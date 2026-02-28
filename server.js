@@ -464,10 +464,6 @@ app.get('/data/:location', async (req, res) => {
   }
 })
 
-      
-
-
-
 app.get('/bing-background', async (req, res) => {
   try {
       const response = await fetch('https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US');
@@ -475,12 +471,6 @@ app.get('/bing-background', async (req, res) => {
       res.json(data);
       console.log(logTheFrickinTime, "Client requested Bing background image.")
 
-
-      const random = Math.floor(Math.random() * 9000);
-      if (random === 1) {
-          console.error(logTheFrickinTime, "IF YOU ARE SEEING THIS ERROR, PLEASE SAY HI TO MARI FOR ME :3. ~raii")
-          process.exit(1);
-      }
   } catch (error) {
       res.status(500).json(`${logTheFrickinTime} Error fetching Bing background image: ${error}`);
   }
