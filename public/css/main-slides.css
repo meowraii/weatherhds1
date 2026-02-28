@@ -21,6 +21,7 @@
 }
 
 .main-slide {
+  position: relative;
   margin: auto auto;
   width: 100%;
   max-width: 1716px;
@@ -28,12 +29,30 @@
   overflow: hidden;
 }
 
+.main-slide-panel {
+  backdrop-filter: var(--mainSlideBlur);
+  position: relative;
+  z-index: 0;
+  border-radius: var(--cornerRadius);
+}
+
+.main-slide-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: var(--cornerRadius, 24px);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px), var(--mainSlideGradient);
+  background-size: 24px 24px, 100% 100%;
+  backdrop-filter: blur(90px) saturate(180%);
+  -webkit-backdrop-filter: blur(90px) saturate(180%);
+  border: var(--border-subtle, 2px solid rgba(255, 255, 255, 0.1));
+}
+
 /* STATION ID */
 .main-info-container {
   position: relative;
-  background-image: var(--mainSlideGradient);
-  backdrop-filter: var(--mainSlideBlur);
-  border-radius: 25px;
   width: 100%;
   height: 85%;
   margin: 0 auto;
@@ -88,7 +107,7 @@
   left: 3%;
   width: 37%;
   height: 11%;
-  background-image: url(/images/meteoch.png);
+  background: url(/images/meteoch.png);
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -100,7 +119,7 @@
   right: -16.5%;
   width: 100%;
   height: 35%;
-  background-image: url(/images/sspwxr.png);
+  background: url(/images/sspwxr.png);
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -116,7 +135,7 @@
 
 .main-current-leftcontainer {
   display: block;
-  background-image: var(--mainGradient);
+  background: var(--mainGradient);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: 0px;
@@ -136,9 +155,6 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-radius: var(--cornerRadius);
-  background-image: var(--mainSlideGradient);
-  backdrop-filter: var(--mainSlideBlur);
   width: 64%;
   height: 100%;
   padding: 2%;
@@ -161,7 +177,9 @@
   height: 30%;
   margin-left: auto;
   margin-right: auto;
-  backdrop-filter: blur(2px) brightness(70%);
+  backdrop-filter: blur(20px);
+  border-radius: var(--cornerRadius);
+  border: var(--border-subtle)
 }
 
 #main-current-temp {
@@ -184,9 +202,22 @@
   text-align: center;
   white-space: nowrap;
   border-radius: var(--cornerRadius);
-  background-image: var(--secondGradient);
+  position: relative;
+  overflow: hidden;
   font-size: var(--fontSizeTwo);
-  outline: var(--defaultOutline);
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.03) 75%, transparent 75%, transparent),
+    linear-gradient(160deg, rgba(33, 36, 38, 0.422) 0%, rgba(18, 18, 18, 0.1) 100%);
+  background-size: 24px 24px, 4px 4px, 100% 100%;
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(170, 181, 188, 0.28);
+  box-shadow: 
+    0 15px 35px -5px rgba(0, 0, 0, 0.834),
+    inset 0 0 20px rgba(170, 180, 188, 0.126);
+  mask-image: radial-gradient(circle at center, black 60%, rgba(0,0,0,0.85) 100%);
+  -webkit-mask-image: radial-gradient(circle at center, black 60%, rgba(0,0,0,0.85) 100%);
 }
 
 .main-current-icon-container {
@@ -259,8 +290,6 @@
 }
 
 .main-precip-eventtype-container {
-  background-image: var(--mainSlideGradient);
-  border-radius: var(--cornerRadius);
   word-wrap: break-word;
   width: 100%;
   height: 35%;
@@ -289,9 +318,6 @@
 }
 
 .main-intraday-period {
-  background-image: var(--mainSlideGradient);
-  backdrop-filter: var(--mainSlideBlur);
-  border-radius: var(--cornerRadius);
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -308,8 +334,9 @@
   border-top-right-radius: var(--cornerRadius);
   width: 100%;
   height: 15%;
-  top: 0%;
-  position: fixed;
+  top: 0;
+  position: absolute;         /* relative to panel, not viewport */
+  z-index: 1;                /* sit above the panel overlay */
   line-height: 1.2;
   font-weight: 300;
   font-size: var(--fontSizeFour);
@@ -342,6 +369,9 @@
   background-color: #a6caff09;
   backdrop-filter: blur(1px) saturate(350%) brightness(60%);
   border-radius: var(--cornerRadius);
+  box-shadow: 
+    0 15px 35px -5px rgba(0, 0, 0, 0.834),
+    inset 0 0 20px rgba(170, 180, 188, 0.126);
 }
 
 .main-intraday-temp-slider-container {
@@ -374,8 +404,6 @@
 
 .forecast-shortterm-summary {
   display: block;
-  background-image: var(--mainSlideGradient);
-  backdrop-filter: var(--mainSlideBlur);
   width: 30%;
   height: 100%;
   border-radius: var(--cornerRadius);
@@ -388,15 +416,12 @@
 .forecast-shortterm-text {
   display: flex;
   justify-content: space-between;
-  background-image: var(--mainSlideGradient);
-  backdrop-filter: var(--mainSlideBlur);
   width: 64%;
   height: 100%;
   padding: 2%;
   box-sizing: border-box;
   line-height: 1.6;
   font-size: var(--fontSizeFour);
-  border-radius: var(--cornerRadius);
 }
 
 .forecast-shortterm-title {
@@ -410,7 +435,12 @@
   display: block;
   width: 100%;
   height: 25%;
-  backdrop-filter: blur(2px) brightness(70%);
+  backdrop-filter: blur(20px);
+  border-radius: var(--cornerRadius);
+  border: var(--border-subtle);
+  box-shadow: 
+    0 15px 35px -5px rgba(0, 0, 0, 0.834),
+    inset 0 0 20px rgba(170, 180, 188, 0.126);
 }
 
 .forecast-shortterm-condition {
@@ -439,9 +469,6 @@
 .main-forecast-day {
   height: 100%;
   width: 18%;
-  border-radius: var(--cornerRadius);
-  background-image: var(--mainSlideGradient);
-  backdrop-filter: var(--mainSlideBlur);
 }
 
 .main-forecast-title {
@@ -522,7 +549,7 @@
   position: absolute;
   justify-content: space-around;
   align-items: center;
-  background-image: var(--mainGradient);
+  background: var(--mainGradient);
   backdrop-filter: blur(10px) saturate(150%);
   border-radius: var(--cornerRadius);
   width: 768px;
@@ -560,9 +587,6 @@
   justify-content: space-between;
   justify-content: center;
   text-align: center;
-  background-image: var(--mainSlideGradient);
-  backdrop-filter: var(--mainSlideBlur);
-  border-radius: var(--cornerRadius);
   width: 100%;
   height: 100%;
 }
@@ -587,9 +611,6 @@
   display: flex;
   overflow: visible;
   justify-content: space-around;
-  background-image: var(--mainSlideGradient);
-  border-radius: var(--cornerRadius);
-  backdrop-filter: var(--mainSlideBlur);
   flex-direction: column;
   text-align: center;
   align-items: center;
@@ -602,9 +623,6 @@
   overflow: visible;
   text-wrap: nowrap;
   justify-content: space-around;
-  background-image: var(--mainSlideGradient);
-  border-radius: var(--cornerRadius);
-  backdrop-filter: var(--mainSlideBlur);
   flex-direction: row;
   width: 63%;
   height: 100%;
@@ -656,9 +674,6 @@
   padding: 0.5%;
   width: 100%;
   height: 90%;
-  background-image: var(--mainSlideGradient);
-  backdrop-filter: var(--mainSlideBlur);
-  border-radius: var(--cornerRadius);
 }
 
 .main-alerts-standby-brainrot {

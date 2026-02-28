@@ -101,6 +101,7 @@ const headers = {
 async function loadLocaleData(location) {
 
   const cacheKey = `locale-${location}`
+  const fetchUrl = `https://api.weather.com/v3/location/search?query=${encodeURIComponent(location)}&language=${encodeURIComponent(systemLocale)}&format=json&apiKey=${encodeURIComponent(twcApiKey)}`;
 
   // persistent cache for locale data because cities dont move lol
   if (persistentCache.get(cacheKey)) {
@@ -109,7 +110,7 @@ async function loadLocaleData(location) {
   } else {
     try {
 
-      const response = await fetch(`https://api.weather.com/v3/location/search?query=${location}&language=${systemLocale}&format=json&apiKey=${twcApiKey}`, {
+      const response = await fetch(fetchUrl, {
         method: 'GET',
         headers: headers
       });
@@ -134,6 +135,12 @@ async function loadLocaleData(location) {
 
     } catch (error) {
       console.error(logTheFrickinTime, error)
+      console.error(logTheFrickinTime, `Error fetching locale data for query "${location}":`, error);
+      console.error('The full fetch URL was', fetchUrl);
+      if ("<HTML><HEAD>" in error.toString()) {
+        console.error(logTheFrickinTime, "Received HTML error response from the API. Full document below:");
+        console.error(error.toString());
+      }
       if (persistentCache.get(cacheKey)) {
         return persistentCache.get(cacheKey);
       }
@@ -194,6 +201,11 @@ async function fetchAlertSingleLocation(geocode, next) {
     }
   } catch (error) {
     console.error(logTheFrickinTime, "Error fetching alert data:", error);
+    console.error(logTheFrickinTime, 'The full fetch URL was', url);
+    if ("<HTML><HEAD>" in error.toString()) {
+      console.error(logTheFrickinTime, "Received HTML error response from the API. Full document below:");
+      console.error(error.toString());
+    }
     return null;
   }
 }
@@ -267,6 +279,11 @@ async function loadWxData(postalKey, geocode, locType) {
 
   } catch (error) {
     console.error("Error fetching weather data:", error);
+    console.error(logTheFrickinTime, 'The full fetch URL was', url);
+    if ("<HTML><HEAD>" in error.toString()) {
+      console.error(logTheFrickinTime, "Received HTML error response from the API. Full document below:");
+      console.error(error.toString());
+    }
     if (cache.get(cacheKey)) {
       console.log(logTheFrickinTime, 'Returned cachekey after error:', cacheKey)
       return cache.get(cacheKey);

@@ -13,7 +13,6 @@
 .topbar-next-locations,
 #currentprogressbar,
 #ldl-location-progressbar {
-  will-change: transform, opacity;
   transform: translateZ(0);
   backface-visibility: hidden;
 }
