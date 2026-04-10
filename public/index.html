@@ -35,22 +35,12 @@
                 
             </div>
 
-            <div id="loading-screen">
-                <div id="loadingscreen-spinny"></div>
-                <p id="loadingscreen-versionID"></p>
-                <p id="loadingscreen-affiliatename"></p>
-                <p id="loadingscreen-locationname"></p>
-            </div>
-
             <div class="wallpaper"></div>
-
-            <div class="i2-sidebar-buffer"></div>
 
             <div class="topbar">
                 <div class="topbar-channel-info">
 
                     <div class="topbar-logo-group">
-                        <div class="topbar-channel-square-logo" id="topbar-channel-square-logo"></div>
                         <div class="topbar-channel-logo"></div>
                     </div>
 
@@ -64,7 +54,7 @@
                 <div class="topbar-upnext-group">
                     <div class="topbar-presentation-info">
                         <div class="topbar-current-slide-group">
-                            <img width="96" src="/graphics/ux/thermometer-sun.svg" class="topbar-current-slide-icon" id="topbar-slide-icon">
+                            <img width="64" src="/graphics/ux/thermometer-sun.svg" class="topbar-current-slide-icon" id="topbar-slide-icon">
                             <div class="topbar-current-slide" id="currentslide">Current COnddition</div>
                         </div>
                         <div class="topbar-progressbar-group">
@@ -89,13 +79,7 @@
               
             </div>
 
-            <div class="main-radar" id="radar-div-so-that-mapbox-will-be-happy">
-                <div class="main-radar-time-container main-slide-panel">
-                    <img width="108" height="108" src="./graphics/ux/radar.svg" alt="Spinny Radar Icon Thingy">
-                    <div id="main-radar-time">4:00</div>
-                    <img src="./graphics/ux/radarcolors.svg" alt="Radar Color Legend">
-                </div>
-            </div>
+            <div class="content-area">
 
             <div class="bumper-slides">
                 <div id="stationid" class="bumper-slide">
@@ -146,7 +130,11 @@
             <div class="main-slides">
 
                 <div id="radar" class="main-slide">
-
+                    <div class="main-radar-time-container main-slide-panel">
+                        <img width="108" height="108" src="./graphics/ux/radar.svg" alt="Radar icon">
+                        <div id="main-radar-time">--:--</div>
+                        <img src="./graphics/ux/radarcolors.svg" alt="Radar Color Legend">
+                    </div>
                 </div>
 
                 <div id="alerts" class="main-slide">
@@ -521,6 +509,10 @@
                     </div>
                 </div>
             </div>
+
+                <div class="i2-sidebar-buffer"></div>
+            </div>
+
                         <div class="ldl-weather">
                 <div class="ldl-bulletin-crawl">
                     <div class="ldl-bulletin-metadata-text" id="ldl-bulletin-metadata-text">

@@ -32,13 +32,12 @@
 
 /* LDL MAIN CONTAINER */
 .ldl-weather {
-  position: absolute;
+  flex-shrink: 0;
+  height: var(--ldl-height);
+  width: 95%;
+  align-self: center;
+  position: relative;
   z-index: 487845785;
-  bottom: 0%;
-  height: 20%;
-  margin: 0 auto;
-  left: 50%;
-  transform: translateX(-50%);
   text-shadow: 2pt 2pt 6px #080F1B;
   border-top-left-radius: var(--cornerRadius);
   border-top-right-radius: var(--cornerRadius);

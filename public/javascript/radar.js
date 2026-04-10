@@ -308,11 +308,12 @@ export class RadarMap {
     }
 }
 
-const mainRadar = new RadarMap("radar-div-so-that-mapbox-will-be-happy", {
+const mainRadar = new RadarMap("radar", {
     timeElement: document.getElementById("main-radar-time"),
 });
 
 export function clearMap() { mainRadar.destroy(); }
+export function resizeRadar() { mainRadar.resize(); }
 export let mapTTL = 0;
 
 export async function preloadRadar(lat, lon, product) {

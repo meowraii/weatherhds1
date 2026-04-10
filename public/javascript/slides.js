@@ -2,6 +2,7 @@ import { config, locationConfig, versionID, serverConfig, bumperBackgroundsRando
 import { appendDatatoMain, animateIntraday, daypartNames } from "./weather.js";
 import { serverHealth } from "./data.js";
 import { runRegionalPlayback } from "./regional.js";
+import { resizeRadar } from "./radar.js";
 
 const playlistSettings = {
     defaultAnimationIn: `mainPresentationSlideIn 500ms ease-in-out`,
@@ -32,11 +33,11 @@ const preferredPlaylist = {
         },
         {
             htmlID: "radar",
-            title: "",
+            title: "3 Hour Radar",
             duration: 12000,
             dynamicFunction: runRadarSlide,
-            animationIn: null,
-            animationOut: null
+            animationIn: playlistSettings.defaultAnimationIn,
+            animationOut: playlistSettings.defaultAnimationOut
         },
         {
             htmlID: "forecast-intraday",
@@ -115,11 +116,11 @@ const preferredPlaylist = {
         },
         {
             htmlID: "radar",
-            title: "",
+            title: "3 Hour Radar",
             duration: 12000,
             dynamicFunction: runRadarSlide,
-            animationIn: null,
-            animationOut: null
+            animationIn: playlistSettings.defaultAnimationIn,
+            animationOut: playlistSettings.defaultAnimationOut
         }
     ],
 
@@ -148,9 +149,8 @@ const domCache = {
     mainSlides: document.getElementsByClassName('main-slides')[0],
     regionalSlides: document.getElementsByClassName('regional-slides')[0],
     bumperSlides: document.getElementsByClassName('bumper-slides')[0],
-    radarDiv: document.getElementsByClassName('main-radar')[0],
+    radarDiv: document.getElementById('radar'),
     stationIdHdsver: document.getElementById('station-id-hdsver'),
-    loadingscreenVersionID: document.getElementById('loadingscreen-versionID'),
     slideIcon: document.getElementById('topbar-slide-icon'),
     localeIcon: document.getElementById('topbar-loc-icon'),
     currentSlideText: document.getElementById('currentslide'),
@@ -162,7 +162,6 @@ const domCache = {
     upNextLocationText3: document.getElementById('upnext-location3'),
     wallpaper: document.getElementsByClassName('wallpaper')[0],
     topbar: document.getElementsByClassName('topbar')[0],
-    loadingScreen: document.getElementById('loading-screen'),
     currentModule1: document.getElementsByClassName('main-current-module1')[0],
     currentModule2: document.getElementsByClassName('main-current-module2')[0],
     currentExtraProducts: Array.from(document.getElementsByClassName('main-current-extraproducts')),
@@ -182,7 +181,6 @@ const domCache = {
 };
 
 domCache.stationIdHdsver.innerText = versionID;
-domCache.loadingscreenVersionID.innerHTML = `WeatherHDS ${versionID}`;
 
 const { slideIcon, currentSlideText, currentLocationText, currentprogressbar, upNextLocationText, upNextLocationText1, upNextLocationText2, upNextLocationText3, radarDiv, regionalSlides } = domCache;
 
@@ -632,57 +630,13 @@ function cancelSlideshow() {
     }, 650);
 }
 
-function loadingScreen() {
-    switch (config.loadingScreen) {
-        case true:
-                let time = 1;
-                const spinningLogo = document.getElementById('loadingscreen-spinny');
-                domCache.loadingScreen.style.display = 'block';
-
-                const startxx = Math.random() * 1000;
-                const startxy = Math.random() * 1000;
-                const startyx = Math.random() * 1000;
-                const startyy = Math.random() * 1000;
-                const startzx = Math.random() * 1000;
-                const startzy = Math.random() * 1000;
-            
-                requestAnimationFrame(() => {
-                    document.getElementById('loadingscreen-affiliatename').innerHTML = `Affiliate Name: ${config.affiliateName}`;
-                    document.getElementById('loadingscreen-locationname').innerHTML = `System Location: ${locationConfig.localLocations.find(g => g.playlist === "primary")?.locations?.[0]?.displayName || "Not Set"}`;
-                });
-                    
-                const rotateAnimation = () => {
-                    const rotatex = perlin.get(startxx + time, startxy + time) * 2;
-                    const rotatey = perlin.get(startyx + time, startyy + time) * 2;
-                    const rotatez = perlin.get(startzx + time, startzy + time) * 2;
-                    spinningLogo.style.transform = `rotateX(${rotatex}turn) rotateY(${rotatey}turn) rotateZ(${rotatez}turn)`;
-                };
-
-                const rotationInterval = setInterval(() => {
-                    time += 0.003;
-                    rotateAnimation();
-                }, 30);
-                    
-                setTimeout(() => {
-                    clearInterval(rotationInterval);
-                    domCache.loadingScreen.remove();
-                    if (config.presentationConfig.autorunOnStartup === true) {
-                        runPresentation();
-                    }
-                }, 3000);
-            
-            break;
-    
-        default:
-            domCache.loadingScreen.style.display = 'none'; // for when im debugging and i dont want the loading screen
-            if (config.presentationConfig.autorunOnStartup === true) {
-                runPresentation();
-            }
-            break;
+window.addEventListener('load', () => {
+    if (config.presentationConfig.autorunOnStartup === true) {
+        setTimeout(() => {
+            runPresentation();
+        }, 0);
     }
-}
-
-window.onload = loadingScreen()
+});
 
 
 
@@ -712,7 +666,6 @@ function runMainCurrentSlide() {
     setTimeout(() => {
         requestAnimationFrame(() => {
             currentModule1.style.animation = 'fadeModule 0.4s ease-out 1';
-            domCache.radarDiv.style.display = 'block'; // radar shit ignore
         });
 
         setTimeout(() => {
@@ -852,11 +805,10 @@ function runBumperSlide(bumperId, upcomingRegions, callback) {
 function runRadarSlide() {
     requestAnimationFrame(() => {
         domCache.radarDiv.style.display = 'block';
-        domCache.radarDiv.style.animation = 'fadeInTypeBeat 300ms ease forwards';
+        resizeRadar();
     });
     setTimeout(() => {
         requestAnimationFrame(() => {
-            domCache.radarDiv.style.animation = 'fadeModule 300ms ease';
         });
     }, slideDurationMS + 100);
 }

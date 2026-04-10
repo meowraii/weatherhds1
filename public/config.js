@@ -21,7 +21,6 @@ export let config = {
         "autorunOnStartup": true // mainly for when i make new slides lol
     },
 
-    "loadingScreen": true,
     "topbarStyle": "domestic", // domestic or weatherscan.
     "videoType": "i2buffer", // sets the aspect ratio
     "systemTimeZone": "America/Regina", // tz_database. https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
@@ -34,11 +33,10 @@ export let config = {
 
 export const locationConfig = {
   mainBlockPlaylist: [ // this determines the order of playlists to show on the main block (large block covering most of the screen). it will cycle through each playlist in order, showing the location(s) specified by the index for 12 seconds before moving on to the next one. if a playlist has fewer locations than the specified index, it will loop back to the beginning of that playlist.
-    
     { playlist: "primary", index: 0 }, // plays the first primary location found in localLocations
     { playlist: "secondary", index: 0 }, // plays the first set of secondary locations
-  //  { playlist: "primary", index: 1 }, // plays the second primary location found in localLocations, if it exists. if not, ignores and moves on to the next item in the playlist.
-  //  { playlist: "secondary", index: 1 }, // plays the second set of secondary locations, if it exists. if not, ignores and moves on to the next item in the playlist.
+    //  { playlist: "primary", index: 1 }, // plays the second primary location found in localLocations, if it exists. if not, ignores and moves on to the next item in the playlist.
+    //  { playlist: "secondary", index: 1 }, // plays the second set of secondary locations, if it exists. if not, ignores and moves on to the next item in the playlist.
     { playlist: "bumper", bumperId: "regionalBumper", index: 0 }, // put our bumper graphic to open our regional segment.
     { playlist: "regional", regionId: "Pacific", index: 0 }, // plays the regional playlist for the pacific location set as defined in regionalLocations.
     { playlist: "regional", regionId: "Prairies", index: 0 },
@@ -449,4 +447,4 @@ export const holidayMapping = {
 
 
 
-export const versionID = '26.02.27';
+export const versionID = '26.04.10';

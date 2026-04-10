@@ -6,6 +6,7 @@ const domElements = {
     mainSlides: document.getElementsByClassName("main-slides")[0],
     regionalSlides: document.getElementsByClassName("regional-slides")[0],
     bumperSlides: document.getElementsByClassName("bumper-slides")[0],
+    contentArea: document.getElementsByClassName("content-area")[0],
     wallpaper: document.getElementsByClassName("wallpaper")[0],
     topBar: document.getElementsByClassName("topbar")[0],
     ldl: document.getElementsByClassName("ldl-presentation")[0],
@@ -21,7 +22,7 @@ const domElements = {
     marqueeTicker: document.getElementById('marquee-ticker')
 };
 
-const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, topBar, ldl, ldlContainer, ldlBranding } = domElements;
+const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, topBar, ldl, ldlContainer, ldlBranding, contentArea } = domElements;
 const date = domElements.date;
 const time = domElements.time;
 const dateLDL = domElements.dateLDL;
@@ -107,7 +108,7 @@ const VIDEO_MODES = Object.freeze({
     ntsc: { width: 2160, height: 1440, barWidth: "95%" },
     tablet: { width: 2304, height: 1440, barWidth: "95%" },
     i2sidebar: { width: 2048, height: 1440, barWidth: "95%" },
-    i2buffer: { width: 2560, height: 1440, barWidth: "100%" },
+    i2buffer: { width: 2560, height: 1440, barWidth: "95%" },
 });
 
 const videoTypeParam = new URLSearchParams(window.location.search).get('videoType');
@@ -129,11 +130,11 @@ function ScaleViewportToTheWindowIGuessLmao() {
     
     ldlContainer.style.width = barWidth;
     topBar.style.width = barWidth;
+    contentArea.style.width = barWidth;
 
     const mainVideoBlock = [
-        mainSlides,
         regionalSlides,
-        bumperSlides
+        bumperSlides,
     ]
 
     if (config.videoType === "i2buffer" && domElements.i2SidebarBuffer) {

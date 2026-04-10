@@ -4,11 +4,12 @@
   --fontSizeRegionalPanelTitle: 26pt;
 }
 .regional-slides {
-  position: relative;
+  flex: 1 1 0;
+  align-self: stretch;
+  min-width: 0;
   display: flex;
   justify-content: space-evenly;
-  top: 20%;
-  height: 60%;
+  align-items: center;
   overflow: hidden;
 }
 .regional-slide {

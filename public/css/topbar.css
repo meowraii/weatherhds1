@@ -1,29 +1,19 @@
 .topbar {
-  position: absolute;
+  flex-shrink: 0;
+  height: var(--topbar-height);
+  align-self: center;
+  position: relative;
   z-index: 4;
-  height: 20%;
-  margin: 0 auto;
+  width: 90%;
   display: flex;
   justify-content: space-between;
-  border-bottom-left-radius: var(--cornerRadius);
-  border-bottom-right-radius: var(--cornerRadius);
-  
-  /* Modernized Glass: Lowered blur, softer lighting */
   backdrop-filter: blur(30px) saturate(200%) brightness(80%);
   -webkit-backdrop-filter: blur(30px) saturate(200%) brightness(80%);
   background-image: var(--mainSlideGradient);
-
-  /* Thinner, more elegant borders */
-  border-bottom: 1px solid var(--thirdColourTransparent, rgba(255, 255, 255, 0.1));
-  border-left: 1px solid var(--thirdColourTransparent, rgba(255, 255, 255, 0.1));
-  border-right: 1px solid var(--thirdColourTransparent, rgba(255, 255, 255, 0.1));
-  
-  /* Added a subtle drop shadow to lift it off the background */
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--thirdColourTransparent, rgba(255, 255, 255, 0.1));
   box-sizing: border-box;
-
-  left: 50%;
-  transform: translateX(-50%);
+  border-radius: 120px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.522), 0 4px 12px rgba(0, 0, 0, 0.506);
 }
 
 .topbar-channel-info {
@@ -39,15 +29,13 @@
   width: 33%;
   height: 90%;
 
-  border-radius: var(--cornerRadius);
+  border-radius: 120px;
   backdrop-filter: saturate(110%);
   
-  /* Smoother inner gradient */
   background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
   padding: 12px;
   box-sizing: border-box;
-  
-  /* Replaced 4px border with a 1px premium edge */
+
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -75,20 +63,6 @@
   align-self: flex-start;
 }
 
-.topbar-channel-square-logo {
-  width: 128px;
-  height: 128px;
-  align-self: flex-start;
-  flex-grow: 0;
-  flex-shrink: 0;
-  border-radius: var(--cornerRadius);
-  margin-right: 2%;
-
-  background-image: url(/images/ssp_square_blue.png);
-  background-size: cover;
-  background-position: 0%;
-}
-
 .topbar-affiliate-logo {
   position: absolute;
   right: 0%;
@@ -114,8 +88,6 @@
   white-space: nowrap;
   line-height: 1;
   align-self: flex-start;
-  
-  /* Modernized Text Shadow: Softer, more diffuse rather than a hard copy */
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
@@ -165,7 +137,6 @@
   height: 100%;
   width: 0%;
   border-radius: var(--cornerRadius);
-  /* Brighter fill with a subtle glow */
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
 }
@@ -183,7 +154,6 @@
   height: 35%;
   font-size: var(--fontSizeThree);
   font-weight: 500;
-  /* Softer text shadow here too */
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
   box-sizing: border-box;
   gap: 1rem;
@@ -199,16 +169,11 @@
   flex: 1 1 auto;
   height: 100%;
   border-radius: var(--cornerRadius);
-  
-  /* Toned down the blur to match the parent, keeps the system unified */
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-  
   padding: 10px;
   box-sizing: border-box;
-  
-  /* Thinned out the border */
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-size: var(--fontSizeThree);

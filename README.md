@@ -50,7 +50,6 @@
       <li><code>autorunOnStartup</code>: Auto-start presentation. Similar to toggling MAIN off.</li>
     </ul>
   </li>
-  <li><code>loadingScreen</code>: Enables or disables a loading screen before presentation starts.</li>
   <li><code>videoType</code>: Aspect ratio mode. (options: <code>vga</code>, <code>ntsc</code>, <code>hdtv</code>, <code>tablet</code>).</li>
   <li><code>systemTimeZone</code>: Time zone in <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones">tz_database</a> format.</li>
   <li><code>tickerContent</code>: Text for the scrolling crawl on the LDL; empty string hides the crawl.</li>

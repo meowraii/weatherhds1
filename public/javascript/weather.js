@@ -114,7 +114,7 @@ export async function appendDatatoMain(locale, locType) {
     }
 
 
-    drawMap(lat, lon, "twcRadarHcMosaic", 8, 'radar-div-so-that-mapbox-will-be-happy')
+    drawMap(lat, lon, "twcRadarHcMosaic", 7, 'radar')
 
     function setDayIcon(day, product, daypartIndex) { // this sucks i hate myself
 

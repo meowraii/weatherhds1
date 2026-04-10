@@ -1,17 +1,13 @@
 .i2-sidebar-buffer {
   display: none;
-  position: absolute;
-  height: 100%;
-  right: 0%;
-  width: 20%;
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 19%;
 
-  border-bottom-left-radius: var(--cornerRadius);
-  border-top-left-radius: var(--cornerRadius);
+  border-radius: var(--cornerRadius);
   backdrop-filter: blur(70px) saturate(350%) brightness(60%);
   background-image: var(--mainGradient);
 
-  border-bottom: 4px solid var(--thirdColourTransparent);
-  border-left: 4px solid var(--thirdColourTransparent);
-  border-top: 4px solid var(--thirdColourTransparent);
+  border: 4px solid var(--thirdColourTransparent);
   box-sizing: border-box;
 }
