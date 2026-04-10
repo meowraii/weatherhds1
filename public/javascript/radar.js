@@ -1,6 +1,4 @@
 const DEFAULTS = {
-    twcApiKey: "e1f10a1e78da46f5b10a1e78da96f525",
-    mapboxToken: "pk.eyJ1IjoicGV5dG9ud2R5bSIsImEiOiJjbGx0NHpmMHYwenJtM2tsaXRmaHF3ZHBsIn0.TlyGx6b0mqYSbzZUFjIQmg",
     mapStyle: "mapbox://styles/peytonwdym/clov0gd3u00mj01pe1wmhb2j5",
     product: "twcRadarHcMosaic",
     totalFrames: 48,
@@ -12,6 +10,15 @@ const DEFAULTS = {
     labelTextSize: 40,
     radarOpacity: 0.75,
 };
+
+let _keys = null;
+async function getKeys() {
+    if (_keys) return _keys;
+    const res = await fetch('/config/keys');
+    if (!res.ok) throw new Error(`Failed to fetch radar keys: ${res.status}`);
+    _keys = await res.json();
+    return _keys;
+}
 
 const log = () => `[radar.js] | ${new Date().toLocaleString()} |`;
 
@@ -67,6 +74,7 @@ export class RadarMap {
     get ttl() { return this.#ttl; }
 
     async init(lat, lon, zoom, product) {
+        const { twcApiKey, mapboxToken } = await getKeys();
         product = product ?? this.#opts.product;
 
         if (!lat || !lon) {
@@ -84,14 +92,14 @@ export class RadarMap {
             this.#map.setCenter(center);
             this.#map.setZoom(zoom);
             this.#ttl++;
-            return this.#loadAndAnimate(product);
+            return this.#loadAndAnimate(product, twcApiKey);
         }
 
         this.#map = new mapboxgl.Map({
             container: this.#containerId,
             style: this.#opts.mapStyle,
             center,
-            accessToken: this.#opts.mapboxToken,
+            accessToken: mapboxToken,
             telemetry: false,
             interactive: false,
             zoom,
@@ -113,7 +121,7 @@ export class RadarMap {
             });
         });
 
-        await this.#loadAndAnimate(product);
+        await this.#loadAndAnimate(product, twcApiKey);
     }
 
     async flyTo(lat, lon, zoom, product) {
@@ -133,10 +141,11 @@ export class RadarMap {
     }
 
     async preload(product) {
+        const { twcApiKey } = await getKeys();
         product = product ?? this.#opts.product;
         if (this.#preloaded) return;
         try {
-            await this.#fetchSlices(product);
+            await this.#fetchSlices(product, twcApiKey);
             console.log(log(), `Radar preloaded for [${this.#containerId}]`);
         } catch (err) {
             console.error(log(), "Preload failed:", err.message);
@@ -173,12 +182,12 @@ export class RadarMap {
         if (this.#loopTimer) { clearTimeout(this.#loopTimer); this.#loopTimer = null; }
     }
 
-    async #fetchSlices(product) {
+    async #fetchSlices(product, twcApiKey) {
         if (this.#preloadPromise) return this.#preloadPromise;
 
         this.#preloadPromise = (async () => {
             try {
-                this.#slices = await fetchTimeslices(this.#opts.twcApiKey, this.#opts.totalFrames, product);
+                this.#slices = await fetchTimeslices(twcApiKey, this.#opts.totalFrames, product);
                 this.#preloaded = true;
                 return this.#slices;
             } catch (err) {
@@ -200,7 +209,7 @@ export class RadarMap {
         });
     }
 
-    async #loadAndAnimate(product) {
+    async #loadAndAnimate(product, twcApiKey) {
         try {
             this.#map.resize();
             this.#stopAnimation();
@@ -208,7 +217,7 @@ export class RadarMap {
             this.#loops = 0;
 
             if (!this.#preloaded) {
-                await this.#fetchSlices(product);
+                await this.#fetchSlices(product, twcApiKey);
             }
 
             const style = this.#map.getStyle();
@@ -239,7 +248,7 @@ export class RadarMap {
                     source: {
                         type: "raster",
                         tiles: [
-                            `https://api.weather.com/v3/TileServer/tile/${product}?ts=${ts.ts}&xyz={x}:{y}:{z}&apiKey=${this.#opts.twcApiKey}`,
+                            `https://api.weather.com/v3/TileServer/tile/${product}?ts=${ts.ts}&xyz={x}:{y}:{z}&apiKey=${twcApiKey}`,
                         ],
                         tileSize: 512,
                     },

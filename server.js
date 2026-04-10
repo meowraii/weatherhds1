@@ -91,6 +91,29 @@ if (!process.env.TWC_API_KEY) {
   
 twcApiKey = process.env.TWC_API_KEY;
 
+const mapboxToken = process.env.MAPBOX_API_KEY ?? null;
+
+const localhostOrigin = /^https?:\/\/localhost(:\d+)?$|^https?:\/\/127\.0\.0\.1(:\d+)?$/;
+
+app.get('/config/keys', (req, res) => {
+    const origin = req.headers.origin;
+    const host   = req.headers.host ?? '';
+
+    const isLocalOrigin = !origin || localhostOrigin.test(origin);
+    const isLocalHost   = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host);
+
+    if (!isLocalOrigin || !isLocalHost) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
+    }
+
+    res.json({ twcApiKey, mapboxToken });
+});
+
 const headers = {
       'Accept': 'application/json',
       'Accept-Encoding': 'gzip',
