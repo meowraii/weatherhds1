@@ -14,11 +14,14 @@
 .main-slides {
   align-self: stretch;
   min-width: 0;
-  width: 73%;
+  width: 100%;
+  max-width: 1716px;
   display: flex;
   justify-content: center;
+  justify-self: center;
   align-items: center;
   overflow: hidden;
+  margin: 0 auto;
 }
 
 .main-slide {
