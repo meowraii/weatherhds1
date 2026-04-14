@@ -2,7 +2,7 @@
   display: none;
   flex-shrink: 0;
   align-self: stretch;
-  width: 19%;
+  width: 22%;
 
   border-radius: var(--cornerRadius);
   backdrop-filter: blur(70px) saturate(350%) brightness(60%);

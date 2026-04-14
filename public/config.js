@@ -19,18 +19,81 @@ export let config = {
         "squareLogo": true,
         "bannerLogo": true,
         "autorunOnStartup": true // mainly for when i make new slides lol
-    },
-
-    "topbarStyle": "domestic", // domestic or weatherscan.
-    "videoType": "i2buffer", // sets the aspect ratio
-    "systemTimeZone": "America/Regina", // tz_database. https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-    "tickerContent": "", // empty = hides scroll. add any text to it to show a crawl on the LDL.
+      },
+      
+      "cityTicker": {
+        "enabled": true, // enables or disables the city ticker above the LDL.
+        "showTimeChanges": true, // whether or not to show time changes in the ticker. if true, it will show the time change icons and text for each city that has a different current time than the main location. if false, it will just show the city names without any indication of time changes.
+        "products": [ // which products to show in the city ticker. options are:
+          "currentConditions",
+          "dayOne",
+          "dayTwo"
+        ],
+        "severeAlertIcon": true, // shows a severe weather alert icon in the city ticker if there is an active severe weather alert in that location.
+        "intervalMessages": [
+          {
+            "messageHeader": "Thanks for watching",
+            "messageBody": "METEOchannel is Saskatoon's own continuous automated weather channel. Local weather, when you want it, when you DON'T want it, and everything in between.",
+            "showBeforeProduct": "currentConditions", // which product to show the message before. options are the same as the products array above.
+            "showAfterProduct": null, // which product to show the message after. options are the same as the products array above. if null, it will just show the message before the specified product and then continue with the normal ticker content.
+            "scroll": true, // whether or not to scroll the message across the ticker. if false, it will just show the message in place of the normal ticker content for 15 seconds.
+            "displayInterval": 1 // show this message every x cycles of the city ticker. so if you have 3 products in the ticker and this message is set to show before dayOne, and the displayInterval is set to 2, then it will show this message before dayOne every 2 cycles of the ticker. so it would show before dayOne on the first cycle, then not show on the second cycle, then show again on the third cycle, and so on.
+          },
+          {
+            "messageHeader": "HELLO",
+            "messageBody": "I am the city ticker, I think. I show weather for different cities, I think. And also I scroll so like that is really cool. I am also a ripoff of the cityticker from Weatherscan, but I'm better because Weatherscan is dead and I'm not. I am also not running on a Pentium 4-powered space heater like Weatherscan. So that means I am better than Weatherscan. You can contact Raii at (639) 872 9088 for inquiries about the METEOchannel project. I am also very sorry for this message, I will go back to showing weather now.",
+            "showBeforeProduct": "",
+            "showAfterProduct": "currentConditions",
+            "scroll": true,
+            "displayInterval": 15 // lol
+          },
+          {
+            "messageHeader": "METEOchannel cares too much about your safety",
+            "messageBody": "Remember, when severe weather strikes, seek shelter immediately and stay tuned to your local weather station for updates. Don't forget to have a weather radio on hand, and make sure your emergency kit is stocked with essentials. Your safety is our top priority.",
+            "showBeforeProduct": "dayTwo",
+            "showAfterProduct": null,
+            "scroll": true,
+            "displayInterval": 2
+          },
+          {
+            "messageHeader": "Environment Canada colour codes",
+            "messageBody": "Weather alerts have used to have one modifier associated with an event type: statement, watch, or warning. Now, a colour code is also added on top of that, where @textcolor{yellow}{Yellow} means that hazardous weather may cause damage, disruption, or health impacts, and that impacts are moderate, localized and/or short-term. @textcolor{orange}{Orange} indicates that hazardous weather is expected to cause damage, disruption, or health impacts, and that impacts are significant, widespread and/or long-term. @textcolor{red}{Red} signifies that extremely hazardous weather is expected to cause widespread damage, disruption, or health impacts, and that impacts are severe, widespread and/or long-term.", // messages support inline formatting: @textcolor{color}{text}, @textbf{text}, @textit{text}, @underline{text}
+            "showBeforeProduct": "",
+            "showAfterProduct": "dayOne",
+            "scroll": true,
+            "displayInterval": 5
+          },
+          {
+            "messageHeader": "",
+            "headerIcon": null, // you can also have messages with icons next to either or both the header and the body. just add the filename of the icon in the appropriate field, and make sure the icon is in the public folder.
+            "messageBody": "",
+            "bodyIcon": "/images/giphy.gif",
+            "showBeforeProduct": "",
+            "showAfterProduct": "",
+            "scroll": true,
+            "displayInterval": 30 // this is basically never, just here as a template for adding new messages.
+          },
+          {
+            "messageHeader": "Help save Weatheradio Canada",
+            "messageBody": "Since March 16, 2026, Environment and Climate Change Canada has been decommissioning their Weatheradio transmitters across the country, with plans to shut down the entire network by the end of 2026. This means that the grand majority of Canadians will lose access to instantaneous critical weather alerts and information, especially those in remote areas with limited internet access. To help save Weatheradio Canada, please sign e-petition E-7290 on the Parliament of Canada website, and share it with your friends and family. The more signatures it gets, the better chance we have of saving this vital service. Visit https://petitions.ourcommons.ca/en/Petition/Details?Petition=e-7290 to sign the petition and help save Weatheradio Canada.",
+            "showBeforeProduct": "",
+            "showAfterProduct": "dayOne",
+            "scroll": true,
+            "displayInterval": 5
+          }
+        ]
+      },
+      
+      "topbarStyle": "domestic", // domestic or weatherscan.
+      "videoType": "i2buffer", // sets the aspect ratio
+      "systemTimeZone": "America/Regina", // tz_database. https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+      "tickerContent": "", // empty = hides scroll. add any text to it to show a crawl on the LDL.
     "overrideBackgroundImage": "", // skips the background rotation and uses the URL provided.
     "backgroundSource": "local", // set to local to use the locally stored default backgrounds, set value to online to use the Bing background api thing, and set to url to use a background URL.
     "verboseLogging": true, // enables or disables console.log
     "refreshInterval": 120 // how often to refresh the browser tab, in minutes.
-}
-
+  }
+  
 export const locationConfig = {
   mainBlockPlaylist: [ // this determines the order of playlists to show on the main block (large block covering most of the screen). it will cycle through each playlist in order, showing the location(s) specified by the index for 12 seconds before moving on to the next one. if a playlist has fewer locations than the specified index, it will loop back to the beginning of that playlist.
     { playlist: "primary", index: 0 }, // plays the first primary location found in localLocations
@@ -83,6 +146,41 @@ export const locationConfig = {
     "Lloydminster, AB",
     "Regina, SK"
   ],
+
+  cityTickerLocations: {
+    "categories": {
+      "CENTRAL SASKATCHEWAN": [
+        "Saskatoon, SK",
+        "Prince Albert, SK",
+        "Lloydminster, AB",
+        "North Battleford, SK",
+        "Humboldt, SK",
+        "Melfort, SK",
+        "Wadena, SK",
+        "Watrous, SK",
+        "Wynyard, SK",
+        "Porcupine Plain, SK",
+        "Tisdale, SK",
+        "Kerrobert, SK",
+        "Rosetown, SK",
+        "Outlook, SK",
+      ],
+      "SOUTHERN SASKATCHEWAN": [
+        "Regina, SK",
+        "Moose Jaw, SK",
+        "Weyburn, SK",
+        "Estevan, SK",
+        "Swift Current, SK",
+        "Moosomin, SK",
+        "Assiniboia, SK",
+        "Maple Creek, SK",
+        "Yorkton, SK",
+        "Melville, SK",
+        "Fort Qu'Appelle, SK",
+        "Gravelbourg, SK",
+      ]
+    },
+  },
 
   regionalLocations: { // 12 cities each. sort by province, then by population. these are used for the regional weather slides showed on main.
     "regions": {
@@ -447,4 +545,4 @@ export const holidayMapping = {
 
 
 
-export const versionID = '26.04.10';
+export const versionID = '26.04.13';

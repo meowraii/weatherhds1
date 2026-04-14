@@ -6,6 +6,7 @@ const domElements = {
     mainSlides: document.getElementsByClassName("main-slides")[0],
     regionalSlides: document.getElementsByClassName("regional-slides")[0],
     bumperSlides: document.getElementsByClassName("bumper-slides")[0],
+    cityTicker: document.getElementsByClassName("cityticker")[0],
     contentArea: document.getElementsByClassName("content-area")[0],
     wallpaper: document.getElementsByClassName("wallpaper")[0],
     topBar: document.getElementsByClassName("topbar")[0],
@@ -22,7 +23,7 @@ const domElements = {
     marqueeTicker: document.getElementById('marquee-ticker')
 };
 
-const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, topBar, ldl, ldlContainer, ldlBranding, contentArea } = domElements;
+const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, topBar, ldl, ldlContainer, ldlBranding, contentArea, cityTicker } = domElements;
 const date = domElements.date;
 const time = domElements.time;
 const dateLDL = domElements.dateLDL;
@@ -131,6 +132,7 @@ function ScaleViewportToTheWindowIGuessLmao() {
     ldlContainer.style.width = barWidth;
     topBar.style.width = barWidth;
     contentArea.style.width = barWidth;
+    cityTicker.style.width = barWidth;
 
     const mainVideoBlock = [
         regionalSlides,

@@ -136,6 +136,9 @@ const ldlDomCache = Object.freeze({
 
 
 
+
+
+
 function initializeMarquee(retries = 3) {
   if (typeof $ === 'undefined' || typeof $.fn.marquee === 'undefined') {
     if (retries > 0) {
@@ -216,24 +219,8 @@ export function requestBulletinCrawl(text, alertCategory, headlineText, country,
 }
 
 export function cancelBulletinCrawl() {
-    bulletinCrawlContainer.style.display = `none`
-
-    try {
-      if (typeof $ !== 'undefined' && typeof $.fn.marquee !== 'undefined') {
-        $('#ldl-bulletin-text').marquee('destroy');
-      }
-    } catch (error) {
-      console.error('[cancelBulletinCrawl] Error destroying marquee:', error);
-    }
-   
-    ldlDomCache.headlineBack.style.background = ""
-    ldlDomCache.bulletinMetadataText.innerHTML = `
-      <span class="bulletin-icon">⚠</span>
-      <span class="bulletin-metadata-label"></span>
-    `;
-    ldlDomCache.bulletinText.innerHTML = ""
+  bulletinCrawlContainer.style.display = `none`
 }
-
 
 let currentLDLData = null;
 

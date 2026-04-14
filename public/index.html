@@ -9,6 +9,7 @@
         <link rel="stylesheet" href="/css/main-slides.css">
         <link rel="stylesheet" href="/css/bumper-slides.css">
         <link rel="stylesheet" href="/css/regional-slides.css">
+        <link rel="stylesheet" href="/css/cityticker.css">
         <link rel="stylesheet" href="/css/ldl.css">
         <link rel="stylesheet" href="/css/animations.css">
         <link rel="icon" type="image/x-icon" href="./images/favicon.png">
@@ -21,6 +22,7 @@
         <script type="module" src="javascript/regional.js" defer></script>
         <script type="module" src="javascript/main.js" defer></script>
         <script type="module" src="/javascript/data.js"></script>
+        <script type="module" src="javascript/cityticker.js" defer></script>
         <script type="module" src="javascript/ldl.js" defer></script>
         <script type="module" src="javascript/radar.js" defer></script>
         <link href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css" rel="stylesheet">
@@ -513,15 +515,19 @@
                 <div class="i2-sidebar-buffer"></div>
             </div>
 
-                        <div class="ldl-weather">
+            <div class="cityticker">
+                <div class="cityticker-body">
+                    <div class="cityticker-track"></div>
+                </div>
+            </div>
+
+            <div class="ldl-weather">
                 <div class="ldl-bulletin-crawl">
                     <div class="ldl-bulletin-metadata-text" id="ldl-bulletin-metadata-text">
                         <span class="bulletin-icon">⚠</span>
                         <span class="bulletin-metadata-label"></span>
                     </div>
-                    <div class="ldl-bulletin-text-container" id="ldl-bulletin-text">
-                        ssdfgsdfgsergsdthdfthdfyjfdtygjfgyukfuykfgfghjd;fglhjdkfgkjhd;lkfgjhd;lfkgjh;dlkfgjhd;lkfgjhd;lgkfjhdjlhgk;fjghlkdfhgkld;fhjglk;ghkl;gjlk;gjhklghklhkgltiohjdoritjhdfiljh;dltjhojod;ighjoit;doftijhftd;otfijhjf
-                    </div>
+                    <div class="ldl-bulletin-text-container" id="ldl-bulletin-text"></div>
                 </div>
 
                 <div class="ldl-container">
@@ -788,9 +794,6 @@
                             <div class="ldl-bottomtext-container">
                                 <div class="ldl-locationlabel-container">
                                     <div class="ldltext-secondary" id="ldl-location-label"></div>
-                                </div>
-                                <div class="ldl-marquee">
-                                    <div id="marquee-ticker"></div>
                                 </div>
                             </div>
                         </div>

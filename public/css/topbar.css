@@ -5,7 +5,7 @@
   position: relative;
   z-index: 4;
   width: 90%;
-  margin-top: 2%;
+  margin-top: 1%;
   display: flex;
   justify-content: space-between;
   backdrop-filter: blur(30px) saturate(200%) brightness(80%);

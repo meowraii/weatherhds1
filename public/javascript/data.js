@@ -143,6 +143,7 @@ async function checkAlerts() {
     
     if (existingAlert && alert.identifier !== existingAlert.identifier) {
       cancelBulletinCrawl();
+      delete alertRegistry[primaryLocation];
     }
     
     alertRegistry[primaryLocation] = alert;
