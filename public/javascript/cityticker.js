@@ -1,7 +1,7 @@
 import { weatherIcons, locationConfig, serverConfig, config, displayUnits } from "../config.js";
-import { requestWxData } from "./data.js";
+import { requestWxData, requestAlertData } from "./data.js";
 
-const SCROLL_SPEED_PX_PER_MS = 0.30;
+const SCROLL_SPEED_PX_PER_MS = 0.48;
 const STATIC_MSG_DURATION_MS = 12000;
 const iconDir = config.staticIcons ? "static" : "animated";
 const units = displayUnits[serverConfig.units] ?? displayUnits["m"];
@@ -11,13 +11,22 @@ function resolveIcon(iconCode, dayOrNight) {
     return arr[dayOrNight === "D" ? 0 : 1] ?? "not-available.svg";
 }
 
-function buildCurrentEntry(locationStr, current) {
+function buildAlertBadge(color) {
+    const badge = document.createElement("span");
+    badge.className = "cityticker-alert-badge";
+    badge.style.color = color;
+    badge.textContent = "\u26a0";
+    return badge;
+}
+
+function buildCurrentEntry(locationStr, current, alertData = null) {
     const entry = document.createElement("div");
     entry.className = "cityticker-entry";
 
     const city = document.createElement("div");
     city.className = "cityticker-entry-city";
     city.textContent = locationStr.split(",")[0];
+    if (alertData && config.cityTicker?.severeAlertIcon) city.prepend(buildAlertBadge(alertColorFor(alertData)));
 
     const temp = document.createElement("div");
     temp.className = "cityticker-entry-temp";
@@ -35,7 +44,7 @@ function buildCurrentEntry(locationStr, current) {
     return entry;
 }
 
-function buildForecastEntry(locationStr, forecast, dayIndex) {
+function buildForecastEntry(locationStr, forecast, dayIndex, hasAlert = false) {
     const dpOffset = dayIndex * 2;
     const iconCode = forecast.daypart[0].iconCode[dpOffset] ?? forecast.daypart[0].iconCode[dpOffset + 1];
     const cond = forecast.daypart[0].wxPhraseLong[dpOffset] ?? forecast.daypart[0].wxPhraseLong[dpOffset + 1] ?? "";
@@ -48,6 +57,7 @@ function buildForecastEntry(locationStr, forecast, dayIndex) {
     const city = document.createElement("div");
     city.className = "cityticker-entry-city";
     city.textContent = locationStr.split(",")[0];
+    if (hasAlert && config.cityTicker?.severeAlertIcon) city.prepend(buildAlertBadge());
 
     const temps = document.createElement("div");
     temps.className = "cityticker-entry-forecast-temps";
@@ -150,19 +160,32 @@ async function fetchSectionData(categories) {
         Object.values(categories).flat()
     )];
 
-    const results = await Promise.allSettled(
-        allLocations.map(loc => requestWxData(loc, "ldl"))
-    );
+    const [wxResults, alertResults] = await Promise.all([
+        Promise.allSettled(allLocations.map(loc => requestWxData(loc, "ldl"))),
+        Promise.allSettled(allLocations.map(loc => requestAlertData(loc))),
+    ]);
 
     const dataMap = {};
+    const alertMap = {};
     allLocations.forEach((loc, i) => {
-        const r = results[i];
+        const r = wxResults[i];
         dataMap[loc] = r.status === "fulfilled" ? r.value?.weather ?? null : null;
+        alertMap[loc] = alertResults[i].status === "fulfilled" ? alertResults[i].value : null;
     });
-    return dataMap;
+    return { dataMap, alertMap };
 }
 
-function buildSections(categories, dataMap, products) {
+function buildAlertIntroEntry(alertInfo) {
+    const entry = document.createElement("div");
+    entry.className = "cityticker-entry cityticker-entry--alert-intro";
+    entry.style.color = alertInfo.color;
+    entry.style.fontWeight = "600";
+    const article = /^[aeiou]/i.test(alertInfo.event) ? "An" : "A";
+    entry.textContent = `${article} ${alertInfo.event} is in effect for the following indicated locations.`;
+    return entry;
+}
+
+function buildSections(categories, dataMap, alertMap, products) {
     const byProduct = {};
 
     for (const product of products) {
@@ -170,13 +193,28 @@ function buildSections(categories, dataMap, products) {
         for (const [category, locations] of Object.entries(categories)) {
             const entries = [];
             let sectionDayName = null;
+            const sectionAlertGroups = new Map();
+
             for (const loc of locations) {
                 const wx = dataMap[loc];
                 if (!wx) continue;
 
+                const alertData = alertMap[loc] ?? null;
                 if (product === "currentConditions") {
                     const current = wx["v3-wx-observations-current"];
-                    if (current) entries.push(buildCurrentEntry(loc, current));
+                    if (current) {
+                        entries.push(buildCurrentEntry(loc, current, alertData));
+                        if (alertData && config.cityTicker?.severeAlertIcon) {
+                            const a = alertData.headline.alerts[0];
+                            const key = `${a.eventDescription}|${a.severityCode}|${a.sourceColorName ?? ""}`;
+                            if (!sectionAlertGroups.has(key)) {
+                                sectionAlertGroups.set(key, {
+                                    event: a.eventDescription,
+                                    color: alertColorFor(alertData),
+                                });
+                            }
+                        }
+                    }
                 } else if (product === "dayOne") {
                     const forecast = wx["v3-wx-forecast-daily-7day"] ?? wx["v3-wx-forecast-daily-3day"];
                     if (forecast?.calendarDayTemperatureMax?.[0] != null) {
@@ -191,10 +229,25 @@ function buildSections(categories, dataMap, products) {
                     }
                 }
             }
-            if (entries.length > 0) byProduct[product].push({ category, entries, dayName: sectionDayName });
+            if (entries.length > 0) {
+                const alertIntros = [...sectionAlertGroups.values()].map(buildAlertIntroEntry);
+                byProduct[product].push({
+                    category,
+                    entries: [...alertIntros, ...entries],
+                    dayName: sectionDayName,
+                });
+            }
         }
     }
     return byProduct;
+}
+
+function alertColorFor(alertData) {
+    const a = alertData.headline.alerts[0];
+    if (a.countryCode === "CA") {
+        return { Red: "#e05537", Orange: "#dd7322", Yellow: "#c9b820" }[a.sourceColorName] ?? "#57aa57";
+    }
+    return { W: "#e04428", Y: "#dd7322", A: "#c9b820" }[a.severityCode] ?? "#57aa57";
 }
 
 function buildQueue(byProduct, products, messages, cycleCount) {
@@ -300,8 +353,6 @@ class CityTickerScroller {
                 return;
             }
         }
-
-        this.#trackWidth = this.track.scrollWidth;
         const vpWidth = this.viewport.offsetWidth;
         this.#trackOffset = vpWidth;
         this.#entryOffset = 0;
@@ -379,8 +430,8 @@ async function buildCityTicker() {
     const viewport = document.querySelector(".cityticker-body");
     const track = viewport.querySelector(".cityticker-track");
 
-    const dataMap = await fetchSectionData(categories);
-    const byProduct = buildSections(categories, dataMap, products);
+    const { dataMap, alertMap } = await fetchSectionData(categories);
+    const byProduct = buildSections(categories, dataMap, alertMap, products);
 
     const hasContent = products.some(p => (byProduct[p] ?? []).some(s => s.entries.length > 0));
     if (!hasContent) return;

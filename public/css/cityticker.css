@@ -74,6 +74,16 @@
 
 .cityticker-entry-city {
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cityticker-alert-badge {
+    font-size: 1.6em;
+    line-height: 1;
+    flex-shrink: 0;
+    text-shadow: 2 4 4px #ffffff39;
 }
 
 .cityticker-entry-temp {

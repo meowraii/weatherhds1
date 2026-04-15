@@ -53,7 +53,7 @@ export async function requestWxData(location, locType) {
   return wxData;
 }
 
-async function requestAlertData(location) {
+export async function requestAlertData(location) {
   try {
     const alertResponse = await fetch(`/data/alerts/${encodeURIComponent(location)}`);
     
@@ -115,43 +115,31 @@ let alertRegistry = {};
 let alertPollTimer = null;
 
 function setupAlertPolling(hasAlert) {
-  if (alertPollTimer) {
-    clearInterval(alertPollTimer);
-  }
-  
-  const interval = hasAlert 
+  if (alertPollTimer) clearInterval(alertPollTimer);
+  const interval = hasAlert
     ? serverConfig.alertPollIntervalSevere * 60000
     : serverConfig.alertPollIntervalNormal * 60000;
-  
   alertPollTimer = setInterval(checkAlerts, interval);
 }
 
 async function checkAlerts() {
   const primaryLocation = locationConfig.localLocations.find(g => g.playlist === "primary")?.locations?.[0]?.name;
-  
   const alertData = await requestAlertData(primaryLocation);
-  
+
   if (alertData !== null) {
     const alert = alertData.headline.alerts[0];
     const alertText = alertData.detail?.alertDetail?.texts?.[0];
-    
-    const existingAlert = alertRegistry[primaryLocation];
-    
-    if (existingAlert && existingAlert.identifier === alert.identifier) {
-      return;
-    }
-    
-    if (existingAlert && alert.identifier !== existingAlert.identifier) {
-      cancelBulletinCrawl();
-      delete alertRegistry[primaryLocation];
-    }
-    
+
+    if (alertRegistry[primaryLocation]?.identifier === alert.identifier) return;
+
+    cancelBulletinCrawl();
+    alertRegistry = {};
     alertRegistry[primaryLocation] = alert;
-    
-    const bulletinText = alertText ? 
-      (alertText.description + " " + (alertText.instruction || "")).trim() : 
-      alert.headlineText;
-    
+
+    const bulletinText = alertText
+      ? (alertText.description + " " + (alertText.instruction || "")).trim()
+      : alert.headlineText;
+
     requestBulletinCrawl(
       bulletinText,
       alert.severityCode,
@@ -159,14 +147,12 @@ async function checkAlerts() {
       alert.countryCode,
       alert.sourceColorName
     );
-    
     setupAlertPolling(true);
   } else {
     if (alertRegistry[primaryLocation]) {
       cancelBulletinCrawl();
       delete alertRegistry[primaryLocation];
     }
-    
     setupAlertPolling(false);
   }
 }

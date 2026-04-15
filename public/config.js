@@ -75,7 +75,7 @@ export let config = {
           },
           {
             "messageHeader": "Help save Weatheradio Canada",
-            "messageBody": "Since March 16, 2026, Environment and Climate Change Canada has been decommissioning their Weatheradio transmitters across the country, with plans to shut down the entire network by the end of 2026. This means that the grand majority of Canadians will lose access to instantaneous critical weather alerts and information, especially those in remote areas with limited internet access. To help save Weatheradio Canada, please sign e-petition E-7290 on the Parliament of Canada website, and share it with your friends and family. The more signatures it gets, the better chance we have of saving this vital service. Visit https://petitions.ourcommons.ca/en/Petition/Details?Petition=e-7290 to sign the petition and help save Weatheradio Canada.",
+            "messageBody": "Since March 16, 2026, Environment and Climate Change Canada has decommissioned Weatheradio Canada transmitters nationwide. This means that Canadians will lose access to instantaneous, reliable, and redundant critical weather alerts and information, especially those in remote or rural areas with limited internet access. To help save Weatheradio Canada, please sign e-petition E-7290 on the Parliament of Canada website, and share it with your friends and family. The more signatures it gets, the better chance we have of saving this vital service. Visit https://petitions.ourcommons.ca/en/Petition/Details?Petition=e-7290 to sign the petition and help save Weatheradio Canada.",
             "showBeforeProduct": "",
             "showAfterProduct": "dayOne",
             "scroll": true,

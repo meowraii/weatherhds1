@@ -185,37 +185,13 @@ export function requestBulletinCrawl(text, alertCategory, headlineText, country,
 
   beep.play();
 
-  if (country === "US") {
-    switch (alertCategory) {
-      case "W":
-        ldlDomCache.headlineBack.style.background = "rgba(188, 56, 33, 0.51)"
-        break;
-      case "A":
-        ldlDomCache.headlineBack.style.background = "rgba(247, 231, 136, 0.51)"
-        break;
-      case "S":
-        ldlDomCache.headlineBack.style.background = "rgba(87, 170, 87, 0.51)"
-        break;
-      case "Y":
-        ldlDomCache.headlineBack.style.background = "rgba(221, 115, 34, 0.51)"
-        break;
-    }
-  } else if (country === "CA") {
-    switch (colorCode) {
-      case "Orange":
-        ldlDomCache.headlineBack.style.background = "rgba(221, 115, 34, 0.51)"
-        break;
-      case "Yellow":
-        ldlDomCache.headlineBack.style.background = "rgba(247, 231, 136, 0.51)"
-        break;
-      case "Red":
-        ldlDomCache.headlineBack.style.background = "rgba(189, 59, 29, 0.51)"
-        break;
-      default:
-        ldlDomCache.headlineBack.style.background = "rgba(87, 170, 87, 0.51)"
-        break;
-    }
+  let bg;
+  if (country === "CA") {
+    bg = { Red: "rgba(189, 59, 29, 0.51)", Orange: "rgba(221, 115, 34, 0.51)", Yellow: "rgba(247, 231, 136, 0.51)" }[colorCode] ?? "rgba(87, 170, 87, 0.51)";
+  } else {
+    bg = { W: "rgba(188, 56, 33, 0.51)", Y: "rgba(221, 115, 34, 0.51)", A: "rgba(247, 231, 136, 0.51)" }[alertCategory] ?? "rgba(87, 170, 87, 0.51)";
   }
+  ldlDomCache.headlineBack.style.background = bg;
 }
 
 export function cancelBulletinCrawl() {
