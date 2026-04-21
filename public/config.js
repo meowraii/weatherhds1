@@ -8,6 +8,11 @@ export let config = {
     "currentConditionsGradient": true, // current conditions gradient based on current time relative to sunrise or sunset.
     "staticIcons": false, // would you like icons that dont move?
     "ldlClock": true, // when in LDL only mode, choose if you want to show the clock and the network logo on the LDL.
+
+    "haze": { // connect and display a screen bug of a haze playout instance on the sidebar.
+      "enabled": true,
+      "socketUrl": "http://172.16.1.31:8080" // URL of the haze playout socket.
+    },
     
     "presentationConfig": {
         "main": true,
@@ -48,7 +53,7 @@ export let config = {
             "displayInterval": 15 // lol
           },
           {
-            "messageHeader": "METEOchannel cares too much about your safety",
+            "messageHeader": "Weather Safety",
             "messageBody": "Remember, when severe weather strikes, seek shelter immediately and stay tuned to your local weather station for updates. Don't forget to have a weather radio on hand, and make sure your emergency kit is stocked with essentials. Your safety is our top priority.",
             "showBeforeProduct": "dayTwo",
             "showAfterProduct": null,
@@ -56,7 +61,7 @@ export let config = {
             "displayInterval": 2
           },
           {
-            "messageHeader": "Environment Canada colour codes",
+            "messageHeader": "Colour Coded Weather Alerts",
             "messageBody": "Weather alerts have used to have one modifier associated with an event type: statement, watch, or warning. Now, a colour code is also added on top of that, where @textcolor{yellow}{Yellow} means that hazardous weather may cause damage, disruption, or health impacts, and that impacts are moderate, localized and/or short-term. @textcolor{orange}{Orange} indicates that hazardous weather is expected to cause damage, disruption, or health impacts, and that impacts are significant, widespread and/or long-term. @textcolor{red}{Red} signifies that extremely hazardous weather is expected to cause widespread damage, disruption, or health impacts, and that impacts are severe, widespread and/or long-term.", // messages support inline formatting: @textcolor{color}{text}, @textbf{text}, @textit{text}, @underline{text}
             "showBeforeProduct": "",
             "showAfterProduct": "dayOne",
@@ -85,7 +90,7 @@ export let config = {
       },
       
       "topbarStyle": "domestic", // domestic or weatherscan.
-      "videoType": "i2buffer", // sets the aspect ratio
+      "videoType": "auto", // sets the aspect ratio
       "systemTimeZone": "America/Regina", // tz_database. https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
       "tickerContent": "", // empty = hides scroll. add any text to it to show a crawl on the LDL.
     "overrideBackgroundImage": "", // skips the background rotation and uses the URL provided.
@@ -545,4 +550,4 @@ export const holidayMapping = {
 
 
 
-export const versionID = '26.04.13';
+export const versionID = '26.04.21';

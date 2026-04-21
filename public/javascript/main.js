@@ -4,12 +4,12 @@ import { fetchOnlineBackground } from "./data.js";
 const domElements = {
     viewport: document.getElementsByClassName("view")[0],
     mainSlides: document.getElementsByClassName("main-slides")[0],
+    slidesBlock: document.getElementsByClassName("slides-block")[0],
     regionalSlides: document.getElementsByClassName("regional-slides")[0],
     bumperSlides: document.getElementsByClassName("bumper-slides")[0],
     cityTicker: document.getElementsByClassName("cityticker")[0],
     contentArea: document.getElementsByClassName("content-area")[0],
     wallpaper: document.getElementsByClassName("wallpaper")[0],
-    topBar: document.getElementsByClassName("topbar")[0],
     ldl: document.getElementsByClassName("ldl-presentation")[0],
     ldlContainer: document.getElementsByClassName("ldl-weather")[0],
     ldlBranding: document.getElementsByClassName("ldl-netlogo")[0],
@@ -17,13 +17,14 @@ const domElements = {
     time: document.getElementById("time"),
     dateLDL: document.getElementById("dateLDL"),
     timeLDL: document.getElementById("timeLDL"),
-    i2SidebarBuffer: document.getElementsByClassName("i2-sidebar-buffer")[0],
+    i2SidebarBuffer: document.getElementsByClassName("sidebar")[0],
     upnextLocation2: document.getElementById('upnext-location2'),
+    upnextLocation3: document.getElementById('upnext-location3'),
     ldlMarquee: document.getElementsByClassName('ldl-marquee')[0],
     marqueeTicker: document.getElementById('marquee-ticker')
 };
 
-const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, topBar, ldl, ldlContainer, ldlBranding, contentArea, cityTicker } = domElements;
+const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, ldl, ldlContainer, ldlBranding, contentArea, cityTicker, slidesBlock } = domElements;
 const date = domElements.date;
 const time = domElements.time;
 const dateLDL = domElements.dateLDL;
@@ -104,12 +105,11 @@ function initBackgrounds() {
 }
 
 const VIDEO_MODES = Object.freeze({
-    vga: { width: 1920, height: 1440, barWidth: "95%" },
-    hdtv: { width: 2560, height: 1440, barWidth: "95%" },
-    ntsc: { width: 2160, height: 1440, barWidth: "95%" },
-    tablet: { width: 2304, height: 1440, barWidth: "95%" },
-    i2sidebar: { width: 2048, height: 1440, barWidth: "95%" },
-    i2buffer: { width: 2560, height: 1440, barWidth: "95%" },
+    vga:       { width: 1920, height: 1440, barWidth: "94%" },  // 4:3 - VGA
+    ntsc:      { width: 2160, height: 1440, barWidth: "94%" },  // 3:2 - NTSC
+    pal:       { width: 720,  height: 576,  barWidth: "94%" },  // 5:4 - PAL
+    tablet:    { width: 2304, height: 1440, barWidth: "88%" },  // 16:10 - tablet
+    hdtv:      { width: 2560, height: 1440, barWidth: "88%" },  // 16:9 - HDTV
 });
 
 const videoTypeParam = new URLSearchParams(window.location.search).get('videoType');
@@ -117,10 +117,21 @@ if (videoTypeParam !== null) {
     config.videoType = String(videoTypeParam).toLowerCase();
 }
 
+function resolveVideoMode() {
+    if (config.videoType !== 'auto') return config.videoType;
+    const windowRatio = window.innerWidth / window.innerHeight;
+    return Object.entries(VIDEO_MODES).reduce((best, [key, mode]) => {
+        const bestRatio = VIDEO_MODES[best].width / VIDEO_MODES[best].height;
+        const thisRatio = mode.width / mode.height;
+        return Math.abs(thisRatio - windowRatio) < Math.abs(bestRatio - windowRatio) ? key : best;
+    }, 'vga');
+}
+
 function viewportAspect() {
     const containerWidth = window.innerWidth;
     const containerHeight = window.innerHeight;
-    const mode = VIDEO_MODES[config.videoType] || VIDEO_MODES.vga;
+    const resolvedType = resolveVideoMode();
+    const mode = VIDEO_MODES[resolvedType] || VIDEO_MODES.vga;
     const { width, barWidth } = mode;
 
     const scaleRatio = Math.min(containerWidth / width, containerHeight / mode.height);
@@ -130,24 +141,26 @@ function viewportAspect() {
     viewport.style.cssText = `width:${width}px;transform-origin:top left;left:${centeredLeft}px;top:${centeredTop}px;transform:scale(${scaleRatio})`;
     
     ldlContainer.style.width = barWidth;
-    topBar.style.width = barWidth;
     contentArea.style.width = barWidth;
-    cityTicker.style.width = barWidth;
 
     const mainVideoBlock = [
         regionalSlides,
         bumperSlides,
+        mainSlides
     ]
 
-    if (config.videoType === "i2buffer" && domElements.i2SidebarBuffer) {
-        domElements.i2SidebarBuffer.style.display = 'block';
-
-        mainVideoBlock.forEach((el) => {
-            el.style.width = '80%';
+    if (resolvedType !== "hdtv" && resolvedType !== "tablet" && domElements.upnextLocation3) {
+        domElements.upnextLocation3.style.display = 'none';
+        mainVideoBlock.forEach(el => {
+            if (el) el.style.paddingBottom = '2%'; el.style.paddingTop = '2%';
+        });
+    } else {
+        mainVideoBlock.forEach(el => {
+            if (el) el.style.paddingRight = '18%';
         });
     }
 
-    if (config.videoType !== "hdtv" && config.videoType !== "tablet" && config.videoType !== "i2Sidebar" && domElements.upnextLocation2) {
+    if (resolvedType !== "hdtv" && resolvedType !== "tablet" && resolvedType && domElements.upnextLocation2) {
         domElements.upnextLocation2.style.display = 'none';
     }
 }
@@ -212,7 +225,6 @@ function presentationType() {
     if (config.presentationConfig.main != true) {
         wallpaper.style.display = `none`
         mainSlides.style.display = `none`
-        topBar.style.display = `none`
     } else {
         ldlBranding.style.display = `none`
     }

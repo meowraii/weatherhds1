@@ -4,7 +4,6 @@
         <title>WeatherHDS Client</title>
         <link rel="stylesheet" href="/css/variables.css">
         <link rel="stylesheet" href="/css/base.css">
-        <link rel="stylesheet" href="/css/topbar.css">
         <link rel="stylesheet" href="/css/sidebar.css">
         <link rel="stylesheet" href="/css/main-slides.css">
         <link rel="stylesheet" href="/css/bumper-slides.css">
@@ -25,9 +24,12 @@
         <script type="module" src="javascript/cityticker.js" defer></script>
         <script type="module" src="javascript/ldl.js" defer></script>
         <script type="module" src="javascript/radar.js" defer></script>
+        <script type="module" src="javascript/sidebar.js" defer></script>
         <link href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css" rel="stylesheet">
         <script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
         <script src='https://joeiddon.github.io/perlin/perlin.js'></script>
+        <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+        <script type="module" src="javascript/haze.js" defer></script>
     </head>
 
     <body>
@@ -39,486 +41,568 @@
 
             <div class="wallpaper"></div>
 
-            <div class="topbar">
-                <div class="topbar-channel-info">
-
-                    <div class="topbar-logo-group">
-                        <div class="topbar-channel-logo"></div>
-                    </div>
-
-                    <div class="topbar-datetime">
-                        <div id="date"></div>
-                        <div id="time"></div>
-                    </div>
-                    
-                </div>
-
-                <div class="topbar-upnext-group">
-                    <div class="topbar-presentation-info">
-                        <div class="topbar-current-slide-group">
-                            <img width="64" src="/graphics/ux/thermometer-sun.svg" class="topbar-current-slide-icon" id="topbar-slide-icon">
-                            <div class="topbar-current-slide" id="currentslide">Current COnddition</div>
-                        </div>
-                        <div class="topbar-progressbar-group">
-                            <div class="topbar-current-product-progressbar">
-                                <div class="topbar-current-product-progress-element" id="currentprogressbar"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="topbar-location-info">
-                        <div class="topbar-current-location">
-                            <img width="48" height="48" src="./graphics/ux/map-pinned.svg" class="topbar-current-loc-icon" id="topbar-loc-icon">
-                            <div id="current-location">Saskatoon</div>
-                        </div>
-                        <div class="topbar-next-locations">
-                            <div class="topbar-next-location" id="upnext-location">> Regina</div>
-                            <div class="topbar-next-location" id="upnext-location1">> Moose Jaw</div>
-                            <div class="topbar-next-location" id="upnext-location2">> Prince Albert</div>
-                        </div>
-                    </div>
-                </div>
-
-              
-            </div>
 
             <div class="content-area">
-
-            <div class="bumper-slides">
-                <div id="stationid" class="bumper-slide">
-                    <div class="main-info-container main-slide-panel">
-                        <div class="main-info-logos">
-                            <div class="main-info-netlogo-container"></div>
-                            <div class="main-info-operatorLogos">
-                                <h6 class="main-info-logos-label">A project of</h6>
-                                <div class="main-info-sspwxrlogo-container"></div>
-                            </div>
-                        </div>
-                        <div class="main-info-links">
-                            <div id="station-id-affiliatename">KODI IP Cable Network</div>
-                            <div id="station-id-channelid">www.kodicable.net</div>
-                        </div>
-                        <div class="main-info-hds1info">
-                            <img class="hdsLogo" src="/images/hdslogo_2024.png" alt="WeatherHDS 1 logo">
-                            <h6 id="station-id-hdsver" class="versionID"></h6>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="regional" class="bumper-slide">
-                    <div class="bumper-slide-container">
-                        <div class="bumper-background-canvas" id="bumper-background">
-                            <div class="bumper-text" id="regional-bumper-text">Regional Weather</div>
-                            <div class="bumper-regional-upnext-text" id="bumper-regional-upnext">
-                                <div class="upnext-reg-loc-header" id="upnext-in-this-segment">In this segment:</div>
-                                <div id="upnext-reg-loc1" class="upnext-reg">Edmonton</div>
-                                <div id="upnext-reg-loc2" class="upnext-reg">Edmonton</div>
-                                <div id="upnext-reg-loc3" class="upnext-reg">Edmonton</div>
-                                <div id="upnext-reg-loc4" class="upnext-reg">Edmonton</div>
-                                <div id="upnext-reg-loc5" class="upnext-reg">Edmonton</div>
-                            </div>
-                            <div class="bumper-background-metadata">
-                                <div class="bumper-bg-title" id="bumper-bg-title">Some Picture</div>
-                                <div class="bumper-bg-subtitle" id="bumper-bg-subtitle">City, Province</div>
-                                <div class="bumper-bg-author" id="bumper-bg-author">Photographer Name</div>
-                            </div>
-                        </div>
-                        <div class="bumper-subtext-container">
-                            <div id="regional-bumper-subtext"> blah  blah  blah  blah  blah  blah  blah  blah  blah  blah  blah  blah </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="main-slides">
-
-                <div id="radar" class="main-slide">
-                    <div class="main-radar-time-container main-slide-panel">
-                        <img width="108" height="108" src="./graphics/ux/radar.svg" alt="Radar icon">
-                        <div id="main-radar-time">--:--</div>
-                        <img src="./graphics/ux/radarcolors.svg" alt="Radar Color Legend">
-                    </div>
-                </div>
-
-                <div id="alerts" class="main-slide">
-
-                </div>
-
-                <div id="current" class="main-slide">
-                    <div class="main-current-slide-container">
-                        <div id="current-background" class="main-current-leftcontainer">
-                            <div id="main-current-box-filter">
-                                <div id="main-current-condition">No Data</div>
-                                <img src="/graphics/animated/not-available.svg" id="main-current-icon">
-                                <div id="main-current-temp">--°C</div>     
-                            </div>
-                        </div>
-                        <div class="main-current-rightcontainer main-slide-panel">
-
-                            <div class="main-current-conditions-slotone">
-                                <div class="main-current-condtions-box">
-
-                                    <div class="main-current-boxlabel" id="main-current-windlabel">Wind</div>
-                                    <div class="main-current-icon-container">
-                                        <img src="/graphics/animated/not-available.svg" id="main-current-windicon">
-                                    </div>
-                                    <div id="main-current-windvalue">W, 12 km/h</div>
-                                    <div id="main-current-windvalue-gust">Gusting to 512km/h</div>
-
-                                </div>
-                                <div class="main-current-condtions-box">
-
-                                    <div class="main-current-boxlabel" id="main-current-feelslikelabel">Feels Like</div>
-                                    <div class="main-current-icon-container">
-                                        <img src="/graphics/animated/not-available.svg" id="main-current-feelslikeicon">
-                                    </div>
-                                    <div id="main-current-feelslikevalue">hi</div>
-
-                                </div>
-                                <div class="main-current-condtions-box">
-                                    <div class="main-current-boxlabel" id="main-current-sunlabel">Sunrise & Sunset</div>
-                                    <div class="main-current-sunrisesunset-container">
-                                        <img class="main-current-sunicon" src="/graphics/animated/sunrise.svg">
-                                        <div id="main-current-sunrise-value">9:00a</div>
-                                    </div>
-                                    <div class="main-current-sunrisesunset-container">
-                                        <img class="main-current-sunicon" src="/graphics/animated/sunset.svg">
-                                        <div id="main-current-sunset-value">9:00p</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="main-current-conditions-slottwo">
-                            <div class="main-current-module1">
-
-                                <div class="main-current-extraproducts">
-                                    <div class="main-current-humiditylabel">RELATIVE HUMIDITY</div>
-                                    <div id="main-current-humidityvalue"></div>
-                                </div>
-
-                                <div class="main-current-extraproducts">
-                                    <div class="main-current-pressurelabel">PRESSURE</div>
-                                    <div id="main-current-pressurevalue"></div>
-                                </div>
-
-                                <div class="main-current-extraproducts">
-                                    <div class="main-current-ceilinglabel">CEILING</div>
-                                    <div id="main-current-ceilingvalue"></div>
-                                </div>
-
-                                <div class="main-current-extraproducts">
-                                    <div class="main-current-visiblabel">VISIBILITY</div>
-                                    <div id="main-current-visibvalue"></div>
-                                </div>
-
-                            </div>
-
-                            <div class="main-current-module2">
-
-                                <div class="main-current-extraproducts">
-                                    <div class="main-current-dewpointlabel">DEWPOINT</div>
-                                    <div id="main-current-dewpointvalue"></div>
-                                </div>
-
-                                <div class="main-current-extraproducts">
-                                    <div class="main-current-uvlabel">UV INDEX</div>
-                                    <div id="main-current-uvvalue"></div>
-                                </div>
-
-                                <div class="main-current-extraproducts">
-                                    <div class="main-current-tempchange">TEMP. 24 HR CHANGE</div>
-                                    <div id="main-current-tempchangevalue"></div>
-                                </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="forecast-intraday" class="main-slide">
-                    <div class="main-intraday-slide-container">
-
-                        <div class="main-intraday-period main-slide-panel">
-                            <div class="main-intraday-period-title">
-                                <div id="main-intraday-title0"></div>
-                                <div class="main-intraday-time" id="main-intraday-time0"></div>
-                            </div>
-                            <div class="main-intraday-period-condition" id="main-intraday-condition0">Mostly Sunny</div>
-                            <img class="forecast-shortterm-icon intradayicon" id="main-intraday-icon0" src="/graphics/animated/extreme-day-rain.svg">
-                            
-                            <div class="main-intraday-temp-slider-container">
-                                <div class="main-intraday-period-temp" id="main-intraday-temp0">36</div>
-                                <div class="main-intraday-temp-slider" id="main-intraday-temp-slider-day0"></div>
-                            </div>
-                        </div>
-
-                        
-                        <div class="main-intraday-period main-slide-panel">
-                            <div class="main-intraday-period-title">
-                                <div id="main-intraday-title1"></div>
-                                <div class="main-intraday-time" id="main-intraday-time1"></div></div>
-                            <div class="main-intraday-period-condition" id="main-intraday-condition1">i love you laura, you will be missed, by me, until the day we meet again (no she is not dead)</div>
-                            <img class="forecast-shortterm-icon intradayicon" id="main-intraday-icon1" src="/graphics/animated/extreme-day-rain.svg">
-                            
-                            <div class="main-intraday-temp-slider-container">
-                                <div class="main-intraday-period-temp" id="main-intraday-temp1">36</div>
-                                <div class="main-intraday-temp-slider" id="main-intraday-temp-slider-day1"></div>
-                            </div>
-                        </div>
-
-                        
-                        <div class="main-intraday-period main-slide-panel">
-                            <div class="main-intraday-period-title">
-                                <div id="main-intraday-title2"></div>
-                                <div class="main-intraday-time" id="main-intraday-time2"></div>
-                            </div>
-                            <div class="main-intraday-period-condition" id="main-intraday-condition2">fgsdfgs</div>
-                            <img class="forecast-shortterm-icon intradayicon" id="main-intraday-icon2" src="/graphics/animated/extreme-day-rain.svg">
-                            
-                            <div class="main-intraday-temp-slider-container">
-                                <div class="main-intraday-period-temp" id="main-intraday-temp2">36</div>
-                                <div class="main-intraday-temp-slider" id="main-intraday-temp-slider-day2"></div>
-                            </div>
-                        </div>
-
-                        
-                        <div class="main-intraday-period main-slide-panel">
-                            <div class="main-intraday-period-title">
-                                <div id="main-intraday-title3"></div>
-                                <div class="main-intraday-time" id="main-intraday-time3"></div>
-                            </div>
-                            <div class="main-intraday-period-condition" id="main-intraday-condition3">fgsdfgs</div>
-                            <img class="forecast-shortterm-icon intradayicon" id="main-intraday-icon3" src="/graphics/animated/extreme-day-rain.svg">
-                            
-                            <div class="main-intraday-temp-slider-container">
-                                <div class="main-intraday-period-temp" id="main-intraday-temp3">36</div>
-                                <div class="main-intraday-temp-slider" id="main-intraday-temp-slider-day3"></div>
-                            </div>
-                        </div>
-
-
-                    </div>
-                </div>
-
-                <div id="forecast-shortterm-d1" class="main-slide">
-                    <div class="main-shortterm-slide-container">
-                        <div class="forecast-shortterm-summary main-slide-panel" id="forecast-shorttermd1-summary">
-                            <div class="forecast-shortterm-title" id="forecast-shorttermd1-title"></div>
-                            <img class="forecast-shortterm-icon" src="/graphics/animated/not-available.svg" id="main-forecast-shorttermd1-icon">
-                            <div class="forecast-shortterm-condition" id="forecast-shorttermd1-condition"></div>
-                            <div class="forecast-shortterm-temp" id="forecast-shorttermd1-temp"></div>
-                        </div>
-                        <div class="forecast-shortterm-text main-slide-panel" id="forecast-shorttermd1-text"></div>
-                    </div>
-                </div>
-                
-                <div id="forecast-shortterm-d2" class="main-slide">
-                    <div class="main-shortterm-slide-container">
-                        <div class="forecast-shortterm-summary main-slide-panel" id="forecast-shorttermd2-summary">
-                            <div class="forecast-shortterm-title" id="forecast-shorttermd2-title"></div>
-                            <img class="forecast-shortterm-icon" src="/graphics/animated/not-available.svg" id="main-forecast-shorttermd2-icon">
-                            <div class="forecast-shortterm-condition" id="forecast-shorttermd2-condition"></div>
-                            <div class="forecast-shortterm-temp" id="forecast-shorttermd2-temp"></div>
-                        </div>
-                        <div class="forecast-shortterm-text main-slide-panel" id="forecast-shorttermd2-text"></div>
-                    </div>
-                </div>
-
-                <div id="forecast-extended" class="main-slide">
-                    <div class="main-forecast-slide-container">
-                        <div class="main-forecast-day main-slide-panel">
-                            <div id="forecast-day3-title" class="main-forecast-title">TODAY</div>
-                            <div id="forecast-day3-condition" class="main-forecast-condition"></div>
-                            <img id="forecast-day3-icon" class="main-forecast-icon" src="/graphics/animated/not-available.svg">
-                            <div class="main-forecast-temp-labels">
-                                <p>HIGH</p>
-                                <p>LOW</p>
-                            </div>
-                            <div class="main-forecast-temp">
-                                <div id="forecast-day3-high" class="main-forecast-temp-high"></div>
-                                <div id="forecast-day3-low" class="main-forecast-temp-low"></div>
-                            </div>
-                            <div class="main-forecast-labels">WIND</div>
-                            <div id="forecast-day3-wind" class="main-forecast-wind"></div>
-                            <div class="main-forecast-labels">CHANCE OF PRECIP.</div>
-                            <div id="forecast-day3-pop" class="main-forecast-pop"></div>
-                        </div>
-
-                        <div class="main-forecast-day main-slide-panel">
-                            <div id="forecast-day4-title" class="main-forecast-title">TODAY</div>
-                            <div id="forecast-day4-condition" class="main-forecast-condition"></div>
-                            <img id="forecast-day4-icon" class="main-forecast-icon" src="/graphics/animated/not-available.svg">
-                            <div class="main-forecast-temp-labels">
-                                <p>HIGH</p>
-                                <p>LOW</p>
-                            </div>
-                            <div class="main-forecast-temp">
-                                <div id="forecast-day4-high" class="main-forecast-temp-high"></div>
-                                <div id="forecast-day4-low" class="main-forecast-temp-low"></div>
-                            </div>
-                            <div class="main-forecast-labels">WIND</div>
-                            <div id="forecast-day4-wind" class="main-forecast-wind"></div>
-                            <div class="main-forecast-labels">CHANCE OF PRECIP.</div>
-                            <div id="forecast-day4-pop" class="main-forecast-pop"></div>
-                        </div>
-
-                        <div class="main-forecast-day main-slide-panel">
-                            <div id="forecast-day5-title" class="main-forecast-title">TODAY</div>
-                            <div id="forecast-day5-condition" class="main-forecast-condition"></div>
-                            <img id="forecast-day5-icon" class="main-forecast-icon" src="/graphics/animated/not-available.svg">
-                            <div class="main-forecast-temp-labels">
-                                <p>HIGH</p>
-                                <p>LOW</p>
-                            </div>
-                            <div class="main-forecast-temp">
-                                <div id="forecast-day5-high" class="main-forecast-temp-high"></div>
-                                <div id="forecast-day5-low" class="main-forecast-temp-low"></div>
-                            </div>
-                            <div class="main-forecast-labels">WIND</div>
-                            <div id="forecast-day5-wind" class="main-forecast-wind"></div>
-                            <div class="main-forecast-labels">CHANCE OF PRECIP.</div>
-                            <div id="forecast-day5-pop" class="main-forecast-pop"></div>
-                        </div>
-
-                        <div class="main-forecast-day main-slide-panel">
-                            <div id="forecast-day6-title" class="main-forecast-title">TODAY</div>
-                            <div id="forecast-day6-condition" class="main-forecast-condition"></div>
-                            <img id="forecast-day6-icon" class="main-forecast-icon" src="/graphics/animated/not-available.svg">
-                            <div class="main-forecast-temp-labels">
-                                <p>HIGH</p>
-                                <p>LOW</p>
-                            </div>
-                            <div class="main-forecast-temp">
-                                <div id="forecast-day6-high" class="main-forecast-temp-high"></div>
-                                <div id="forecast-day6-low" class="main-forecast-temp-low"></div>
-                            </div>
-                            <div class="main-forecast-labels">WIND</div>
-                            <div id="forecast-day6-wind" class="main-forecast-wind"></div>
-                            <div class="main-forecast-labels">CHANCE OF PRECIP.</div>
-                            <div id="forecast-day6-pop" class="main-forecast-pop"></div>
-                        </div>
-
-                        <div class="main-forecast-day main-slide-panel">
-                            <div id="forecast-day7-title" class="main-forecast-title">TODAY</div>
-                            <div id="forecast-day7-condition" class="main-forecast-condition"></div>
-                            <img id="forecast-day7-icon" class="main-forecast-icon" src="/graphics/animated/not-available.svg">
-                            <div class="main-forecast-temp-labels">
-                                <p>HIGH</p>
-                                <p>LOW</p>
-                            </div>
-                            <div class="main-forecast-temp">
-                                <div id="forecast-day7-high" class="main-forecast-temp-high"></div>
-                                <div id="forecast-day7-low" class="main-forecast-temp-low"></div>
-                            </div>
-                            <div class="main-forecast-labels">WIND</div>
-                            <div id="forecast-day7-wind" class="main-forecast-wind"></div>
-                            <div class="main-forecast-labels">CHANCE OF PRECIP.</div>
-                            <div id="forecast-day7-pop" class="main-forecast-pop"></div>
-                        </div>
-                    </div>
-                </div>
-                    <div id="7day-graph" class="main-slide">
-                        <div class="main-7day-container main-slide-panel">
-                            <div id="main-7day-canvas-container">
-                                <canvas style="width:100%;height:100%; padding: 2%;" id="sevenDayChart"></canvas> 
-                            </div>
-                        </div> 
-                    </div>
-                    
-
-
-                <div id="airquality" class="main-slide">
-                        <div class="main-aq-slide-container">
-
-                            <div class="main-aq-flexcontainer main-slide-panel">
-                                <img id="main-aq-icon" src="/graphics/ux/leaf.svg">
-
-                                <div class="main-aq-text-container">
-                                    <div id="main-aq-category">Moderate</div>
-                                    <div class="main-aq-top-label">PRIMARY POLLUTANT</div>
-                                    <div id="main-aq-pp" class="main-aq-top-value">INCREDIBLE GASSY</div>
-                                    <div id="main-aq-ppamount" class="main-aq-top-value">INCREDIBLE GASSY</div>
-                                </div>
-                            </div>
-
-                            <div class="main-aq-otherflexcontainer main-slide-panel">
-                                <div id="main-aq-narrative">HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI </div>
-                            </div>
-                        </div>
-                </div>
-
-                <!--LIFESTYLE PRODUCTS-->
-
-            </div>
-
-            <div class="regional-slides">
             
-                <div class="left-container-radar">
-                    <div class="regional-current-labels">
-                        <div class="regional-current-label">Radar/Satellite</div>
-                        <div class="regional-current-label">9:20 PM (0/48)</div>
+                <div class="sidebar">
+                    <div class="sidebar-channel-info">
+                        <div class="sidebar-logo-group">
+                            <div class="sidebar-channel-logo"></div>
+                        </div>
+
+                        <div class="sidebar-datetime">
+                            <div id="date"></div>
+                            <div id="time"></div>
+                        </div>
                     </div>
-                    <div id="regional-radar-map"></div>
+
+                    <div class="sidebar-haze-display"> <!-- optional integration for haze playout's song metadata and album art -->
+                        <div class="sidebar-haze-text-group">
+                            <div class="sidebar-haze-albumart-container">
+                                <img id="sidebar-haze-albumart" src="/graphics/ux/thermometer-sun.svg">
+                            </div>
+                            <div class="sidebar-haze-songinfo">
+                                <div class="haze-scroll-wrap"><div id="sidebar-haze-title">Song Title</div></div>
+                                <div class="haze-scroll-wrap"><div id="sidebar-haze-artist">Artist Name</div></div>
+                                <div class="haze-scroll-wrap"><div id="sidebar-haze-album">Album Name (Album Year)</div></div>
+                            </div>
+                        </div>
+                        <div class="sidebar-haze-progressbar-group">
+                            <div class="sidebar-haze-current-time">00:00</div>
+                            <div class="sidebar-haze-progressbar">
+                                <div id="sidebar-haze-progress" class="sidebar-haze-progress"></div>
+                            </div>
+                            <div class="sidebar-haze-duration">00:00</div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-main-location-summary">
+                        <div class="sidebar-conditions-location-row">
+                            <div class="sidebar-conditions-location" id="sidebar-conditions-location">--</div>
+                        </div>
+                        <div class="sidebar-conditions-body">
+                            <div class="sidebar-conditions-left">
+                                <div class="sidebar-conditions-temp" id="sidebar-conditions-temp">--</div>
+                                <div class="sidebar-conditions-phrase" id="sidebar-conditions-phrase">--</div>
+                            </div>
+                            <img class="sidebar-conditions-icon" id="sidebar-conditions-icon" src="/graphics/animated/not-available.svg" alt="">
+                        </div>
+                        <div class="sidebar-conditions-footer">
+                            <div class="sidebar-summary-terminal" id="sidebar-summary-lines"></div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-radar-constant">
+                        <div class="sidebar-radar-title" id="sidebar-radar-past-hours">PAST 3 HOURS</div>
+                        <div id="sidebar-radar-map"></div>
+                    </div>
                 </div>
 
-                <div id="current-regional" class="regional-slide">
-                    <div class="right-container-locations">
-                        <div class="regional-current-labels">
-                            <div class="regional-current-label">Central Canada</div>
-                            <div class="regional-current-label">Current Observations</div>
+                <div class="main-block">
+
+                    <div class="slides-block">
+                        <div class="main-presentation-upnext">
+                            <div class="slide-info-row">
+                                <div class="slide-info-group">
+                                    <img src="/graphics/ux/thermometer-sun.svg" id="slide-info-icon" class="slide-info-icon" width="44" height="44">
+                                    <div id="slide-info-name" class="slide-info-name">Current Conditions</div>
+                                    <div class="slide-progress-track">
+                                        <div id="slide-progress-bar" class="slide-progress-bar"></div>
+                                    </div>
+                                </div>
+                                <div id="radar-info-bubble" class="radar-info-bubble">
+                                    <div id="main-radar-time" class="radar-bubble-time">--:--</div>
+                                    <div class="radar-legend">
+                                        <div class="radar-legend-section">
+                                            <span class="radar-legend-label">RAIN</span>
+                                            <div class="radar-swatches">
+                                                <span class="radar-swatch" style="background:#63eb63"></span>
+                                                <span class="radar-swatch" style="background:#0e681a"></span>
+                                                <span class="radar-swatch" style="background:#fbeb02"></span>
+                                                <span class="radar-swatch" style="background:#ee6d02"></span>
+                                                <span class="radar-swatch" style="background:#a90503"></span>
+                                            </div>
+                                        </div>
+                                        <div class="radar-legend-divider"></div>
+                                        <div class="radar-legend-section">
+                                            <span class="radar-legend-label">ICE</span>
+                                            <div class="radar-swatches">
+                                                <span class="radar-swatch" style="background:#bca5f0"></span>
+                                                <span class="radar-swatch" style="background:#866dbd"></span>
+                                                <span class="radar-swatch" style="background:#5d469b"></span>
+                                            </div>
+                                        </div>
+                                        <div class="radar-legend-divider"></div>
+                                        <div class="radar-legend-section">
+                                            <span class="radar-legend-label">SNOW</span>
+                                            <div class="radar-swatches">
+                                                <span class="radar-swatch" style="background:#8af8ff"></span>
+                                                <span class="radar-swatch" style="background:#529faa"></span>
+                                                <span class="radar-swatch" style="background:#36737f"></span>
+                                                <span class="radar-swatch" style="background:#0d3140"></span>
+                                            </div>
+                                        </div>
+                                        <div class="radar-legend-divider"></div>
+                                        <div class="radar-legend-section">
+                                            <span class="radar-legend-label">SLEET</span>
+                                            <div class="radar-swatches">
+                                                <span class="radar-swatch" style="background:#ffa0cf"></span>
+                                                <span class="radar-swatch" style="background:#d1649a"></span>
+                                                <span class="radar-swatch" style="background:#a42665"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upnext-locations-group">
+                                <div class="current-location-group">
+                                    <div class="current-location-icon"></div>
+                                    <div class="current-location-name" id="upnext-current-location-name">Saskatoon</div>
+                                </div>
+                                <div class="upnext-list">
+                                    <div class="upnext-location-entry" id="upnext-location1">
+                                        <div class="upnext-location-name" id="upnext-loc-name1">> Edmonton</div>
+                                    </div>
+                                    <div class="upnext-location-entry" id="upnext-location2">
+                                        <div class="upnext-location-name" id="upnext-loc-name2">> Regina</div>
+                                    </div>
+                                    <div class="upnext-location-entry" id="upnext-location3">
+                                        <div class="upnext-location-name" id="upnext-loc-name3">> Prince Albert</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="regional-locations-list">
-                            <div class="class-regional-location-slimcard"> <!-- slim card template to be dynamically generated by js -->
-                                <div class="regional-location-name" id="regional-current-location-name1">Saskatoon</div>
-                                <div class="regional-location-temp" id="regional-current-location-temp1">12°C</div>
-                                <div class="regional-location-condition" id="regional-current-location-condition1">Partly Cloudy</div>
-                                <img class="regional-location-icon" id="regional-current-location-icon1" src="/graphics/animated/partly-cloudy-day-rain.svg">
+                        <div class="bumper-slides">
+                            <div id="stationid" class="bumper-slide">
+                                <div class="main-info-container main-slide-panel">
+                                    <div class="main-info-logos">
+                                        <div class="main-info-netlogo-container"></div>
+                                        <div class="main-info-operatorLogos">
+                                            <h6 class="main-info-logos-label">A project of</h6>
+                                            <div class="main-info-sspwxrlogo-container"></div>
+                                        </div>
+                                    </div>
+                                    <div class="main-info-links">
+                                        <div id="station-id-affiliatename">KODI IP Cable Network</div>
+                                        <div id="station-id-channelid">www.kodicable.net</div>
+                                    </div>
+                                    <div class="main-info-hds1info">
+                                        <img class="hdsLogo" src="/images/hdslogo_2024.png" alt="WeatherHDS 1 logo">
+                                        <h6 id="station-id-hdsver" class="versionID"></h6>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="regional" class="bumper-slide">
+                                <div class="bumper-slide-container">
+                                    <div class="bumper-background-canvas" id="bumper-background">
+                                        <div class="bumper-text" id="regional-bumper-text">Regional Weather</div>
+                                        <div class="bumper-regional-upnext-text" id="bumper-regional-upnext">
+                                            <div class="upnext-reg-loc-header" id="upnext-in-this-segment">In this segment:</div>
+                                            <div id="upnext-reg-loc1" class="upnext-reg">Edmonton</div>
+                                            <div id="upnext-reg-loc2" class="upnext-reg">Edmonton</div>
+                                            <div id="upnext-reg-loc3" class="upnext-reg">Edmonton</div>
+                                            <div id="upnext-reg-loc4" class="upnext-reg">Edmonton</div>
+                                            <div id="upnext-reg-loc5" class="upnext-reg">Edmonton</div>
+                                        </div>
+                                        <div class="bumper-background-metadata">
+                                            <div class="bumper-bg-title" id="bumper-bg-title">Some Picture</div>
+                                            <div class="bumper-bg-subtitle" id="bumper-bg-subtitle">City, Province</div>
+                                            <div class="bumper-bg-author" id="bumper-bg-author">Photographer Name</div>
+                                        </div>
+                                    </div>
+                                    <div class="bumper-subtext-container">
+                                        <div id="regional-bumper-subtext"> blah  blah  blah  blah  blah  blah  blah  blah  blah  blah  blah  blah </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="main-slides">
+
+                            <div id="radar" class="main-slide"></div>
+
+                            <div id="alerts" class="main-slide">
+
+                            </div>
+
+                            <div id="current" class="main-slide">
+                                <div class="main-current-slide-container">
+                                    <div id="current-background" class="main-current-leftcontainer">
+                                        <div id="main-current-box-filter">
+                                            <div id="main-current-condition">No Data</div>
+                                            <img src="/graphics/animated/not-available.svg" id="main-current-icon">
+                                            <div id="main-current-temp">--°C</div>     
+                                        </div>
+                                    </div>
+                                    <div class="main-current-rightcontainer main-slide-panel">
+
+                                        <div class="main-current-conditions-slotone">
+                                            <div class="main-current-condtions-box">
+
+                                                <div class="main-current-boxlabel" id="main-current-windlabel">Wind</div>
+                                                <div class="main-current-icon-container">
+                                                    <img src="/graphics/animated/not-available.svg" id="main-current-windicon">
+                                                </div>
+                                                <div id="main-current-windvalue">W, 12 km/h</div>
+                                                <div id="main-current-windvalue-gust">Gusting to 512km/h</div>
+
+                                            </div>
+                                            <div class="main-current-condtions-box">
+
+                                                <div class="main-current-boxlabel" id="main-current-feelslikelabel">Feels Like</div>
+                                                <div class="main-current-icon-container">
+                                                    <img src="/graphics/animated/not-available.svg" id="main-current-feelslikeicon">
+                                                </div>
+                                                <div id="main-current-feelslikevalue">hi</div>
+
+                                            </div>
+                                            <div class="main-current-condtions-box">
+                                                <div class="main-current-boxlabel" id="main-current-sunlabel">Sunrise & Sunset</div>
+                                                <div class="main-current-sunrisesunset-container">
+                                                    <img class="main-current-sunicon" src="/graphics/animated/sunrise.svg">
+                                                    <div id="main-current-sunrise-value">9:00a</div>
+                                                </div>
+                                                <div class="main-current-sunrisesunset-container">
+                                                    <img class="main-current-sunicon" src="/graphics/animated/sunset.svg">
+                                                    <div id="main-current-sunset-value">9:00p</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="main-current-conditions-slottwo">
+                                        <div class="main-current-module1">
+
+                                            <div class="main-current-extraproducts">
+                                                <div class="main-current-humiditylabel">RELATIVE HUMIDITY</div>
+                                                <div id="main-current-humidityvalue"></div>
+                                            </div>
+
+                                            <div class="main-current-extraproducts">
+                                                <div class="main-current-pressurelabel">PRESSURE</div>
+                                                <div id="main-current-pressurevalue"></div>
+                                            </div>
+
+                                            <div class="main-current-extraproducts">
+                                                <div class="main-current-ceilinglabel">CEILING</div>
+                                                <div id="main-current-ceilingvalue"></div>
+                                            </div>
+
+                                            <div class="main-current-extraproducts">
+                                                <div class="main-current-visiblabel">VISIBILITY</div>
+                                                <div id="main-current-visibvalue"></div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="main-current-module2">
+
+                                            <div class="main-current-extraproducts">
+                                                <div class="main-current-dewpointlabel">DEWPOINT</div>
+                                                <div id="main-current-dewpointvalue"></div>
+                                            </div>
+
+                                            <div class="main-current-extraproducts">
+                                                <div class="main-current-uvlabel">UV INDEX</div>
+                                                <div id="main-current-uvvalue"></div>
+                                            </div>
+
+                                            <div class="main-current-extraproducts">
+                                                <div class="main-current-tempchange">TEMP. 24 HR CHANGE</div>
+                                                <div id="main-current-tempchangevalue"></div>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="forecast-intraday" class="main-slide">
+                                <div class="main-intraday-slide-container">
+
+                                    <div class="main-intraday-period main-slide-panel">
+                                        <div class="main-intraday-period-title">
+                                            <div id="main-intraday-title0"></div>
+                                            <div class="main-intraday-time" id="main-intraday-time0"></div>
+                                        </div>
+                                        <div class="main-intraday-period-condition" id="main-intraday-condition0">Mostly Sunny</div>
+                                        <img class="forecast-shortterm-icon intradayicon" id="main-intraday-icon0" src="/graphics/animated/extreme-day-rain.svg">
+                                        
+                                        <div class="main-intraday-temp-slider-container">
+                                            <div class="main-intraday-period-temp" id="main-intraday-temp0">36</div>
+                                            <div class="main-intraday-temp-slider" id="main-intraday-temp-slider-day0"></div>
+                                        </div>
+                                    </div>
+
+                                    
+                                    <div class="main-intraday-period main-slide-panel">
+                                        <div class="main-intraday-period-title">
+                                            <div id="main-intraday-title1"></div>
+                                            <div class="main-intraday-time" id="main-intraday-time1"></div></div>
+                                        <div class="main-intraday-period-condition" id="main-intraday-condition1">i love you laura, you will be missed, by me, until the day we meet again (no she is not dead)</div>
+                                        <img class="forecast-shortterm-icon intradayicon" id="main-intraday-icon1" src="/graphics/animated/extreme-day-rain.svg">
+                                        
+                                        <div class="main-intraday-temp-slider-container">
+                                            <div class="main-intraday-period-temp" id="main-intraday-temp1">36</div>
+                                            <div class="main-intraday-temp-slider" id="main-intraday-temp-slider-day1"></div>
+                                        </div>
+                                    </div>
+
+                                    
+                                    <div class="main-intraday-period main-slide-panel">
+                                        <div class="main-intraday-period-title">
+                                            <div id="main-intraday-title2"></div>
+                                            <div class="main-intraday-time" id="main-intraday-time2"></div>
+                                        </div>
+                                        <div class="main-intraday-period-condition" id="main-intraday-condition2">fgsdfgs</div>
+                                        <img class="forecast-shortterm-icon intradayicon" id="main-intraday-icon2" src="/graphics/animated/extreme-day-rain.svg">
+                                        
+                                        <div class="main-intraday-temp-slider-container">
+                                            <div class="main-intraday-period-temp" id="main-intraday-temp2">36</div>
+                                            <div class="main-intraday-temp-slider" id="main-intraday-temp-slider-day2"></div>
+                                        </div>
+                                    </div>
+
+                                    
+                                    <div class="main-intraday-period main-slide-panel">
+                                        <div class="main-intraday-period-title">
+                                            <div id="main-intraday-title3"></div>
+                                            <div class="main-intraday-time" id="main-intraday-time3"></div>
+                                        </div>
+                                        <div class="main-intraday-period-condition" id="main-intraday-condition3">fgsdfgs</div>
+                                        <img class="forecast-shortterm-icon intradayicon" id="main-intraday-icon3" src="/graphics/animated/extreme-day-rain.svg">
+                                        
+                                        <div class="main-intraday-temp-slider-container">
+                                            <div class="main-intraday-period-temp" id="main-intraday-temp3">36</div>
+                                            <div class="main-intraday-temp-slider" id="main-intraday-temp-slider-day3"></div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            <div id="forecast-shortterm-d1" class="main-slide">
+                                <div class="main-shortterm-slide-container">
+                                    <div class="forecast-shortterm-summary main-slide-panel" id="forecast-shorttermd1-summary">
+                                        <div class="forecast-shortterm-title" id="forecast-shorttermd1-title"></div>
+                                        <img class="forecast-shortterm-icon" src="/graphics/animated/not-available.svg" id="main-forecast-shorttermd1-icon">
+                                        <div class="forecast-shortterm-condition" id="forecast-shorttermd1-condition"></div>
+                                        <div class="forecast-shortterm-temp" id="forecast-shorttermd1-temp"></div>
+                                    </div>
+                                    <div class="forecast-shortterm-text main-slide-panel" id="forecast-shorttermd1-text"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="forecast-shortterm-d2" class="main-slide">
+                                <div class="main-shortterm-slide-container">
+                                    <div class="forecast-shortterm-summary main-slide-panel" id="forecast-shorttermd2-summary">
+                                        <div class="forecast-shortterm-title" id="forecast-shorttermd2-title"></div>
+                                        <img class="forecast-shortterm-icon" src="/graphics/animated/not-available.svg" id="main-forecast-shorttermd2-icon">
+                                        <div class="forecast-shortterm-condition" id="forecast-shorttermd2-condition"></div>
+                                        <div class="forecast-shortterm-temp" id="forecast-shorttermd2-temp"></div>
+                                    </div>
+                                    <div class="forecast-shortterm-text main-slide-panel" id="forecast-shorttermd2-text"></div>
+                                </div>
+                            </div>
+
+                            <div id="forecast-extended" class="main-slide">
+                                <div class="main-forecast-slide-container">
+                                    <div class="main-forecast-day main-slide-panel">
+                                        <div id="forecast-day3-title" class="main-forecast-title">TODAY</div>
+                                        <div id="forecast-day3-condition" class="main-forecast-condition"></div>
+                                        <img id="forecast-day3-icon" class="main-forecast-icon" src="/graphics/animated/not-available.svg">
+                                        <div class="main-forecast-temp-labels">
+                                            <p>HIGH</p>
+                                            <p>LOW</p>
+                                        </div>
+                                        <div class="main-forecast-temp">
+                                            <div id="forecast-day3-high" class="main-forecast-temp-high"></div>
+                                            <div id="forecast-day3-low" class="main-forecast-temp-low"></div>
+                                        </div>
+                                        <div class="main-forecast-labels">WIND</div>
+                                        <div id="forecast-day3-wind" class="main-forecast-wind"></div>
+                                        <div class="main-forecast-labels">CHANCE OF PRECIP.</div>
+                                        <div id="forecast-day3-pop" class="main-forecast-pop"></div>
+                                    </div>
+
+                                    <div class="main-forecast-day main-slide-panel">
+                                        <div id="forecast-day4-title" class="main-forecast-title">TODAY</div>
+                                        <div id="forecast-day4-condition" class="main-forecast-condition"></div>
+                                        <img id="forecast-day4-icon" class="main-forecast-icon" src="/graphics/animated/not-available.svg">
+                                        <div class="main-forecast-temp-labels">
+                                            <p>HIGH</p>
+                                            <p>LOW</p>
+                                        </div>
+                                        <div class="main-forecast-temp">
+                                            <div id="forecast-day4-high" class="main-forecast-temp-high"></div>
+                                            <div id="forecast-day4-low" class="main-forecast-temp-low"></div>
+                                        </div>
+                                        <div class="main-forecast-labels">WIND</div>
+                                        <div id="forecast-day4-wind" class="main-forecast-wind"></div>
+                                        <div class="main-forecast-labels">CHANCE OF PRECIP.</div>
+                                        <div id="forecast-day4-pop" class="main-forecast-pop"></div>
+                                    </div>
+
+                                    <div class="main-forecast-day main-slide-panel">
+                                        <div id="forecast-day5-title" class="main-forecast-title">TODAY</div>
+                                        <div id="forecast-day5-condition" class="main-forecast-condition"></div>
+                                        <img id="forecast-day5-icon" class="main-forecast-icon" src="/graphics/animated/not-available.svg">
+                                        <div class="main-forecast-temp-labels">
+                                            <p>HIGH</p>
+                                            <p>LOW</p>
+                                        </div>
+                                        <div class="main-forecast-temp">
+                                            <div id="forecast-day5-high" class="main-forecast-temp-high"></div>
+                                            <div id="forecast-day5-low" class="main-forecast-temp-low"></div>
+                                        </div>
+                                        <div class="main-forecast-labels">WIND</div>
+                                        <div id="forecast-day5-wind" class="main-forecast-wind"></div>
+                                        <div class="main-forecast-labels">CHANCE OF PRECIP.</div>
+                                        <div id="forecast-day5-pop" class="main-forecast-pop"></div>
+                                    </div>
+
+                                    <div class="main-forecast-day main-slide-panel">
+                                        <div id="forecast-day6-title" class="main-forecast-title">TODAY</div>
+                                        <div id="forecast-day6-condition" class="main-forecast-condition"></div>
+                                        <img id="forecast-day6-icon" class="main-forecast-icon" src="/graphics/animated/not-available.svg">
+                                        <div class="main-forecast-temp-labels">
+                                            <p>HIGH</p>
+                                            <p>LOW</p>
+                                        </div>
+                                        <div class="main-forecast-temp">
+                                            <div id="forecast-day6-high" class="main-forecast-temp-high"></div>
+                                            <div id="forecast-day6-low" class="main-forecast-temp-low"></div>
+                                        </div>
+                                        <div class="main-forecast-labels">WIND</div>
+                                        <div id="forecast-day6-wind" class="main-forecast-wind"></div>
+                                        <div class="main-forecast-labels">CHANCE OF PRECIP.</div>
+                                        <div id="forecast-day6-pop" class="main-forecast-pop"></div>
+                                    </div>
+
+                                    <div class="main-forecast-day main-slide-panel">
+                                        <div id="forecast-day7-title" class="main-forecast-title">TODAY</div>
+                                        <div id="forecast-day7-condition" class="main-forecast-condition"></div>
+                                        <img id="forecast-day7-icon" class="main-forecast-icon" src="/graphics/animated/not-available.svg">
+                                        <div class="main-forecast-temp-labels">
+                                            <p>HIGH</p>
+                                            <p>LOW</p>
+                                        </div>
+                                        <div class="main-forecast-temp">
+                                            <div id="forecast-day7-high" class="main-forecast-temp-high"></div>
+                                            <div id="forecast-day7-low" class="main-forecast-temp-low"></div>
+                                        </div>
+                                        <div class="main-forecast-labels">WIND</div>
+                                        <div id="forecast-day7-wind" class="main-forecast-wind"></div>
+                                        <div class="main-forecast-labels">CHANCE OF PRECIP.</div>
+                                        <div id="forecast-day7-pop" class="main-forecast-pop"></div>
+                                    </div>
+                                </div>
+                            </div>
+                                <div id="7day-graph" class="main-slide">
+                                    <div class="main-7day-container main-slide-panel">
+                                        <div id="main-7day-canvas-container">
+                                            <canvas style="width:100%;height:100%; padding: 2%;" id="sevenDayChart"></canvas> 
+                                        </div>
+                                    </div> 
+                                </div>
+                                
+
+
+                            <div id="airquality" class="main-slide">
+                                    <div class="main-aq-slide-container">
+
+                                        <div class="main-aq-flexcontainer main-slide-panel">
+                                            <img id="main-aq-icon" src="/graphics/ux/leaf.svg">
+
+                                            <div class="main-aq-text-container">
+                                                <div id="main-aq-category">Moderate</div>
+                                                <div class="main-aq-top-label">PRIMARY POLLUTANT</div>
+                                                <div id="main-aq-pp" class="main-aq-top-value">INCREDIBLE GASSY</div>
+                                                <div id="main-aq-ppamount" class="main-aq-top-value">INCREDIBLE GASSY</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="main-aq-otherflexcontainer main-slide-panel">
+                                            <div id="main-aq-narrative">HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI HI </div>
+                                        </div>
+                                    </div>
+                            </div>
+
+                        </div>
+
+                        <div class="regional-slides">
+                        
+                            <div class="left-container-radar">
+                                <div class="regional-current-labels">
+                                    <div class="regional-current-label">Radar/Satellite</div>
+                                    <div class="regional-current-label">9:20 PM (0/48)</div>
+                                </div>
+                                <div id="regional-radar-map"></div>
+                            </div>
+
+                            <div id="current-regional" class="regional-slide">
+                                <div class="right-container-locations">
+                                    <div class="regional-current-labels">
+                                        <div class="regional-current-label">Central Canada</div>
+                                        <div class="regional-current-label">Current Observations</div>
+                                    </div>
+                                    <div class="regional-locations-list">
+                                        <div class="class-regional-location-slimcard"> <!-- slim card template to be dynamically generated by js -->
+                                            <div class="regional-location-name" id="regional-current-location-name1">Saskatoon</div>
+                                            <div class="regional-location-temp" id="regional-current-location-temp1">12°C</div>
+                                            <div class="regional-location-condition" id="regional-current-location-condition1">Partly Cloudy</div>
+                                            <img class="regional-location-icon" id="regional-current-location-icon1" src="/graphics/animated/partly-cloudy-day-rain.svg">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="forecast1-regional" class="regional-slide">
+                                <div class="right-container-locations">
+                                    <div class="regional-current-labels">
+                                        <div class="regional-current-label">Central Canada</div>
+                                        <div class="regional-current-label">Tonight</div>
+                                    </div>
+                                    <div class="regional-locations-list">
+                                        <div class="class-regional-location-slimcard"> <!-- slim card template to be dynamically generated by js -->
+                                            <div class="regional-location-name" id="regional-forecast1-location-name1">Saskatoon</div>
+                                            <div class="regional-location-temp" id="regional-forecast1-location-hightemp1">12°</div>
+                                            <div class="regional-location-temp" id="regional-forecast1-location-lowtemp1">-12°</div>
+                                            <div class="regional-location-condition" id="regional-forecast1-location-condition1">Partly Cloudy</div>
+                                            <img class="regional-location-icon" id="regional-forecast1-location-icon1" src="/graphics/animated/partly-cloudy-day-rain.svg">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="forecast2-regional" class="regional-slide">
+                                <div class="right-container-locations">
+                                    <div class="regional-current-labels">
+                                        <div class="regional-current-label">Central Canada</div>
+                                        <div class="regional-current-label">Tomorrow</div>
+                                    </div>
+                                    <div class="regional-locations-list">
+                                        <div class="class-regional-location-slimcard"> <!-- slim card template to be dynamically generated by js -->
+                                            <div class="regional-location-name" id="regional-forecast2-location-name1">Saskatoon</div>
+                                            <div class="regional-location-temp" id="regional-forecast2-location-hightemp1">12°</div>
+                                            <div class="regional-location-temp" id="regional-forecast2-location-lowtemp1">-12°</div>
+                                            <div class="regional-location-condition" id="regional-forecast2-location-condition1">Partly Cloudy</div>
+                                            <img class="regional-location-icon" id="regional-forecast2-location-icon1" src="/graphics/animated/partly-cloudy-day-rain.svg">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div id="forecast1-regional" class="regional-slide">
-                    <div class="right-container-locations">
-                        <div class="regional-current-labels">
-                            <div class="regional-current-label">Central Canada</div>
-                            <div class="regional-current-label">Tonight</div>
-                        </div>
-                        <div class="regional-locations-list">
-                            <div class="class-regional-location-slimcard"> <!-- slim card template to be dynamically generated by js -->
-                                <div class="regional-location-name" id="regional-forecast1-location-name1">Saskatoon</div>
-                                <div class="regional-location-temp" id="regional-forecast1-location-hightemp1">12°</div>
-                                <div class="regional-location-temp" id="regional-forecast1-location-lowtemp1">-12°</div>
-                                <div class="regional-location-condition" id="regional-forecast1-location-condition1">Partly Cloudy</div>
-                                <img class="regional-location-icon" id="regional-forecast1-location-icon1" src="/graphics/animated/partly-cloudy-day-rain.svg">
-                            </div>
+
+                    <div class="cityticker">
+                        <div class="cityticker-body">
+                            <div class="cityticker-track"></div>
                         </div>
                     </div>
                 </div>
-                <div id="forecast2-regional" class="regional-slide">
-                    <div class="right-container-locations">
-                        <div class="regional-current-labels">
-                            <div class="regional-current-label">Central Canada</div>
-                            <div class="regional-current-label">Tomorrow</div>
-                        </div>
-                        <div class="regional-locations-list">
-                            <div class="class-regional-location-slimcard"> <!-- slim card template to be dynamically generated by js -->
-                                <div class="regional-location-name" id="regional-forecast2-location-name1">Saskatoon</div>
-                                <div class="regional-location-temp" id="regional-forecast2-location-hightemp1">12°</div>
-                                <div class="regional-location-temp" id="regional-forecast2-location-lowtemp1">-12°</div>
-                                <div class="regional-location-condition" id="regional-forecast2-location-condition1">Partly Cloudy</div>
-                                <img class="regional-location-icon" id="regional-forecast2-location-icon1" src="/graphics/animated/partly-cloudy-day-rain.svg">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-                <div class="i2-sidebar-buffer"></div>
-            </div>
 
-            <div class="cityticker">
-                <div class="cityticker-body">
-                    <div class="cityticker-track"></div>
-                </div>
+
             </div>
 
             <div class="ldl-weather">

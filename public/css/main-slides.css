@@ -1,7 +1,7 @@
 /* MAIN SLIDES DISPLAY CONTROL */
 #stationid { display: none; }
 #alerts { display: none; }
-#current { display: none; }
+#current { display: block; }
 #radar { display: none; }
 #forecast-intraday { display: none; }
 #forecast-shortterm-d1 { display: none; }
@@ -10,12 +10,153 @@
 #\37 day-graph { display: none; }
 #airquality { display: none; }
 
+/* MAIN PRESENTATION UPNEXT BAR */
+.main-presentation-upnext {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  height: 160px;
+  flex-shrink: 0;
+  gap: 8px;
+  margin-bottom: 0.6%;
+  box-sizing: border-box;
+}
+
+.slide-info-group {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  width: 50%;
+  height: 74px;
+  flex-shrink: 0;
+  padding: 0 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+  backdrop-filter: blur(6px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  background-image: var(--mainSlideGradient);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--cornerRadius);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.slide-info-icon {
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.slide-info-name {
+  flex: 1 1 auto;
+  font-size: var(--fontSizeThree);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.slide-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.slide-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.upnext-locations-group {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  height: 74px;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.current-location-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  background-image: var(--mainSlideGradient);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--cornerRadius);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.current-location-icon {
+  width: 36px;
+  height: 36px;
+  background-image: url(/graphics/ux/map-pinned.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.current-location-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.upnext-list {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 0.5rem;
+}
+
+.upnext-location-entry {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 16px;
+  box-sizing: border-box;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  background-image: var(--mainSlideGradient);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--cornerRadius);
+}
+
+.upnext-location-name {
+  font-size: var(--fontSizeThree);
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+
 /* MAIN PRESENTATION */
 .main-slides {
-  align-self: stretch;
-  min-width: 0;
   width: 100%;
-  max-width: 1716px;
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   justify-content: center;
   justify-self: center;
@@ -144,6 +285,7 @@
   background-position: 0px;
   width: 30%;
   height: 100%;
+  border: var(--border-distinct);
   border-radius: var(--cornerRadius);
   text-shadow: 1px 1px 5px rgb(0, 0, 0);
 }
@@ -566,26 +708,90 @@
   height: 100% !important;
 }
 
-.main-radar-time-container {
+.slide-info-row {
   display: flex;
-  position: absolute;
-  justify-content: space-around;
-  align-items: center;
-  background: var(--mainSlideGradient)00;
-  backdrop-filter: blur(10px) saturate(150%);
-  border-radius: var(--cornerRadius);
-  width: 768px;
-  height: 180px;
-  z-index: 100;
-  top: 2%;
-  left: 2%;
-  font-family: var(--monospace-font), monospace;
-  text-align: center;
-  outline: 2px solid #c3e0ff59;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+  height: 74px;
+  flex-shrink: 0;
 }
 
-#main-radar-time {
-  font-size: var(--fontSizeThree);
+.radar-info-bubble {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 20px;
+  box-sizing: border-box;
+  backdrop-filter: blur(6px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  background-image: var(--mainSlideGradient);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--cornerRadius);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.radar-info-bubble.radar-bubble--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.radar-bubble-time {
+  font-family: var(--monospace-font), monospace;
+  font-size: var(--fontSizeTwo);
+  flex-shrink: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.radar-legend {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.radar-legend-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.radar-legend-label {
+  font-size: var(--fontSizeOne);
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+.radar-swatches {
+  display: flex;
+  flex-direction: row;
+  gap: 3px;
+}
+
+.radar-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.radar-legend-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
 }
 
 .mapboxgl-ctrl-bottom-left, .mapboxgl-ctrl-bottom-right {

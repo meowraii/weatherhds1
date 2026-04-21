@@ -17,7 +17,7 @@ const iconMappings = [
     { id: "forecast-extended", icon: "/graphics/ux/calendar-1.svg" },
     { id: "7day-graph", icon: "/graphics/ux/calendar-1.svg" },
     { id: "airquality", icon: "/graphics/ux/leaf.svg" },
-    { id: "radar", icon: "/graphics/ux/blank.png" },
+    { id: "radar", icon: "/graphics/ux/radar.svg" },
 ];
 
 
@@ -100,7 +100,7 @@ const preferredPlaylist = {
         },
         {
             htmlID: "forecast-shortterm-d1",
-            title: daypartNames[0],
+            title: "",
             duration: 10000,
             dynamicFunction: null,
             animationIn: playlistSettings.defaultAnimationIn,
@@ -108,7 +108,7 @@ const preferredPlaylist = {
         },
         {
             htmlID: "forecast-shortterm-d2",
-            title: daypartNames[1],
+            title: "",
             duration: 10000,
             dynamicFunction: null,
             animationIn: playlistSettings.defaultAnimationIn,
@@ -151,17 +151,14 @@ const domCache = {
     bumperSlides: document.getElementsByClassName('bumper-slides')[0],
     radarDiv: document.getElementById('radar'),
     stationIdHdsver: document.getElementById('station-id-hdsver'),
-    slideIcon: document.getElementById('topbar-slide-icon'),
-    localeIcon: document.getElementById('topbar-loc-icon'),
-    currentSlideText: document.getElementById('currentslide'),
-    currentLocationText: document.getElementById('current-location'),
-    currentprogressbar: document.getElementById('currentprogressbar'),
-    upNextLocationText: document.getElementById('upnext-location'),
-    upNextLocationText1: document.getElementById('upnext-location1'),
-    upNextLocationText2: document.getElementById('upnext-location2'),
-    upNextLocationText3: document.getElementById('upnext-location3'),
     wallpaper: document.getElementsByClassName('wallpaper')[0],
-    topbar: document.getElementsByClassName('topbar')[0],
+    slideInfoIcon: document.getElementById('slide-info-icon'),
+    slideInfoName: document.getElementById('slide-info-name'),
+    slideProgressBar: document.getElementById('slide-progress-bar'),
+    currentLocationName: document.getElementById('upnext-current-location-name'),
+    upnextLocName1: document.getElementById('upnext-loc-name1'),
+    upnextLocName2: document.getElementById('upnext-loc-name2'),
+    upnextLocName3: document.getElementById('upnext-loc-name3'),
     currentModule1: document.getElementsByClassName('main-current-module1')[0],
     currentModule2: document.getElementsByClassName('main-current-module2')[0],
     currentExtraProducts: Array.from(document.getElementsByClassName('main-current-extraproducts')),
@@ -178,11 +175,43 @@ const domCache = {
     bumperBgTitle: document.getElementById('bumper-bg-title'),
     bumperBgSubtitle: document.getElementById('bumper-bg-subtitle'),
     bumperBgAuthor: document.getElementById('bumper-bg-author'),
+    radarInfoBubble: document.getElementById('radar-info-bubble'),
 };
 
 domCache.stationIdHdsver.innerText = versionID;
 
-const { slideIcon, currentSlideText, currentLocationText, currentprogressbar, upNextLocationText, upNextLocationText1, upNextLocationText2, upNextLocationText3, radarDiv, regionalSlides } = domCache;
+const { radarDiv, regionalSlides, slideInfoIcon, slideInfoName, slideProgressBar } = domCache;
+
+function updateUpNext(queue, currentIdx) {
+    const current = queue[currentIdx];
+    const upcoming = [1, 2, 3].map(i => queue[(currentIdx + i) % queue.length]);
+
+    if (domCache.currentLocationName) {
+        requestAnimationFrame(() => {
+            domCache.currentLocationName.style.animation = 'none';
+            void domCache.currentLocationName.offsetWidth;
+            domCache.currentLocationName.style.animation = 'bonr 0.5s ease-in-out forwards';
+            domCache.currentLocationName.textContent = current?.displayName || 'Please Standby...';
+        });
+    }
+
+    const upnextEls = [domCache.upnextLocName1, domCache.upnextLocName2, domCache.upnextLocName3];
+    const vt = config.videoType;
+    const maxUpnext = (vt === 'hdtv' || vt === 'tablet') ? 3 : vt === 'vga' || vt === 'ntsc' ? 2 : 2;
+
+    upcoming.forEach((item, i) => {
+        const el = upnextEls[i];
+        if (!el) return;
+        if (i >= maxUpnext) {
+            el.parentElement.style.display = 'none';
+            return;
+        }
+        const text = item ? `> ${item.displayName}` : '';
+        el.textContent = text;
+        el.parentElement.style.display = text ? 'flex' : 'none';
+        el.style.animation = `switchModules 0.2s ease-in-out ${0.1 * i}s forwards`;
+    });
+}
 
 let slideNearEnd, slideEnd;
 
@@ -255,37 +284,6 @@ function buildQueue() {
         }
     }
     return queue;
-}
-
-function updateUpNext(queue, currentIdx) {
-    const current = queue[currentIdx];
-    const upcoming = [1, 2, 3].map(i => queue[(currentIdx + i) % queue.length]);
-
-    const textUpdates = [
-        { el: currentLocationText, text: current?.displayName || "Please Standby..." },
-        { el: upNextLocationText, text: upcoming[0] ? `> ${upcoming[0].displayName}` : "" },
-        { el: upNextLocationText1, text: upcoming[1] ? `> ${upcoming[1].displayName}` : "" },
-        { el: upNextLocationText2, text: upcoming[2] ? `> ${upcoming[2].displayName}` : "" },
-    ];
-
-    const topbarCurrent = document.querySelector('.topbar-current-location');
-    if (topbarCurrent) {
-        requestAnimationFrame(() => {
-            topbarCurrent.style.animation = 'none';
-            void topbarCurrent.offsetWidth;
-            topbarCurrent.style.animation = 'bonr 0.5s ease-in-out forwards';
-
-            textUpdates.forEach(({ el, text }, index) => {
-                if (config.videoType !== "hdtv" && config.videoType !== "i2buffer" && config.videoType !== "tablet") {
-                    if (el === upNextLocationText2) return;
-                }
-                const delay = 0.1 * index;
-                el.textContent = text.length > 2 ? text : '';
-                el.style.display = text.length > 2 ? 'block' : 'none';
-                el.style.animation = `switchModules 0.2s ease-in-out ${delay}s forwards`;
-            });
-        });
-    }
 }
 
 function runPresentation() {
@@ -375,32 +373,24 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
 
         const slide = activeSlides[slideIndex];
         const el = document.getElementById(slide.htmlID);
+
         const mappedIcon = iconMappings.find(m => m.id === slide.htmlID);
-        if (mappedIcon && mappedIcon.icon) {
-            slideIcon.src = mappedIcon.icon;
-        } else if (slide.htmlID === "current") {
-            slideIcon.src = areWeFreezingToDeath()
+        if (mappedIcon?.icon) {
+            slideInfoIcon.src = mappedIcon.icon;
+        } else if (slide.htmlID === 'current') {
+            slideInfoIcon.src = areWeFreezingToDeath()
                 ? '/graphics/ux/thermometer-snowflake.svg'
                 : '/graphics/ux/thermometer-sun.svg';
         } else {
-            slideIcon.src = '/graphics/ux/gallery-vertical.svg';
+            slideInfoIcon.src = '/graphics/ux/calendar-1.svg';
         }
-
-        switch (slide.htmlID) {
-            case "forecast-shortterm-d1":
-                currentSlideText.textContent = daypartNames[0];
-                break;
-            case "forecast-shortterm-d2":
-                currentSlideText.textContent = daypartNames[1];
-                break;
-            default:
-                currentSlideText.textContent = slide.title;
-                break;
-        }
-
-        currentSlideText.style.cssText = 'display:block;animation:switchModules 300ms ease-in-out forwards';
-        slideIcon.style.cssText = 'display:block;animation:switchModules 160ms ease-in-out forwards';
-        currentprogressbar.style.cssText = `display:block;animation:progressBar ${totalSlideDurationMS}ms linear forwards`;
+        let slideDisplayTitle = slide.title;
+        if (slide.htmlID === 'forecast-shortterm-d1') slideDisplayTitle = daypartNames[0] || slide.title;
+        if (slide.htmlID === 'forecast-shortterm-d2') slideDisplayTitle = daypartNames[1] || slide.title;
+        slideInfoName.textContent = slideDisplayTitle;
+        slideInfoName.style.cssText = 'display:block;animation:switchModules 300ms ease-in-out forwards';
+        slideInfoIcon.style.cssText = 'display:block;animation:switchModules 160ms ease-in-out forwards';
+        slideProgressBar.style.cssText = `display:block;animation:progressBar ${totalSlideDurationMS}ms linear forwards`;
 
         slideDurationMS = slide.duration;
 
@@ -415,19 +405,26 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
             }
         }
 
+        if (slide.htmlID === 'radar') {
+            domCache.radarInfoBubble?.classList.add('radar-bubble--active');
+        } else {
+            domCache.radarInfoBubble?.classList.remove('radar-bubble--active');
+        }
+
         slideNearEnd = setTimeout(() => {
             if (el) el.style.animation = slide.animationOut;
-            currentSlideText.style.animation = `fadeModule 0.5s ease-in-out forwards`;
-            slideIcon.style.animation = `slideDown 160ms ease-in-out forwards`;
+            slideInfoName.style.animation = 'fadeModule 0.5s ease-in-out forwards';
+            slideInfoIcon.style.animation = 'slideDown 160ms ease-in-out forwards';
+            domCache.radarInfoBubble?.classList.remove('radar-bubble--active');
         }, slideDurationMS - 500);
 
         slideEnd = setTimeout(() => {
-            currentSlideText.style.display = "none";
-            currentSlideText.style.animation = "";
-            currentprogressbar.style.display = `none`;
-            currentprogressbar.style.animation = "";
-            slideIcon.style.animation = "";
-            slideIcon.style.display = "none";
+            slideInfoName.style.display = 'none';
+            slideInfoName.style.animation = '';
+            slideProgressBar.style.display = 'none';
+            slideProgressBar.style.animation = '';
+            slideInfoIcon.style.display = 'none';
+            slideInfoIcon.style.animation = '';
 
             if (!config.presentationConfig.repeatMain && slideIndex === activeSlides.length - 1) {
                 slides.forEach(s => s.style.display = "none");
@@ -621,12 +618,9 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
 
 function cancelSlideshow() {
     domCache.wallpaper.style.animation = 'mainPresentationSlideOut 600ms ease-in-out 1 forwards';
-    domCache.topbar.style.animation = 'fadeModule 600ms ease-in-out 1 forwards';
     setTimeout(() => {
         domCache.wallpaper.style.display = 'none';
         domCache.wallpaper.style.animation = '';
-        domCache.topbar.style.display = 'none';
-        domCache.topbar.style.animation = '';
     }, 650);
 }
 
@@ -717,11 +711,11 @@ function runBumperSlide(bumperId, upcomingRegions, callback) {
         el.style.animation = playlistSettings.defaultAnimationIn;
     }
 
-    currentSlideText.textContent = def.title;
-    currentSlideText.style.cssText = 'display:block;animation:switchModules 300ms ease-in-out forwards';
-    slideIcon.src = def.isRegional ? "/graphics/ux/map.svg" : "/graphics/ux/gallery-vertical.svg";
-    slideIcon.style.cssText = 'display:block;animation:switchModules 160ms ease-in-out forwards';
-    currentprogressbar.style.cssText = `display:block;animation:progressBar ${def.duration}ms linear forwards`;
+    slideInfoName.textContent = def.title;
+    slideInfoName.style.cssText = 'display:block;animation:switchModules 300ms ease-in-out forwards';
+    slideInfoIcon.src = def.isRegional ? '/graphics/ux/map-pinned.svg' : '/graphics/ux/gallery-vertical.svg';
+    slideInfoIcon.style.cssText = 'display:block;animation:switchModules 160ms ease-in-out forwards';
+    slideProgressBar.style.cssText = `display:block;animation:progressBar ${def.duration}ms linear forwards`;
 
     if (def.isRegional) {
         if (domCache.regionalBumperHeader) domCache.regionalBumperHeader.textContent = def.title;
@@ -787,17 +781,17 @@ function runBumperSlide(bumperId, upcomingRegions, callback) {
 
     slideNearEnd = setTimeout(() => {
         if (el) el.style.animation = playlistSettings.defaultAnimationOut;
-        currentSlideText.style.animation = `fadeModule 0.5s ease-in-out forwards`;
-        slideIcon.style.animation = `slideDown 160ms ease-in-out forwards`;
+        slideInfoName.style.animation = 'fadeModule 0.5s ease-in-out forwards';
+        slideInfoIcon.style.animation = 'slideDown 160ms ease-in-out forwards';
     }, def.duration - 500);
 
     slideEnd = setTimeout(() => {
-        currentSlideText.style.display = "none";
-        currentSlideText.style.animation = "";
-        currentprogressbar.style.display = "none";
-        currentprogressbar.style.animation = "";
-        slideIcon.style.animation = "";
-        slideIcon.style.display = "none";
+        slideInfoName.style.display = 'none';
+        slideInfoName.style.animation = '';
+        slideProgressBar.style.display = 'none';
+        slideProgressBar.style.animation = '';
+        slideInfoIcon.style.display = 'none';
+        slideInfoIcon.style.animation = '';
         callback?.();
     }, def.duration);
 }
@@ -805,7 +799,7 @@ function runBumperSlide(bumperId, upcomingRegions, callback) {
 function runRadarSlide() {
     requestAnimationFrame(() => {
         domCache.radarDiv.style.display = 'block';
-        resizeRadar();
+        requestAnimationFrame(() => resizeRadar());
     });
     setTimeout(() => {
         requestAnimationFrame(() => {

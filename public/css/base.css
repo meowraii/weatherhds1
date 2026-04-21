@@ -5,7 +5,7 @@
   --monospace-font: 'Geist Mono', monospace;
   image-rendering: auto;
   color: var(--textColour2);
-  --primaryColour: #101218e1;
+  --primaryColour: #101218b3;
   --secondaryColour: #101218e1;
   --thirdColour: #242424b7;
   --fourthColour: #0f0f10e1;
@@ -24,20 +24,19 @@
   --border-subtle: 2px solid #ffffff4a;
   --border-distinct: 1px solid var(--thirdColourTransparent);
 
-  --fontSizeOne: 20pt;
+  --fontSizeOne: 22pt;
   --fontSizeTwo: 26pt;
-  --fontSizeThree: 30pt;
-  --fontSizeFour: 36pt;
-  --fontSizeFive: 49pt;
-  --fontSizeSix: 50pt;
-  --fontSizeSeven: 90pt;
+  --fontSizeThree: 28pt;
+  --fontSizeFour: 32pt;
+  --fontSizeFive: 46pt;
+  --fontSizeSix: 48pt;
+  --fontSizeSeven: 72pt;
 
   --mainGradient: linear-gradient(var(--primaryColour), var(--secondaryColour));
   --secondGradient: linear-gradient(var(--fifthColour), var(--fourthColour));
   --thirdGradient: linear-gradient(var(--sixthColour), var(--seventhColour));
   --mainSlideGradient: var(--mainGradient);
 
-  --topbar-height: 14%;
   --ldl-height: 15%;
 }
 
@@ -50,12 +49,8 @@
 .bumper-slide,
 .ldl-presentation-slide,
 .wallpaper,
-.topbar,
 .ldl-weather,
 .main-radar,
-.topbar-current-location,
-.topbar-next-locations,
-#currentprogressbar,
 #ldl-location-progressbar {
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -102,12 +97,38 @@ body {
   align-items: center;
   align-self: center;
   justify-content: space-between;
-  flex: 0.9 1 0;
+  flex: 0.85 1 0;
   min-height: 0;
   position: relative;
   width: 100%;
-  padding-top: 1%;
-  margin-bottom: 0.5%;
+  margin-bottom: 1%;
+  margin-top: 2%;
+}
+
+.slides-block {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  backdrop-filter: blur(20px) saturate(120%) brightness(80%);
+  border-radius: var(--cornerRadius);
+  border: var(--border-subtle);
+	background-image: linear-gradient(135deg, var(--primaryColour), var(--secondaryColour));
+	box-sizing: border-box;
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  padding: 0.65%;
+}
+
+.main-block {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  align-self: stretch;
+  overflow: hidden;
+  padding-left: 1%;
 }
 
 .wallpaper {
@@ -126,3 +147,4 @@ hr {
   margin-top: 0%;
   border-top: 2px solid var(--textColour2);
 }
+

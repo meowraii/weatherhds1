@@ -229,7 +229,7 @@ export async function appendDatatoMain(locale, locType) {
                         }
                     }
 
-        appendTextContent(dataMapCurrent)
+        appendTextContent(dataMapCurrent);
     }
 
     function buildIntraDayForecast() {

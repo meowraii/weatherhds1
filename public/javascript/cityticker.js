@@ -1,7 +1,7 @@
 import { weatherIcons, locationConfig, serverConfig, config, displayUnits } from "../config.js";
 import { requestWxData, requestAlertData } from "./data.js";
 
-const SCROLL_SPEED_PX_PER_MS = 0.48;
+const SCROLL_SPEED_PX_PER_MS = 0.30;
 const STATIC_MSG_DURATION_MS = 12000;
 const iconDir = config.staticIcons ? "static" : "animated";
 const units = displayUnits[serverConfig.units] ?? displayUnits["m"];

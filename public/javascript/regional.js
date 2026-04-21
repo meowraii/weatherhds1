@@ -18,10 +18,10 @@ const dom = {
     forecast2Slide: document.getElementById("forecast2-regional"),
     radarTimeLabel: document.querySelector(".left-container-radar .regional-current-labels .regional-current-label:last-child"),
     radarRegionLabel: document.querySelector(".left-container-radar .regional-current-labels .regional-current-label:first-child"),
-    topbarSlideText: document.getElementById("currentslide"),
-    topbarSlideIcon: document.getElementById("topbar-slide-icon"),
-    topbarLocationText: document.getElementById("current-location"),
-    topbarProgressBar: document.getElementById("currentprogressbar"),
+    slideInfoIcon: document.getElementById("slide-info-icon"),
+    slideInfoName: document.getElementById("slide-info-name"),
+    slideProgressBar: document.getElementById("slide-progress-bar"),
+    currentLocationName: document.getElementById("upnext-current-location-name"),
 };
 
 function iconPath(iconCode, dayOrNight) {
@@ -169,17 +169,18 @@ function hideSlide(slideId) {
     }
 }
 
-function updateTopbar(regionName, slideLabel) {
-    if (dom.topbarSlideText) {
-        dom.topbarSlideText.textContent = slideLabel;
-        dom.topbarSlideText.style.cssText = "display:block;animation:switchModules 300ms ease-in-out forwards";
+function updateSlideInfo(locationName, slideLabel, totalDuration) {
+    if (dom.currentLocationName) dom.currentLocationName.textContent = locationName;
+    if (dom.slideInfoName) {
+        dom.slideInfoName.textContent = slideLabel;
+        dom.slideInfoName.style.cssText = "display:block;animation:switchModules 300ms ease-in-out forwards";
     }
-    if (dom.topbarSlideIcon) {
-        dom.topbarSlideIcon.src = "/graphics/ux/map.svg";
-        dom.topbarSlideIcon.style.cssText = "display:block;animation:switchModules 160ms ease-in-out forwards";
+    if (dom.slideInfoIcon) {
+        dom.slideInfoIcon.src = "/graphics/ux/map-pinned.svg";
+        dom.slideInfoIcon.style.cssText = "display:block;animation:switchModules 160ms ease-in-out forwards";
     }
-    if (dom.topbarLocationText) {
-        dom.topbarLocationText.textContent = regionName;
+    if (dom.slideProgressBar) {
+        dom.slideProgressBar.style.cssText = `display:block;animation:progressBar ${totalDuration}ms linear forwards`;
     }
 }
 
@@ -232,9 +233,6 @@ export async function runRegionalPlayback(regions, callback) {
         await initRegionalRadar(region.mapCenter, region.zoomLevel);
 
         const totalDuration = SLIDE_DURATION * 3;
-        if (dom.topbarProgressBar) {
-            dom.topbarProgressBar.style.cssText = `display:block;animation:progressBar ${totalDuration}ms linear forwards`;
-        }
 
         const slides = [
             { id: "current-regional", label: "Current Observations" },
@@ -243,7 +241,7 @@ export async function runRegionalPlayback(regions, callback) {
         ];
 
         for (const slide of slides) {
-            updateTopbar(regionLabel, slide.label);
+            updateSlideInfo(regionLabel, slide.label, SLIDE_DURATION);
             showSlide(slide.id);
 
             await new Promise(resolve => {
@@ -260,8 +258,8 @@ export async function runRegionalPlayback(regions, callback) {
     dom.regionalSlides.style.display = "none";
     dom.mainSlides.style.display = "flex";
 
-    if (dom.topbarProgressBar) {
-        dom.topbarProgressBar.style.cssText = "display:none;animation:none";
+    if (dom.slideProgressBar) {
+        dom.slideProgressBar.style.cssText = "display:none;animation:none";
     }
 
     callback?.();

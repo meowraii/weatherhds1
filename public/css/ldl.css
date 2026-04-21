@@ -32,7 +32,7 @@
 
 /* LDL MAIN CONTAINER */
 .ldl-weather {
-  flex: 0.30 0 0;
+  flex: 0.25 0 0;
   height: var(--ldl-height);
   width: 95%;
   align-self: center;
@@ -46,7 +46,7 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  margin-bottom: 0.5%;
+  margin-bottom: 2%;
 }
 
 /* BULLETIN/ALERTS */
