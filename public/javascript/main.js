@@ -117,7 +117,7 @@ if (videoTypeParam !== null) {
     config.videoType = String(videoTypeParam).toLowerCase();
 }
 
-function ScaleViewportToTheWindowIGuessLmao() {
+function viewportAspect() {
     const containerWidth = window.innerWidth;
     const containerHeight = window.innerHeight;
     const mode = VIDEO_MODES[config.videoType] || VIDEO_MODES.vga;
@@ -152,7 +152,7 @@ function ScaleViewportToTheWindowIGuessLmao() {
     }
 }
 
-window.addEventListener('resize', debounce(ScaleViewportToTheWindowIGuessLmao, 100));
+window.addEventListener('resize', debounce(viewportAspect, 100));
 
 function clock() {
     const now = new Date();
@@ -259,7 +259,7 @@ function scrollTicker() {
 }
 
 window.onload = () => {
-    ScaleViewportToTheWindowIGuessLmao();
+    viewportAspect();
     presentationType();
     scrollTicker();
     initBackgrounds();
