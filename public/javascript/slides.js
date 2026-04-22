@@ -797,12 +797,20 @@ function runBumperSlide(bumperId, upcomingRegions, callback) {
 }
 
 function runRadarSlide() {
+    const radarEl = domCache.radarDiv;
     requestAnimationFrame(() => {
-        domCache.radarDiv.style.display = 'block';
-        requestAnimationFrame(() => resizeRadar());
+        radarEl.style.display = 'block';
     });
+    const onAnimEnd = () => {
+        radarEl.removeEventListener('animationend', onAnimEnd);
+        requestAnimationFrame(() => resizeRadar());
+    };
+    radarEl.addEventListener('animationend', onAnimEnd);
     setTimeout(() => {
-        requestAnimationFrame(() => {
-        });
+        radarEl.removeEventListener('animationend', onAnimEnd);
+        resizeRadar();
+    }, 700);
+    setTimeout(() => {
+        requestAnimationFrame(() => {});
     }, slideDurationMS + 100);
 }

@@ -92,7 +92,7 @@ async function refreshSidebar() {
     const lon = wxData?.metadata?.localeData?.lon ?? null;
 
     if (lat && lon) {
-        await radarInstance.init(lat, lon, 6, 'twcRadarHcMosaic');
+        await radarInstance.init(lat, lon, 6, 'satrad');
         requestAnimationFrame(() => radarInstance.resize());
     }
 
@@ -115,12 +115,13 @@ async function refreshSidebar() {
 
     updateSidebarSummary([
         `Pressure: ${current.pressureAltimeter} ${endingPressure}`,
-        `Wind: ${current.windDirectionCardinal}  ${current.windSpeed} ${endingWind}`,
+        `Wind: ${current.windDirectionCardinal} ${current.windSpeed} ${endingWind}`,
         `Dewpoint: ${current.temperatureDewPoint}${endingTemp}`,
-        `Humidity:  ${current.relativeHumidity}%`,
-        `Visibility:  ${current.visibility} ${endingDistance}.`,
+        `Humidity: ${current.relativeHumidity}%`,
+        `Visibility: ${current.visibility} ${endingDistance}`,
         `Ceiling: ${ceiling}`,
-        `${month} Precipitation:  ${precipStr}`,
+        `UV Index: ${current.uvIndex}`,
+        `${month} Precip.: ${precipStr}`,
     ]);
 }
 

@@ -32,8 +32,7 @@
 
 /* LDL MAIN CONTAINER */
 .ldl-weather {
-  flex: 0.25 0 0;
-  height: var(--ldl-height);
+  flex: 0.19 0 0;
   width: 95%;
   align-self: center;
   position: relative;

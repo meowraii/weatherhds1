@@ -299,6 +299,8 @@
 }
 
 .sidebar-summary-line {
+  width: 100%;
+  height: 20%;
   white-space: nowrap;
   overflow: hidden;
 }

@@ -215,7 +215,7 @@ export async function runRegionalPlayback(regions, callback) {
 
         const regionLabel = region.country === "USA"
             ? `${region.name} US`
-            : `${region.name} Canada`;
+            : `${region.name}`;
 
         populateSlide(
             dom.currentSlide, regionLabel, "Current Observations", locationData,

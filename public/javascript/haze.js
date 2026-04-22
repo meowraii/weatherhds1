@@ -1,18 +1,17 @@
 import { config } from "../config.js";
 
 if (!config.haze?.enabled) {
-    document.querySelector(".sidebar-haze-display")?.remove();
-    throw new Error("[haze.js] Haze integration disabled.");
+    document.getElementsByClassName("sidebar-haze-display")[0].style.opacity = "0";
 }
 
 const dom = {
-    display:    document.querySelector(".sidebar-haze-display"),
+    display:    document.getElementsByClassName("sidebar-haze-display")[0],
     art:        document.getElementById("sidebar-haze-albumart"),
     title:      document.getElementById("sidebar-haze-title"),
     artist:     document.getElementById("sidebar-haze-artist"),
     album:      document.getElementById("sidebar-haze-album"),
-    elapsed:    document.querySelector(".sidebar-haze-current-time"),
-    duration:   document.querySelector(".sidebar-haze-duration"),
+    elapsed:    document.getElementsByClassName("sidebar-haze-current-time")[0],
+    duration:   document.getElementsByClassName("sidebar-haze-duration")[0],
     progress:   document.getElementById("sidebar-haze-progress"),
 };
 
@@ -184,4 +183,5 @@ socket.on("state", data => apply(data));
 
 socket.on("connect_error", () => {
     console.warn("[haze.js] Socket connection failed:", config.haze.socketUrl);
+    dom.display.style.opacity = "0";
 });

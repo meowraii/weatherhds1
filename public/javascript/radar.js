@@ -43,7 +43,7 @@ async function fetchTimeslices(apiKey, totalFrames, product = "twcRadarHcMosaic"
         "twcRadarHcMosaic": "radar",
         "twcRadarMosaic": "radar",
         "satrad": "satrad",
-    }
+    };
     return data.seriesInfo[products[product]].series.reverse().slice(0, totalFrames);
 }
 
@@ -57,6 +57,8 @@ export class RadarMap {
     #loopTimer = null;
     #preloaded = false;
     #preloadPromise = null;
+    #pendingInit = null;
+    #resizeObserver = null;
     #containerId;
     #timeEl;
     #onFrame;
@@ -73,8 +75,48 @@ export class RadarMap {
     get isActive() { return this.#map !== null; }
     get ttl() { return this.#ttl; }
 
+    #getContainer() {
+        return document.getElementById(this.#containerId);
+    }
+
+    #isVisible() {
+        const el = this.#getContainer();
+        return Boolean(el && el.offsetWidth > 0 && el.offsetHeight > 0);
+    }
+
+    #setupResizeObserver() {
+        if (this.#resizeObserver) return;
+        const container = this.#getContainer();
+        if (!container) return;
+
+        this.#resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect;
+                if (width === 0 || height === 0) continue;
+
+                if (this.#pendingInit) {
+                    const pending = this.#pendingInit;
+                    this.#pendingInit = null;
+                    this.#teardownResizeObserver();
+                    this.init(pending.lat, pending.lon, pending.zoom, pending.product);
+                    return;
+                }
+
+                if (this.#map) {
+                    this.#map.resize();
+                }
+            }
+        });
+
+        this.#resizeObserver.observe(container);
+    }
+
+    #teardownResizeObserver() {
+        this.#resizeObserver?.disconnect();
+        this.#resizeObserver = null;
+    }
+
     async init(lat, lon, zoom, product) {
-        const { twcApiKey, mapboxToken } = await getKeys();
         product = product ?? this.#opts.product;
 
         if (!lat || !lon) {
@@ -82,6 +124,15 @@ export class RadarMap {
             return;
         }
 
+        if (!this.#isVisible()) {
+            this.#pendingInit = { lat, lon, zoom, product };
+            this.#setupResizeObserver();
+            this.#stopAnimation();
+            return;
+        }
+
+        this.#pendingInit = null;
+        const { twcApiKey, mapboxToken } = await getKeys();
         const center = [lon, lat];
 
         if (this.#map) {
@@ -89,8 +140,8 @@ export class RadarMap {
                 this.destroy();
                 return this.init(lat, lon, zoom, product);
             }
-            this.#map.setCenter(center);
-            this.#map.setZoom(zoom);
+            this.#map.resize();
+            this.#map.jumpTo({ center, zoom });
             this.#ttl++;
             return this.#loadAndAnimate(product, twcApiKey);
         }
@@ -105,6 +156,7 @@ export class RadarMap {
             zoom,
             attributionControl: false,
             preserveDrawingBuffer: false,
+            trackResize: true,
         });
 
         await new Promise((resolve) => {
@@ -153,7 +205,9 @@ export class RadarMap {
     }
 
     resize() {
-        this.#map?.resize();
+        if (this.#pendingInit) return;
+        if (!this.#map) return;
+        this.#map.resize();
     }
 
     pause() {
@@ -168,6 +222,7 @@ export class RadarMap {
 
     destroy() {
         if (!this.#map) return;
+        this.#teardownResizeObserver();
         this.#stopAnimation();
         this.#map.remove();
         this.#map = null;
@@ -175,6 +230,7 @@ export class RadarMap {
         this.#slices = [];
         this.#preloaded = false;
         this.#preloadPromise = null;
+        this.#pendingInit = null;
     }
 
     #stopAnimation() {
@@ -200,19 +256,36 @@ export class RadarMap {
         return this.#preloadPromise;
     }
 
-    #waitForTiles(timeout = 20000) {
+    #waitForIdle(timeout = 20000) {
         return new Promise((resolve) => {
-            if (this.#map.areTilesLoaded()) { resolve(); return; }
-            const timer = setTimeout(() => { this.#map.off("idle", onIdle); resolve(); }, timeout);
-            const onIdle = () => { clearTimeout(timer); resolve(); };
+            if (this.#map.isStyleLoaded() && this.#map.areTilesLoaded()) {
+                resolve();
+                return;
+            }
+            const timer = setTimeout(() => {
+                this.#map.off("idle", onIdle);
+                resolve();
+            }, timeout);
+            const onIdle = () => {
+                clearTimeout(timer);
+                resolve();
+            };
             this.#map.once("idle", onIdle);
         });
     }
 
     async #loadAndAnimate(product, twcApiKey) {
         try {
-            this.#map.resize();
+            if (!this.#isVisible()) {
+                this.#stopAnimation();
+                const center = this.#map?.getCenter();
+                this.#pendingInit = { lat: center?.lat, lon: center?.lng, zoom: this.#map?.getZoom(), product };
+                this.#setupResizeObserver();
+                return;
+            }
+
             this.#stopAnimation();
+            this.#map.resize();
             this.#frame = 0;
             this.#loops = 0;
 
@@ -229,6 +302,8 @@ export class RadarMap {
                     }
                 }
             }
+
+            await this.#waitForIdle();
 
             const firstLabelLayer = this.#map.getStyle().layers.find(
                 l => l.type === "symbol" || l.id.includes("boundary") || l.id.includes("border")
@@ -261,7 +336,7 @@ export class RadarMap {
                 }, firstLabelLayer);
             }
 
-            await this.#waitForTiles();
+            await this.#waitForIdle();
             this.#map.off("error", onError);
 
             if (failedSources.size) {

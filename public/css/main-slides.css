@@ -37,7 +37,7 @@
   overflow: hidden;
   backdrop-filter: blur(6px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
-  background-image: var(--mainSlideGradient);
+  background-image: linear-gradient(135deg, var(--primaryColourTransparent), var(--secondaryColourTransparent));
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--cornerRadius);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -94,7 +94,7 @@
   box-sizing: border-box;
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
-  background-image: var(--mainSlideGradient);
+  background-image: linear-gradient(135deg, var(--primaryColourTransparent), var(--secondaryColourTransparent));
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--cornerRadius);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -137,7 +137,7 @@
   box-sizing: border-box;
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
-  background-image: var(--mainSlideGradient);
+  background-image: linear-gradient(135deg, var(--primaryColourTransparent), var(--secondaryColourTransparent));
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--cornerRadius);
 }
@@ -698,11 +698,6 @@
   height: 100% !important;
 }
 
-#radar .mapboxgl-canvas {
-  width: 100% !important;
-  height: 100% !important;
-}
-
 .mapboxgl-control-container {
   width: 100%;
   height: 100% !important;
@@ -754,6 +749,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
   flex: 1 1 auto;
   min-width: 0;

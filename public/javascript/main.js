@@ -154,10 +154,6 @@ function viewportAspect() {
         mainVideoBlock.forEach(el => {
             if (el) el.style.paddingBottom = '2%'; el.style.paddingTop = '2%';
         });
-    } else {
-        mainVideoBlock.forEach(el => {
-            if (el) el.style.paddingRight = '18%';
-        });
     }
 
     if (resolvedType !== "hdtv" && resolvedType !== "tablet" && resolvedType && domElements.upnextLocation2) {
