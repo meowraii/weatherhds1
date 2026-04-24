@@ -108,8 +108,8 @@ const VIDEO_MODES = Object.freeze({
     vga:       { width: 1920, height: 1440, barWidth: "94%" },  // 4:3 - VGA
     ntsc:      { width: 2160, height: 1440, barWidth: "94%" },  // 3:2 - NTSC
     pal:       { width: 720,  height: 576,  barWidth: "94%" },  // 5:4 - PAL
-    tablet:    { width: 2304, height: 1440, barWidth: "88%" },  // 16:10 - tablet
-    hdtv:      { width: 2560, height: 1440, barWidth: "88%" },  // 16:9 - HDTV
+    tablet:    { width: 2304, height: 1440, barWidth: "90%" },  // 16:10 - tablet
+    hdtv:      { width: 2560, height: 1440, barWidth: "90%" },  // 16:9 - HDTV
 });
 
 const videoTypeParam = new URLSearchParams(window.location.search).get('videoType');

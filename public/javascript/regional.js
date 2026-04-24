@@ -7,6 +7,7 @@ const iconDir = config.staticIcons ? "static" : "animated";
 const units = displayUnits[serverConfig.units] || displayUnits["m"];
 
 const SLIDE_DURATION = 12000;
+const SLIDE_EXIT_DURATION = 320;
 
 const dom = {
     regionalSlides: document.querySelector(".regional-slides"),
@@ -123,6 +124,29 @@ function buildForecastCard(locationName, wxData, dayIndex) {
     return card;
 }
 
+function decorateSlideMotion(slideEl) {
+    const labels = slideEl.querySelectorAll(".regional-current-label");
+    const totalLabels = labels.length;
+
+    labels.forEach((label, index) => {
+        label.style.setProperty("--regional-label-order", String(index));
+        label.style.setProperty("--regional-label-exit-order", String(totalLabels - index - 1));
+    });
+
+    const cards = slideEl.querySelectorAll(".class-regional-location-slimcard");
+    const totalCards = cards.length;
+
+    cards.forEach((card, cardIndex) => {
+        card.style.setProperty("--regional-card-order", String(cardIndex));
+        card.style.setProperty("--regional-card-exit-order", String(totalCards - cardIndex - 1));
+
+        Array.from(card.children).forEach((element, elementIndex) => {
+            element.style.setProperty("--regional-element-order", String(elementIndex));
+            element.style.setProperty("--regional-element-exit-order", String(card.children.length - elementIndex - 1));
+        });
+    });
+}
+
 function populateSlide(slideEl, regionName, label, locationData, buildCardFn) {
     const labels = slideEl.querySelectorAll(".regional-current-label");
     if (labels[0]) labels[0].textContent = regionName;
@@ -134,6 +158,8 @@ function populateSlide(slideEl, regionName, label, locationData, buildCardFn) {
     for (const { location, data } of locationData) {
         list.appendChild(buildCardFn(location, data));
     }
+
+    decorateSlideMotion(slideEl);
 }
 
 const regionalRadar = new RadarMap("regional-radar-map", {
@@ -150,23 +176,52 @@ async function initRegionalRadar(center, zoom) {
     }
 }
 
-function showSlide(slideId) {
-    dom.currentSlide.style.display = "none";
-    dom.forecast1Slide.style.display = "none";
-    dom.forecast2Slide.style.display = "none";
+function resetSlideState(slideEl) {
+    if (!slideEl) return;
 
+    slideEl.classList.remove("is-active", "is-entering", "is-leaving");
+    slideEl.style.animation = "none";
+    slideEl.style.display = "none";
+}
+
+function showSlide(slideId) {
+    const slides = [dom.currentSlide, dom.forecast1Slide, dom.forecast2Slide];
     const el = document.getElementById(slideId);
+
+    slides.forEach(slide => {
+        if (slide !== el) {
+            resetSlideState(slide);
+        }
+    });
+
     if (el) {
+        el.classList.remove("is-active", "is-entering", "is-leaving");
+        el.style.animation = "none";
         el.style.display = "block";
-        el.style.animation = "mainPresentationSlideIn 500ms ease-in-out";
+        void el.offsetWidth;
+        el.classList.add("is-active", "is-entering");
+
+        window.setTimeout(() => {
+            if (el.classList.contains("is-active")) {
+                el.classList.remove("is-entering");
+            }
+        }, 1200);
     }
 }
 
 function hideSlide(slideId) {
     const el = document.getElementById(slideId);
-    if (el) {
-        el.style.animation = "mainPresentationSlideOut 500ms ease-in-out forwards";
-    }
+    if (!el) return Promise.resolve();
+
+    el.classList.remove("is-entering");
+    el.classList.add("is-leaving");
+
+    return new Promise(resolve => {
+        window.setTimeout(() => {
+            resetSlideState(el);
+            resolve();
+        }, SLIDE_EXIT_DURATION);
+    });
 }
 
 function updateSlideInfo(locationName, slideLabel, totalDuration) {
@@ -232,8 +287,6 @@ export async function runRegionalPlayback(regions, callback) {
 
         await initRegionalRadar(region.mapCenter, region.zoomLevel);
 
-        const totalDuration = SLIDE_DURATION * 3;
-
         const slides = [
             { id: "current-regional", label: "Current Observations" },
             { id: "forecast1-regional", label: forecast1Label },
@@ -245,11 +298,10 @@ export async function runRegionalPlayback(regions, callback) {
             showSlide(slide.id);
 
             await new Promise(resolve => {
-                setTimeout(() => {
-                    hideSlide(slide.id);
-                    setTimeout(resolve, 500);
-                }, SLIDE_DURATION - 500);
+                window.setTimeout(resolve, SLIDE_DURATION - SLIDE_EXIT_DURATION);
             });
+
+            await hideSlide(slide.id);
         }
     }
 
