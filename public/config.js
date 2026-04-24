@@ -105,16 +105,16 @@ export const locationConfig = {
     { playlist: "secondary", index: 0 }, // plays the first set of secondary locations
     //  { playlist: "primary", index: 1 }, // plays the second primary location found in localLocations, if it exists. if not, ignores and moves on to the next item in the playlist.
     //  { playlist: "secondary", index: 1 }, // plays the second set of secondary locations, if it exists. if not, ignores and moves on to the next item in the playlist.
-    { playlist: "bumper", bumperId: "regionalBumper", index: 0 }, // put our bumper graphic to open our regional segment.
-    { playlist: "regional", regionId: "Pacific", index: 0 }, // plays the regional playlist for the pacific location set as defined in regionalLocations.
-    { playlist: "regional", regionId: "Prairies", index: 0 },
-    { playlist: "regional", regionId: "Central", index: 0 },
-    { playlist: "regional", regionId: "Atlantic", index: 0 },
-    { playlist: "bumper", bumperId: "USARegionalBumper", index: 0 }, // put our bumper graphic to open our US regional segment.
-    { playlist: "regional", regionId: "Northeast", index: 0 }, // plays the regional playlist for the northeast location set as defined in usaLocations.
-    { playlist: "regional", regionId: "Midwest", index: 0 },
-    { playlist: "regional", regionId: "South", index: 0 },
-    { playlist: "regional", regionId: "West", index: 0 },
+    { playlist: "bumper", bumperId: "regionalBumper", index: 0 }, // put our bumper graphic to open our national segment.
+    { playlist: "national", regionId: "Pacific", index: 0 }, // plays the national playlist for the pacific location set as defined in regionalLocations.
+    { playlist: "national", regionId: "Prairies", index: 0 },
+    { playlist: "national", regionId: "Central", index: 0 },
+    { playlist: "national", regionId: "Atlantic", index: 0 },
+    { playlist: "bumper", bumperId: "USARegionalBumper", index: 0 }, // put our bumper graphic to open our US national segment.
+    { playlist: "national", regionId: "Northeast", index: 0 }, // plays the national playlist for the northeast location set as defined in usaLocations.
+    { playlist: "national", regionId: "Midwest", index: 0 },
+    { playlist: "national", regionId: "South", index: 0 },
+    { playlist: "national", regionId: "West", index: 0 },
     { playlist: "bumper", bumperId: "stationID", index: 0 }, // station ID graphic indicates a new cycle of the program.
   ],
 
@@ -187,7 +187,7 @@ export const locationConfig = {
     },
   },
 
-  regionalLocations: { // 12 cities each. sort by province, then by population. these are used for the regional weather slides showed on main.
+  regionalLocations: { // 12 cities each. sort by province, then by population. these are used for the national weather slides showed on main.
     "regions": {
       "Pacific": {
       "mapCenter": [50.5000, -124.0000], 
@@ -402,7 +402,7 @@ export const displayUnits = {
 }
 
 export const bumperBackgroundsRandom = {
-  "regional": [
+  "national": [
     {
       name: "Del Rosa Intersection",
       subtitle: "Manila, Philippines",
@@ -550,4 +550,4 @@ export const holidayMapping = {
 
 
 
-export const versionID = '26.04.22';
+export const versionID = '26.04.24';

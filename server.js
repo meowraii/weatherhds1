@@ -228,7 +228,7 @@ async function loadWxData(postalKey, geocode, locType) {
     return cache.get(cacheKey)
   }
 
-  if (locType === "secondary" || locType === "regional") {
+  if (locType === "secondary" || locType === "national") {
     const primaryHit = cache.get(`${baseKey}:primary`) || cache.get(`${baseKey}:ldl`);
     if (primaryHit) {
       console.log(logTheFrickinTime, `Serving ${locType} from primary superset cache for ${postalKey}`)
@@ -273,7 +273,7 @@ async function loadWxData(postalKey, geocode, locType) {
       data = { ...aggData, ...aggDataTwo, pollenData };
     }
 
-    if (locType === "secondary" || locType === "regional") {
+    if (locType === "secondary" || locType === "national") {
       const secondaryLocationFetch = await fetch(
         `https://api.weather.com/v3/aggcommon/${minorAggCommon}?postalKey=${postalKey}&language=${systemLocale}&units=${units}&format=json&apiKey=${twcApiKey}`,
         { method: 'GET', headers: headers }

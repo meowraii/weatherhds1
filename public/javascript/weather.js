@@ -89,7 +89,7 @@ export async function appendDatatoMain(locale, locType) {
 
             switch (locType) {
 
-                case "regional":
+                case "national":
                     buildCurrentConditions()
                     break;
                 case "secondary":

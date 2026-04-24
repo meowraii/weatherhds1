@@ -5,7 +5,7 @@ const domElements = {
     viewport: document.getElementsByClassName("view")[0],
     mainSlides: document.getElementsByClassName("main-slides")[0],
     slidesBlock: document.getElementsByClassName("slides-block")[0],
-    regionalSlides: document.getElementsByClassName("regional-slides")[0],
+    regionalSlides: document.getElementsByClassName("national-slides")[0],
     bumperSlides: document.getElementsByClassName("bumper-slides")[0],
     cityTicker: document.getElementsByClassName("cityticker")[0],
     contentArea: document.getElementsByClassName("content-area")[0],

@@ -2,7 +2,7 @@ import { config, locationConfig, displayUnits, serverConfig, weatherIcons } from
 import { requestWxData } from "./data.js";
 import { RadarMap } from "./radar.js";
 
-const log = () => `[regional.js] | ${new Date().toLocaleString()} |`;
+const log = () => `[national.js] | ${new Date().toLocaleString()} |`;
 const iconDir = config.staticIcons ? "static" : "animated";
 const units = displayUnits[serverConfig.units] || displayUnits["m"];
 
@@ -10,15 +10,15 @@ const SLIDE_DURATION = 12000;
 const SLIDE_EXIT_DURATION = 320;
 
 const dom = {
-    regionalSlides: document.querySelector(".regional-slides"),
+    regionalSlides: document.querySelector(".national-slides"),
     mainSlides: document.querySelector(".main-slides"),
     bumperSlides: document.querySelector(".bumper-slides"),
-    radarContainer: document.getElementById("regional-radar-map"),
-    currentSlide: document.getElementById("current-regional"),
-    forecast1Slide: document.getElementById("forecast1-regional"),
-    forecast2Slide: document.getElementById("forecast2-regional"),
-    radarTimeLabel: document.querySelector(".left-container-radar .regional-current-labels .regional-current-label:last-child"),
-    radarRegionLabel: document.querySelector(".left-container-radar .regional-current-labels .regional-current-label:first-child"),
+    radarContainer: document.getElementById("national-radar-map"),
+    currentSlide: document.getElementById("current-national"),
+    forecast1Slide: document.getElementById("forecast1-national"),
+    forecast2Slide: document.getElementById("forecast2-national"),
+    radarTimeLabel: document.querySelector(".left-container-radar .national-current-labels .national-current-label:last-child"),
+    radarRegionLabel: document.querySelector(".left-container-radar .national-current-labels .national-current-label:first-child"),
     slideInfoIcon: document.getElementById("slide-info-icon"),
     slideInfoName: document.getElementById("slide-info-name"),
     slideProgressBar: document.getElementById("slide-progress-bar"),
@@ -44,7 +44,7 @@ function getAllRegions() {
 
 async function fetchRegionData(locations) {
     const results = await Promise.allSettled(
-        locations.map(loc => requestWxData(loc, "regional"))
+        locations.map(loc => requestWxData(loc, "national"))
     );
     return results.map((r, i) => ({
         location: locations[i],
@@ -54,27 +54,27 @@ async function fetchRegionData(locations) {
 
 function buildCurrentCard(locationName, wxData) {
     const card = document.createElement("div");
-    card.className = "class-regional-location-slimcard";
+    card.className = "class-national-location-slimcard";
 
     const current = wxData?.weather?.["v3-wx-observations-current"];
 
     const name = document.createElement("div");
-    name.className = "regional-location-name";
+    name.className = "national-location-name";
     name.textContent = locationName.split(",")[0];
     card.appendChild(name);
 
     const temp = document.createElement("div");
-    temp.className = "regional-location-temp";
+    temp.className = "national-location-temp";
     temp.textContent = current ? `${current.temperature ?? "--"}${units.endingTemp}` : `--${units.endingTemp}`;
     card.appendChild(temp);
 
     const cond = document.createElement("div");
-    cond.className = "regional-location-condition";
+    cond.className = "national-location-condition";
     cond.textContent = current?.wxPhraseShort ?? "";
     card.appendChild(cond);
 
     const icon = document.createElement("img");
-    icon.className = "regional-location-icon";
+    icon.className = "national-location-icon";
     icon.src = `/graphics/${iconDir}/${current ? iconPath(current.iconCode, current.dayorNight) : "not-available.svg"}`;
     card.appendChild(icon);
 
@@ -83,24 +83,24 @@ function buildCurrentCard(locationName, wxData) {
 
 function buildForecastCard(locationName, wxData, dayIndex) {
     const card = document.createElement("div");
-    card.className = "class-regional-location-slimcard";
+    card.className = "class-national-location-slimcard";
 
     const forecast = wxData?.weather?.["v3-wx-forecast-daily-3day"] ?? wxData?.weather?.["v3-wx-forecast-daily-7day"] ?? null;
     const dp = forecast?.daypart?.[0];
 
     const name = document.createElement("div");
-    name.className = "regional-location-name";
+    name.className = "national-location-name";
     name.textContent = locationName.split(",")[0];
     card.appendChild(name);
 
     const high = document.createElement("div");
-    high.className = "regional-location-temp";
+    high.className = "national-location-temp";
     high.textContent = forecast ? `${forecast.calendarDayTemperatureMax?.[dayIndex] ?? "--"}°` : "--°";
     high.style.color = "var(--textColourTempHigh)";
     card.appendChild(high);
 
     const low = document.createElement("div");
-    low.className = "regional-location-temp";
+    low.className = "national-location-temp";
     low.style.color = "var(--textColourTempLow)";
     low.textContent = forecast ? `${forecast.calendarDayTemperatureMin?.[dayIndex] ?? "--"}°` : "--°";
     card.appendChild(low);
@@ -112,12 +112,12 @@ function buildForecastCard(locationName, wxData, dayIndex) {
     const dn = dp?.dayOrNight?.[dpDay] ?? dp?.dayOrNight?.[dpNight] ?? "D";
 
     const cond = document.createElement("div");
-    cond.className = "regional-location-condition";
+    cond.className = "national-location-condition";
     cond.textContent = condText;
     card.appendChild(cond);
 
     const icon = document.createElement("img");
-    icon.className = "regional-location-icon";
+    icon.className = "national-location-icon";
     icon.src = `/graphics/${iconDir}/${ic != null ? iconPath(ic, dn) : "not-available.svg"}`;
     card.appendChild(icon);
 
@@ -125,34 +125,34 @@ function buildForecastCard(locationName, wxData, dayIndex) {
 }
 
 function decorateSlideMotion(slideEl) {
-    const labels = slideEl.querySelectorAll(".regional-current-label");
+    const labels = slideEl.querySelectorAll(".national-current-label");
     const totalLabels = labels.length;
 
     labels.forEach((label, index) => {
-        label.style.setProperty("--regional-label-order", String(index));
-        label.style.setProperty("--regional-label-exit-order", String(totalLabels - index - 1));
+        label.style.setProperty("--national-label-order", String(index));
+        label.style.setProperty("--national-label-exit-order", String(totalLabels - index - 1));
     });
 
-    const cards = slideEl.querySelectorAll(".class-regional-location-slimcard");
+    const cards = slideEl.querySelectorAll(".class-national-location-slimcard");
     const totalCards = cards.length;
 
     cards.forEach((card, cardIndex) => {
-        card.style.setProperty("--regional-card-order", String(cardIndex));
-        card.style.setProperty("--regional-card-exit-order", String(totalCards - cardIndex - 1));
+        card.style.setProperty("--national-card-order", String(cardIndex));
+        card.style.setProperty("--national-card-exit-order", String(totalCards - cardIndex - 1));
 
         Array.from(card.children).forEach((element, elementIndex) => {
-            element.style.setProperty("--regional-element-order", String(elementIndex));
-            element.style.setProperty("--regional-element-exit-order", String(card.children.length - elementIndex - 1));
+            element.style.setProperty("--national-element-order", String(elementIndex));
+            element.style.setProperty("--national-element-exit-order", String(card.children.length - elementIndex - 1));
         });
     });
 }
 
 function populateSlide(slideEl, regionName, label, locationData, buildCardFn) {
-    const labels = slideEl.querySelectorAll(".regional-current-label");
+    const labels = slideEl.querySelectorAll(".national-current-label");
     if (labels[0]) labels[0].textContent = regionName;
     if (labels[1]) labels[1].textContent = label;
 
-    const list = slideEl.querySelector(".regional-locations-list");
+    const list = slideEl.querySelector(".national-locations-list");
     list.innerHTML = "";
 
     for (const { location, data } of locationData) {
@@ -162,8 +162,8 @@ function populateSlide(slideEl, regionName, label, locationData, buildCardFn) {
     decorateSlideMotion(slideEl);
 }
 
-const regionalRadar = new RadarMap("regional-radar-map", {
-    timeElement: document.querySelector(".left-container-radar .regional-current-labels .regional-current-label:last-child"),
+const regionalRadar = new RadarMap("national-radar-map", {
+    timeElement: document.querySelector(".left-container-radar .national-current-labels .national-current-label:last-child"),
     product: "satrad",
     maxLoops: Infinity,
 });
@@ -244,7 +244,7 @@ export async function runRegionalPlayback(regions, callback) {
         regions = getAllRegions();
     }
     if (regions.length === 0) {
-        console.warn(log(), "No regional locations configured");
+        console.warn(log(), "No national locations configured");
         callback?.();
         return;
     }
@@ -256,7 +256,7 @@ export async function runRegionalPlayback(regions, callback) {
     if (dom.radarRegionLabel) dom.radarRegionLabel.textContent = "Radar/Satellite";
 
     for (const region of regions) {
-        console.log(log(), `Regional playback: ${region.name} (${region.country})`);
+        console.log(log(), `National playback: ${region.name} (${region.country})`);
 
         const locationData = await fetchRegionData(region.locations);
 
@@ -288,9 +288,9 @@ export async function runRegionalPlayback(regions, callback) {
         await initRegionalRadar(region.mapCenter, region.zoomLevel);
 
         const slides = [
-            { id: "current-regional", label: "Current Observations" },
-            { id: "forecast1-regional", label: forecast1Label },
-            { id: "forecast2-regional", label: forecast2Label },
+            { id: "current-national", label: "Current Observations" },
+            { id: "forecast1-national", label: forecast1Label },
+            { id: "forecast2-national", label: forecast2Label },
         ];
 
         for (const slide of slides) {

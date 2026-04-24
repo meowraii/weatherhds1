@@ -41,7 +41,7 @@ export async function requestWxData(location, locType) {
             postalKey: wxDataLoc.location.postalKey[0],
           },
           units: serverConfig.units,
-          hdsLocType: "regional",
+          hdsLocType: "national",
         },
         weather: null,
       };

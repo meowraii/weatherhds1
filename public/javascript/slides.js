@@ -1,7 +1,7 @@
 import { config, locationConfig, versionID, serverConfig, bumperBackgroundsRandom } from "../config.js";
 import { appendDatatoMain, animateIntraday, daypartNames } from "./weather.js";
 import { serverHealth } from "./data.js";
-import { runRegionalPlayback } from "./regional.js";
+import { runRegionalPlayback } from "./national.js";
 import { resizeRadar } from "./radar.js";
 
 const playlistSettings = {
@@ -147,7 +147,7 @@ const logTheFrickinTime = `[slides.js] | ${new Date().toLocaleString()} |`;
 
 const domCache = {
     mainSlides: document.getElementsByClassName('main-slides')[0],
-    regionalSlides: document.getElementsByClassName('regional-slides')[0],
+    regionalSlides: document.getElementsByClassName('national-slides')[0],
     bumperSlides: document.getElementsByClassName('bumper-slides')[0],
     radarDiv: document.getElementById('radar'),
     stationIdHdsver: document.getElementById('station-id-hdsver'),
@@ -164,9 +164,9 @@ const domCache = {
     currentExtraProducts: Array.from(document.getElementsByClassName('main-current-extraproducts')),
     forecastDays: Array.from(document.getElementsByClassName('main-forecast-day')),
     mainCurrentTemp: document.getElementById('main-current-temp'),
-    regionalBumperHeader: document.getElementById('regional-bumper-text'),
+    regionalBumperHeader: document.getElementById('national-bumper-text'),
     regionalLocationHeader: document.getElementById('upnext-in-this-segment'),
-    regionalBumperSubtext: document.getElementById('regional-bumper-subtext'),
+    regionalBumperSubtext: document.getElementById('national-bumper-subtext'),
     upNextRegionalText: document.getElementById('upnext-reg-loc1'),
     upNextRegionalText1: document.getElementById('upnext-reg-loc2'),
     upNextRegionalText2: document.getElementById('upnext-reg-loc3'),
@@ -217,8 +217,8 @@ let slideNearEnd, slideEnd;
 
 const bumperDefs = {
     stationID:         { htmlID: "stationid", title: "Welcome!",            duration: 10000, isRegional: false },
-    regionalBumper:    { htmlID: "regional",  title: "Regional Weather",    duration: 12000, isRegional: true  },
-    USARegionalBumper: { htmlID: "regional",  title: "US Regional Weather", duration: 12000, isRegional: true  },
+    regionalBumper:    { htmlID: "national",  title: "National Weather",    duration: 12000, isRegional: true  },
+    USARegionalBumper: { htmlID: "national",  title: "US National Weather", duration: 12000, isRegional: true  },
 };
 
 function resolveRegion(regionId) {
@@ -257,7 +257,7 @@ function buildQueue() {
         }
         else if (step.playlist === "bumper") {
             const upcomingRegions = [];
-            for (let j = i + 1; j < steps.length && steps[j].playlist === "regional"; j++) {
+            for (let j = i + 1; j < steps.length && steps[j].playlist === "national"; j++) {
                 upcomingRegions.push(steps[j].regionId);
             }
             queue.push({
@@ -267,9 +267,9 @@ function buildQueue() {
                 upcomingRegions,
             });
         }
-        else if (step.playlist === "regional") {
+        else if (step.playlist === "national") {
             const regionIds = [step.regionId];
-            while (i + 1 < steps.length && steps[i + 1].playlist === "regional") {
+            while (i + 1 < steps.length && steps[i + 1].playlist === "national") {
                 i++;
                 regionIds.push(steps[i].regionId);
             }
@@ -277,8 +277,8 @@ function buildQueue() {
             if (regions.length === 0) continue;
 
             queue.push({
-                type: "regional",
-                displayName: "Regional Conditions",
+                type: "national",
+                displayName: "National Conditions",
                 regions,
             });
         }
@@ -318,7 +318,7 @@ function runPresentation() {
             case "bumper":
                 runBumperSlide(item.bumperId, item.upcomingRegions, next);
                 break;
-            case "regional":
+            case "national":
                 runRegionalPlayback(item.regions, next);
                 break;
         }
@@ -730,13 +730,13 @@ function runBumperSlide(bumperId, upcomingRegions, callback) {
         const marquee = domCache.regionalBumperSubtext;
         marquee.innerText = ` ${config.networkName} `.repeat(50);
         $(document).ready(function(){
-            $('#regional-bumper-subtext').marquee({
+            $('#national-bumper-subtext').marquee({
                 duration: 9000, gap: 360, delayBeforeStart: 0,
                 direction: 'left', duplicated: true, pauseOnHover: true,
             });
         });
 
-        const randomBackgrounds = bumperBackgroundsRandom.regional;
+        const randomBackgrounds = bumperBackgroundsRandom.national;
         if (randomBackgrounds?.length) {
             let bgIndex = Math.floor(Math.random() * randomBackgrounds.length);
             let selectedBG = randomBackgrounds[bgIndex];
@@ -775,7 +775,7 @@ function runBumperSlide(bumperId, upcomingRegions, callback) {
             });
         }, def.duration - 1000);
         setTimeout(() => {
-            $(document).ready(function(){ $('#regional-bumper-subtext').marquee('destroy'); });
+            $(document).ready(function(){ $('#national-bumper-subtext').marquee('destroy'); });
         }, def.duration);
     }
 

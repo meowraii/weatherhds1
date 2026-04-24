@@ -1,5 +1,6 @@
 :root {
-	--fontSizeRegionalPanel: clamp(24pt, 1.16vw, 27pt);
+	--fontSizeRegionalPanel: clamp(24
+	pt, 1.16vw, 27pt);
 	--fontSizeRegionalPanelTitle: clamp(24pt, 0.86vw, 21pt);
 	--fontSizeRegionalPanelMeta: clamp(22pt, 0.78vw, 18pt);
 	--regionalPanelGap: clamp(10px, 0.7vw, 20px);
@@ -13,7 +14,7 @@
 	--regionalPanelHighlight: radial-gradient(circle at top left, rgba(162, 210, 255, 0.18), transparent 38%);
 }
 
-.regional-slides {
+.national-slides {
 	position: relative;
 	display: none;
 	width: 100%;
@@ -25,7 +26,7 @@
 	isolation: isolate;
 }
 
-.regional-slide {
+.national-slide {
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -38,9 +39,9 @@
 	z-index: 1;
 }
 
-#current-regional,
-#forecast1-regional,
-#forecast2-regional {
+#current-national,
+#forecast1-national,
+#forecast2-national {
 	display: none;
 }
 
@@ -87,7 +88,7 @@
 	justify-content: stretch;
 }
 
-.regional-current-labels {
+.national-current-labels {
 	position: relative;
 	z-index: 1;
 	display: grid;
@@ -106,7 +107,7 @@
 	box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.regional-current-label {
+.national-current-label {
 	min-width: 0;
 	line-height: 1;
 	white-space: nowrap;
@@ -114,14 +115,14 @@
 	text-overflow: ellipsis;
 }
 
-.regional-current-label:first-child {
+.national-current-label:first-child {
 	color: #c7e6ff;
 	text-transform: uppercase;
 	font-size: var(--fontSizeRegionalPanelTitle);
 	font-weight: 600;
 }
 
-.regional-current-label:last-child {
+.national-current-label:last-child {
 	justify-self: end;
 	font-weight: 400;
 	opacity: 0.72;
@@ -131,7 +132,7 @@
 	text-align: right;
 }
 
-#regional-radar-map {
+#national-radar-map {
 	position: relative;
 	z-index: 1;
 	flex: 1 1 auto;
@@ -145,13 +146,13 @@
 	background: rgba(8, 12, 18, 0.28);
 }
 
-#regional-radar-map .mapboxgl-canvas,
-#regional-radar-map .mapboxgl-canvas-container,
-#regional-radar-map .mapboxgl-map {
+#national-radar-map .mapboxgl-canvas,
+#national-radar-map .mapboxgl-canvas-container,
+#national-radar-map .mapboxgl-map {
 	border-radius: inherit;
 }
 
-.regional-locations-list {
+.national-locations-list {
 	position: relative;
 	z-index: 1;
 	display: flex;
@@ -163,7 +164,7 @@
 	padding: var(--regionalPanelPadding);
 }
 
-.class-regional-location-slimcard {
+.class-national-location-slimcard {
 	position: relative;
 	display: flex;
 	align-items: center;
@@ -180,7 +181,7 @@
 	transform: translateZ(0);
 }
 
-.class-regional-location-slimcard::before {
+.class-national-location-slimcard::before {
 	content: "";
 	position: absolute;
 	left: 0;
@@ -192,11 +193,11 @@
 	box-shadow: 0 0 14px rgba(162, 210, 255, 0.28);
 }
 
-.class-regional-location-slimcard:nth-child(even) {
+.class-national-location-slimcard:nth-child(even) {
 	background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025));
 }
 
-.regional-location-name {
+.national-location-name {
 	flex: 1.2 1 0;
 	min-width: 0;
 	font-size: var(--fontSizeRegionalPanel);
@@ -208,7 +209,7 @@
 	letter-spacing: 0.01em;
 }
 
-.regional-location-temp {
+.national-location-temp {
 	flex: 0 0 clamp(80px, 4.6vw, 110px);
 	font-size: var(--fontSizeRegionalPanel);
 	font-weight: 500;
@@ -219,7 +220,7 @@
 	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
 }
 
-.regional-location-condition {
+.national-location-condition {
 	flex: 1 1 0;
 	min-width: 0;
 	font-size: clamp(18pt, 0.98vw, 22pt);
@@ -231,7 +232,7 @@
 	text-align: right;
 }
 
-.regional-location-icon {
+.national-location-icon {
 	flex: 0 0 auto;
 	width: clamp(42px, 2.35vw, 54px);
 	height: clamp(42px, 2.35vw, 54px);
@@ -239,45 +240,45 @@
 	filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.22));
 }
 
-.regional-slide .regional-current-label,
-.regional-slide .class-regional-location-slimcard,
-.regional-slide .class-regional-location-slimcard > * {
+.national-slide .national-current-label,
+.national-slide .class-national-location-slimcard,
+.national-slide .class-national-location-slimcard > * {
 	will-change: opacity, transform;
 }
 
-.regional-slide.is-entering .regional-current-label {
+.national-slide.is-entering .national-current-label {
 	opacity: 0;
 	animation: regionalElementCascadeIn 360ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-	animation-delay: calc(30ms + (var(--regional-label-order, 0) * 70ms));
+	animation-delay: calc(30ms + (var(--national-label-order, 0) * 70ms));
 }
 
-.regional-slide.is-entering .class-regional-location-slimcard {
+.national-slide.is-entering .class-national-location-slimcard {
 	opacity: 0;
 	transform: translate(-22px, -14px) scale(0.985);
 	animation: regionalCardIn 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-	animation-delay: calc(110ms + (var(--regional-card-order, 0) * 90ms));
+	animation-delay: calc(110ms + (var(--national-card-order, 0) * 90ms));
 }
 
-.regional-slide.is-entering .class-regional-location-slimcard > * {
+.national-slide.is-entering .class-national-location-slimcard > * {
 	opacity: 0;
 	transform: translate(-12px, -10px);
 	animation: regionalElementCascadeIn 340ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-	animation-delay: calc(190ms + (var(--regional-card-order, 0) * 90ms) + (var(--regional-element-order, 0) * 48ms));
+	animation-delay: calc(190ms + (var(--national-card-order, 0) * 90ms) + (var(--national-element-order, 0) * 48ms));
 }
 
-.regional-slide.is-leaving .regional-current-label {
+.national-slide.is-leaving .national-current-label {
 	animation: regionalElementCascadeOut 180ms ease forwards;
-	animation-delay: calc(var(--regional-label-exit-order, 0) * 24ms);
+	animation-delay: calc(var(--national-label-exit-order, 0) * 24ms);
 }
 
-.regional-slide.is-leaving .class-regional-location-slimcard {
+.national-slide.is-leaving .class-national-location-slimcard {
 	animation: regionalCardOut 220ms ease forwards;
-	animation-delay: calc(var(--regional-card-exit-order, 0) * 26ms);
+	animation-delay: calc(var(--national-card-exit-order, 0) * 26ms);
 }
 
-.regional-slide.is-leaving .class-regional-location-slimcard > * {
+.national-slide.is-leaving .class-national-location-slimcard > * {
 	animation: regionalElementCascadeOut 180ms ease forwards;
-	animation-delay: calc((var(--regional-card-exit-order, 0) * 26ms) + (var(--regional-element-exit-order, 0) * 18ms));
+	animation-delay: calc((var(--national-card-exit-order, 0) * 26ms) + (var(--national-element-exit-order, 0) * 18ms));
 }
 
 @media (max-width: 1450px) {
@@ -288,17 +289,17 @@
 		--regionalPanelGap: 18px;
 	}
 
-	.class-regional-location-slimcard {
+	.class-national-location-slimcard {
 		padding-right: 20px;
 	}
 
-	.regional-location-temp {
+	.national-location-temp {
 		flex-basis: 90px;
 	}
 	}
 
 @media (max-width: 1080px) {
-	.regional-slides {
+	.national-slides {
 		flex-direction: column;
 	}
 
@@ -308,7 +309,7 @@
 		max-width: none;
 	}
 
-	.regional-slide {
+	.national-slide {
 		position: relative;
 		inset: auto;
 		width: 100%;
@@ -316,7 +317,7 @@
 		margin-top: var(--regionalPanelGap);
 	}
 
-	.class-regional-location-slimcard {
+	.class-national-location-slimcard {
 		gap: 12px;
 	}
 	}
