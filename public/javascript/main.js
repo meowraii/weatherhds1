@@ -10,8 +10,9 @@ const domElements = {
     cityTicker: document.getElementsByClassName("cityticker")[0],
     contentArea: document.getElementsByClassName("content-area")[0],
     wallpaper: document.getElementsByClassName("wallpaper")[0],
-    ldl: document.getElementsByClassName("ldl-presentation")[0],
     ldlContainer: document.getElementsByClassName("ldl-weather")[0],
+    ldlBrandingArea: document.getElementsByClassName("ldl-branding-area")[0],
+    ldlMainContent: document.getElementsByClassName("ldl-main-content")[0],
     date: document.getElementById("date"),
     time: document.getElementById("time"),
     i2SidebarBuffer: document.getElementsByClassName("sidebar")[0],
@@ -21,7 +22,7 @@ const domElements = {
     marqueeTicker: document.getElementById('marquee-ticker')
 };
 
-const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, ldl, ldlContainer, contentArea, cityTicker, slidesBlock } = domElements;
+const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, ldlContainer, ldlBrandingArea, ldlMainContent, contentArea, cityTicker, slidesBlock } = domElements;
 const date = domElements.date;
 const time = domElements.time;
 
@@ -217,14 +218,20 @@ function presentationType() {
     }
 
     if (config.presentationConfig.ldl != true) {
-        ldl.style.display = `none`;
+        ldlMainContent.style.display = `none`;
+        ldlBrandingArea.style.borderRight = `none`;
+        ldlBrandingArea.style.boxShadow = `none`;
     }
     if (config.presentationConfig.ldlBack === false) {
+        ldlMainContent.style.display = `none`;
         ldlContainer.style.borderLeft = `none`
         ldlContainer.style.borderRight = `none`
         ldlContainer.style.borderTop = `none`
         ldlContainer.style.backgroundColor = `transparent`
         ldlContainer.style.backdropFilter = `none`
+        ldlBrandingArea.style.background = `none`
+        ldlBrandingArea.style.borderRight = `none`;
+        ldlBrandingArea.style.boxShadow = `none`;
     }
 }
 

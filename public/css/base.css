@@ -51,7 +51,7 @@
   --text-xl: 46pt;
   --text-2xl: 48pt;
   --text-3xl: 72pt;
-  --sidebar-rail-width: max(650px, 2vw);
+  --sidebar-rail-width: max(568px, 2vw);
 
   /* Gradients */
   --gradient-base: linear-gradient(var(--color-bg), var(--color-surface));

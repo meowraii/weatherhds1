@@ -44,7 +44,6 @@ export let config = {
     "videoBackgrounds": true, // enables or disables the video backgrounds on the current conditions slide.
     "currentConditionsGradient": true, // current conditions gradient based on current time relative to sunrise or sunset.
     "staticIcons": false, // would you like icons that dont move?
-    "ldlClock": true, // when in LDL only mode, choose if you want to show the clock and the network logo on the LDL.
 
     "haze": { // connect and display a screen bug of a haze playout instance on the sidebar.
       "enabled": true,
@@ -62,7 +61,7 @@ export let config = {
             "hourInterval": null, // or you can set it to start every x hours, so if this is set to 2, it will start a blackout at 12:00, 2:00, 4:00, and so on.
             "quarterDayInterval": null, // or you can set it to start every x quarter days (6 hours), so if this is set to 1, it will start a blackout at 12:00, 6:00, 12:00, 6:00, and so on.
             "dayInterval": null, // or you can set it to start every x days, so if this is set to 1, it will start a blackout at 12:00 every day, and so on.
-            "duration": 4,
+            "duration": 2,
           }
         ]
       }

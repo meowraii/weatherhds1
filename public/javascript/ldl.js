@@ -4,10 +4,10 @@ import { formatTime } from './weather.js';
 
 const ldlPresentationSlides = {
     "0": { htmlID: "ldl-current",        durationMS: 15000, label: 'Now' },
-    "1": { htmlID: "ldl-hourly",         durationMS: 16000, label: 'The Next 6 hours' },
-    "2": { htmlID: "ldl-period-summary", durationMS: 12000, label: 'For Today' },
-    "3": { htmlID: "ldl-shortterm",      durationMS: 36000, label: 'The Next 48 hours' },
-    "4": { htmlID: "ldl-daily",          durationMS: 16000, label: 'The Week Ahead' },
+    "1": { htmlID: "ldl-hourly",         durationMS: 16000, label: 'Next 6 hours' },
+    "2": { htmlID: "ldl-period-summary", durationMS: 12000, label: 'Temp. Summary' },
+    "3": { htmlID: "ldl-shortterm",      durationMS: 36000, label: 'Next 48 hours' },
+    "4": { htmlID: "ldl-daily",          durationMS: 16000, label: 'Week Ahead' },
     "5": { htmlID: "ldl-riseset",        durationMS: 16000, label: '' },
 }
 
