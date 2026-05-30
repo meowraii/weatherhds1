@@ -74,8 +74,8 @@ export let config = {
         "ldlBack": true,
         "backgrounds": true,
         "repeatMain": true,
-        "squareLogo": true,
         "bannerLogo": true,
+        "providerLogo": true,
         "autorunOnStartup": true // mainly for when i make new slides lol
       },
       

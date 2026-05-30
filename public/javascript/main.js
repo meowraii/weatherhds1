@@ -13,6 +13,7 @@ const domElements = {
     ldlContainer: document.getElementsByClassName("ldl-weather")[0],
     ldlBrandingArea: document.getElementsByClassName("ldl-branding-area")[0],
     ldlMainContent: document.getElementsByClassName("ldl-main-content")[0],
+    ldlProviderLogo: document.getElementsByClassName("provider-logo-container")[0],
     date: document.getElementById("date"),
     time: document.getElementById("time"),
     i2SidebarBuffer: document.getElementsByClassName("sidebar")[0],
@@ -22,7 +23,7 @@ const domElements = {
     marqueeTicker: document.getElementById('marquee-ticker')
 };
 
-const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, ldlContainer, ldlBrandingArea, ldlMainContent, contentArea, cityTicker, slidesBlock } = domElements;
+const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, ldlContainer, ldlBrandingArea, ldlMainContent, ldlProviderLogo, contentArea, cityTicker, slidesBlock } = domElements;
 const date = domElements.date;
 const time = domElements.time;
 
@@ -181,6 +182,7 @@ function presentationType() {
     const backgrounds = new URLSearchParams(window.location.search).get('backgrounds');
     const repeatMain = new URLSearchParams(window.location.search).get('repeatMain');
     const ldlBack = new URLSearchParams(window.location.search).get('ldlBack')
+    const providerLogo = new URLSearchParams(window.location.search).get('providerLogo')
 
     if (mainPres !== null) {
         const parsed = mainPres.toLowerCase() === 'true';
@@ -206,6 +208,15 @@ function presentationType() {
         config.presentationConfig.ldlBack = parsed;
     }
 
+    if (providerLogo !== null) {
+        const parsed = providerLogo.toLowerCase() === 'true';
+        config.presentationConfig.providerLogo = parsed;
+    }
+
+    if (config.presentationConfig.providerLogo != true) {
+        ldlProviderLogo.style.display = 'none';
+    }
+
     if (config.presentationConfig.main != true) {
         wallpaper.style.display = `none`
         mainSlides.style.display = `none`
@@ -221,17 +232,12 @@ function presentationType() {
         ldlMainContent.style.display = `none`;
         ldlBrandingArea.style.borderRight = `none`;
         ldlBrandingArea.style.boxShadow = `none`;
+        ldlBrandingArea.style.background = `none`;
     }
     if (config.presentationConfig.ldlBack === false) {
         ldlMainContent.style.display = `none`;
-        ldlContainer.style.borderLeft = `none`
-        ldlContainer.style.borderRight = `none`
-        ldlContainer.style.borderTop = `none`
-        ldlContainer.style.backgroundColor = `transparent`
-        ldlContainer.style.backdropFilter = `none`
-        ldlBrandingArea.style.background = `none`
-        ldlBrandingArea.style.borderRight = `none`;
-        ldlBrandingArea.style.boxShadow = `none`;
+        ldlContainer.style.display = `none`
+        ldlContainer.style.opacity = '0';
     }
 }
 
