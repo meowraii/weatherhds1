@@ -1,9 +1,46 @@
 // WeatherHDS system and presentation configuration.
 
+export let brand = {
+    "networkName": "METEOchannel",
+    "networkLogo": "/images/meteoch.png",
+    "providers": { // where we are carried
+        "Mist Weather Media": { // main sponsor
+            "providerLogo": "/images/providers/mistlogo2026site.webp",
+            "showOnLDLDur": 120, // how long to show the provider logo on the ldl in seconds. set to 0 to always show, and set to null to never show.
+            "channels": {
+              "sspwxr01": { "videoType": "hdtv", "label": "METEOchannel in HD" }, // shows a specific channel ID and label depending on the current videoType.
+              "sspwxr02": { "videoType": "vga", "label": "METEOchannel in SD" },
+            },
+            "extraText": { // throw this text either before or after the provider logo on the LDL.
+              "heading": null,
+              "tailing": "weather media",
+              "font": "Arial, sans-serif",
+              "style": "italic", // normal, italic, or oblique
+              "weight": "600", // normal is 400, bold is 700, you can also use numeric values from 100 to 900.
+              "size": "1em",
+              "shadow": "4px 5px 1px rgba(0, 0, 0, 0.45)" // text-shadow for the extra text, in CSS format. if null, no shadow will be applied.
+            }
+        },
+    }
+}
+
+export let clock = {
+    "24Hour": false, // 12 or 24 hour format for the clock.
+    "showSeconds": true, // whether or not to show seconds on the clock.
+    "rotateInterval": 0, // how often to cycle between timezones specified below, in seconds. set to 0 to disable cycling and just show the first timezone in the list.
+    "hideDuplicateZones": true, // if a timezone in the list has the same current time as the previous one, hide it to avoid redundancy. i.e, winnipeg and regina have the same timezone offset during standard time, so ignore winnipeg and move on to the next zone.
+    "zones": [
+      "system",
+      "America/Vancouver",
+      "America/Edmonton",
+      "America/Winnipeg",
+      "America/Toronto",
+      "America/Halifax",
+      "America/St_Johns"
+    ]
+}
+
 export let config = {
-    "networkName": "METEOChannel", // sets the network name.
-    "affiliateName": "Mist Streaming", // your affiliate.
-    "channelNumber": "/sspwxr", // channel id.
     "videoBackgrounds": true, // enables or disables the video backgrounds on the current conditions slide.
     "currentConditionsGradient": true, // current conditions gradient based on current time relative to sunrise or sunset.
     "staticIcons": false, // would you like icons that dont move?
@@ -12,6 +49,23 @@ export let config = {
     "haze": { // connect and display a screen bug of a haze playout instance on the sidebar.
       "enabled": true,
       "socketUrl": "http://172.16.1.31:8080" // URL of the haze playout socket.
+    },
+
+    "vocallocal": {
+      "enabled": true, // whether or not to use vocallocal to narrate conditions and forecasts.
+      "blackout": { // disable vocallocals during this timerange. useful for when you have an IntelliStar 2 and you dont want the AI to disrupt Jim Cantore's beautiful voiceovers.
+        "enabled": true,
+        "timing": [
+          {
+            "minuteInterval": 8, // start the blackout every x minutes. so if this is set to 8, it will start a blackout at 12:08, 12:16, 12:24, and so on.
+            "tenMinInterval": null, // or you can set it to start every x ten minutes, so if this is set to 3, it will start a blackout at 12:03, 12:13, 12:23, and so on.
+            "hourInterval": null, // or you can set it to start every x hours, so if this is set to 2, it will start a blackout at 12:00, 2:00, 4:00, and so on.
+            "quarterDayInterval": null, // or you can set it to start every x quarter days (6 hours), so if this is set to 1, it will start a blackout at 12:00, 6:00, 12:00, 6:00, and so on.
+            "dayInterval": null, // or you can set it to start every x days, so if this is set to 1, it will start a blackout at 12:00 every day, and so on.
+            "duration": 4,
+          }
+        ]
+      }
     },
     
     "presentationConfig": {
@@ -42,31 +96,7 @@ export let config = {
             "showBeforeProduct": "currentConditions", // which product to show the message before. options are the same as the products array above.
             "showAfterProduct": null, // which product to show the message after. options are the same as the products array above. if null, it will just show the message before the specified product and then continue with the normal ticker content.
             "scroll": true, // whether or not to scroll the message across the ticker. if false, it will just show the message in place of the normal ticker content for 15 seconds.
-            "displayInterval": 1 // show this message every x cycles of the city ticker. so if you have 3 products in the ticker and this message is set to show before dayOne, and the displayInterval is set to 2, then it will show this message before dayOne every 2 cycles of the ticker. so it would show before dayOne on the first cycle, then not show on the second cycle, then show again on the third cycle, and so on.
-          },
-          {
-            "messageHeader": "HELLO",
-            "messageBody": "I am the city ticker, I think. I show weather for different cities, I think. And also I scroll so like that is really cool. I am also a ripoff of the cityticker from Weatherscan, but I'm better because Weatherscan is dead and I'm not. I am also not running on a Pentium 4-powered space heater like Weatherscan. So that means I am better than Weatherscan. You can contact Raii at (639) 872 9088 for inquiries about the METEOchannel project. I am also very sorry for this message, I will go back to showing weather now.",
-            "showBeforeProduct": "",
-            "showAfterProduct": "currentConditions",
-            "scroll": true,
-            "displayInterval": 15 // lol
-          },
-          {
-            "messageHeader": "Weather Safety",
-            "messageBody": "Remember, when severe weather strikes, seek shelter immediately and stay tuned to your local weather station for updates. Don't forget to have a weather radio on hand, and make sure your emergency kit is stocked with essentials. Your safety is our top priority.",
-            "showBeforeProduct": "dayTwo",
-            "showAfterProduct": null,
-            "scroll": true,
-            "displayInterval": 2
-          },
-          {
-            "messageHeader": "Colour Coded Weather Alerts",
-            "messageBody": "Weather alerts have used to have one modifier associated with an event type: statement, watch, or warning. Now, a colour code is also added on top of that, where @textcolor{yellow}{Yellow} means that hazardous weather may cause damage, disruption, or health impacts, and that impacts are moderate, localized and/or short-term. @textcolor{orange}{Orange} indicates that hazardous weather is expected to cause damage, disruption, or health impacts, and that impacts are significant, widespread and/or long-term. @textcolor{red}{Red} signifies that extremely hazardous weather is expected to cause widespread damage, disruption, or health impacts, and that impacts are severe, widespread and/or long-term.", // messages support inline formatting: @textcolor{color}{text}, @textbf{text}, @textit{text}, @underline{text}
-            "showBeforeProduct": "",
-            "showAfterProduct": "dayOne",
-            "scroll": true,
-            "displayInterval": 5
+            "displayInterval": 2 // show this message every x cycles of the city ticker. so if you have 3 products in the ticker and this message is set to show before dayOne, and the displayInterval is set to 2, then it will show this message before dayOne every 2 cycles of the ticker. so it would show before dayOne on the first cycle, then not show on the second cycle, then show again on the third cycle, and so on.
           },
           {
             "messageHeader": "",
@@ -76,15 +106,7 @@ export let config = {
             "showBeforeProduct": "",
             "showAfterProduct": "",
             "scroll": true,
-            "displayInterval": 30 // this is basically never, just here as a template for adding new messages.
-          },
-          {
-            "messageHeader": "Help save Weatheradio Canada",
-            "messageBody": "Since March 16, 2026, Environment and Climate Change Canada has decommissioned Weatheradio Canada transmitters nationwide. This means that Canadians will lose access to instantaneous, reliable, and redundant critical weather alerts and information, especially those in remote or rural areas with limited internet access. To help save Weatheradio Canada, please sign e-petition E-7290 on the Parliament of Canada website, and share it with your friends and family. The more signatures it gets, the better chance we have of saving this vital service. Visit https://petitions.ourcommons.ca/en/Petition/Details?Petition=e-7290 to sign the petition and help save Weatheradio Canada.",
-            "showBeforeProduct": "",
-            "showAfterProduct": "dayOne",
-            "scroll": true,
-            "displayInterval": 5
+            "displayInterval": 30
           }
         ]
       },
@@ -105,8 +127,8 @@ export const locationConfig = {
     { playlist: "secondary", index: 0 }, // plays the first set of secondary locations
     //  { playlist: "primary", index: 1 }, // plays the second primary location found in localLocations, if it exists. if not, ignores and moves on to the next item in the playlist.
     //  { playlist: "secondary", index: 1 }, // plays the second set of secondary locations, if it exists. if not, ignores and moves on to the next item in the playlist.
-    { playlist: "bumper", bumperId: "regionalBumper", index: 0 }, // put our bumper graphic to open our national segment.
-    { playlist: "national", regionId: "Pacific", index: 0 }, // plays the national playlist for the pacific location set as defined in regionalLocations.
+    { playlist: "bumper", bumperId: "nationalBumper", index: 0 }, // put our bumper graphic to open our national segment.
+    { playlist: "national", regionId: "Pacific", index: 0 }, // plays the national playlist for the pacific location set as defined in nationalLocations.
     { playlist: "national", regionId: "Prairies", index: 0 },
     { playlist: "national", regionId: "Central", index: 0 },
     { playlist: "national", regionId: "Atlantic", index: 0 },
@@ -187,7 +209,7 @@ export const locationConfig = {
     },
   },
 
-  regionalLocations: { // 12 cities each. sort by province, then by population. these are used for the national weather slides showed on main.
+  nationalLocations: { // 12 cities each. sort by province, then by population. these are used for the national weather slides showed on main.
     "regions": {
       "Pacific": {
       "mapCenter": [50.5000, -124.0000], 
@@ -407,58 +429,57 @@ export const bumperBackgroundsRandom = {
       name: "Del Rosa Intersection",
       subtitle: "Manila, Philippines",
       author: "raii/SSPWXR",
-      url: "/images/regional_bg_images/3.webp"
+      url: "/images/national_bg_images/3.webp"
     },
     {
       name: "SaskTel Corporate Office",
       subtitle: "Saskatoon, SK",
       author: "raii/SSPWXR",
-      url: "/images/regional_bg_images/4.webp"
+      url: "/images/national_bg_images/4.webp"
     },
     {
       name: "Old City Hall",
       subtitle: "Toronto, ON",
       author: "Ali Cuhadaroglu, Pexels",
-      url: "/images/regional_bg_images/probably_toronto.webp"
+      url: "/images/national_bg_images/probably_toronto.webp"
     },
     {
       name: "Some Valley in Alberta",
       subtitle: "Banff, AB",
       author: "Ryutaro Tsukata, Pexels",
-      url: "/images/regional_bg_images/albernta.webp"
+      url: "/images/national_bg_images/albernta.webp"
     },
     {
       name: "Random grain elevator in Saskatchewan",
       subtitle: "Saskatchewan, Canada",
       author: "Bryan Smith, Pexels",
-      url: "/images/regional_bg_images/oldfarmerthingymajig.webp"
+      url: "/images/national_bg_images/oldfarmerthingymajig.webp"
     },
     {
       name: "Sunset over South Saskatchewan River",
       subtitle: "Outlook, SK",
       author: "raii/SSPWXR",
-      url: "/images/regional_bg_images/outlook_sunset_bridge.webp"
+      url: "/images/national_bg_images/outlook_sunset_bridge.webp"
     },
     {
       name: "Downtown Edmonton",
       subtitle: "Edmonton, AB",
       author: "raii/SSPWXR",
-      url: "/images/regional_bg_images/downtn_edmonton.webp"
+      url: "/images/national_bg_images/downtn_edmonton.webp"
     },
     {
       name: "Fisherman's Wharf",
       subtitle: "Victoria, BC",
       author: "raii/SSPWXR",
-      url: "/images/regional_bg_images/vic_harbour1.webp"
+      url: "/images/national_bg_images/vic_harbour1.webp"
     },
     {
       name: "Victoria Harbour",
       subtitle: "Victoria, BC",
       author: "raii/SSPWXR",
-      url: "/images/regional_bg_images/vic_harbour2.webp"
+      url: "/images/national_bg_images/vic_harbour2.webp"
     }
   ],
-  "national": [],
   "stationId": [],
   "local": [],
   "special": []
@@ -550,4 +571,4 @@ export const holidayMapping = {
 
 
 
-export const versionID = '26.04.24';
+export const versionID = '26.05.14';

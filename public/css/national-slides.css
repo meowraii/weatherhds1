@@ -8,7 +8,7 @@
 	--regionalRowGap: clamp(6px, 0.48vw, 10px);
 	--regionalRowPaddingY: clamp(7px, 0.55vw, 12px);
 	--regionalRowPaddingX: clamp(16px, 1vw, 24px);
-	--regionalRowRadius: calc(var(--cornerRadius) - 16px);
+	--regionalRowRadius: calc(var(--radius) - 16px);
 	--regionalPanelBorder: rgba(255, 255, 255, 0.12);
 	--regionalPanelSurface: linear-gradient(155deg, rgba(16, 18, 24, 0.84), rgba(36, 38, 44, 0.72));
 	--regionalPanelHighlight: radial-gradient(circle at top left, rgba(162, 210, 255, 0.18), transparent 38%);
@@ -53,7 +53,7 @@
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	border-radius: var(--cornerRadius);
+	border-radius: var(--radius);
 	border: 1px solid var(--regionalPanelBorder);
 	background: var(--regionalPanelHighlight), var(--regionalPanelSurface);
 	backdrop-filter: blur(26px) saturate(180%);
@@ -139,7 +139,7 @@
 	min-height: 0;
 	width: auto;
 	margin: 0 var(--regionalPanelPadding) var(--regionalPanelPadding);
-	border-radius: calc(var(--cornerRadius) - 10px);
+	border-radius: calc(var(--radius) - 10px);
 	overflow: hidden;
 	border: 1px solid rgba(255, 255, 255, 0.08);
 	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -280,47 +280,6 @@
 	animation: regionalElementCascadeOut 180ms ease forwards;
 	animation-delay: calc((var(--national-card-exit-order, 0) * 26ms) + (var(--national-element-exit-order, 0) * 18ms));
 }
-
-@media (max-width: 1450px) {
-	:root {
-		--fontSizeRegionalPanel: 22pt;
-		--fontSizeRegionalPanelTitle: 22pt;
-		--fontSizeRegionalPanelMeta: 14pt;
-		--regionalPanelGap: 18px;
-	}
-
-	.class-national-location-slimcard {
-		padding-right: 20px;
-	}
-
-	.national-location-temp {
-		flex-basis: 90px;
-	}
-	}
-
-@media (max-width: 1080px) {
-	.national-slides {
-		flex-direction: column;
-	}
-
-	.left-container-radar {
-		flex: 0 0 calc(48% - (var(--regionalPanelGap) * 0.5));
-		width: 100%;
-		max-width: none;
-	}
-
-	.national-slide {
-		position: relative;
-		inset: auto;
-		width: 100%;
-		height: calc(52% - (var(--regionalPanelGap) * 0.5));
-		margin-top: var(--regionalPanelGap);
-	}
-
-	.class-national-location-slimcard {
-		gap: 12px;
-	}
-	}
 
 @keyframes regionalCardIn {
 	0% {

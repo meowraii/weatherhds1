@@ -1,5 +1,12 @@
+.agents
 /node_modules
 /persistentCache/
 .env
 .DS_Store
 .vscode
+build
+weatherhds.exe
+/bin/
+/resource_windows_amd64.syso
+/build/windows/weatherhds.ico
+/public/audio/vocallocal/

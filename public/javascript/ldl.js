@@ -1,13 +1,14 @@
 import { requestWxData } from './data.js'
-import { config, locationConfig, serverConfig, weatherIcons, displayUnits } from "../config.js";
+import { config, locationConfig, serverConfig, weatherIcons, displayUnits, brand } from "../config.js";
 import { formatTime } from './weather.js';
 
 const ldlPresentationSlides = {
-    "0": { htmlID: "ldl-current", durationMS: 20000 },
-    "1": { htmlID: "ldl-hourly", durationMS: 15000 },
-    "2": { htmlID: "ldl-forecast", durationMS: 20000 },
-    "3": { htmlID: "ldl-aqi", durationMS: 8000 },
-    "4": { htmlID: "ldl-riseset", durationMS: 12000 },
+    "0": { htmlID: "ldl-current",        durationMS: 15000, label: 'Now' },
+    "1": { htmlID: "ldl-hourly",         durationMS: 16000, label: 'The Next 6 hours' },
+    "2": { htmlID: "ldl-period-summary", durationMS: 12000, label: 'For Today' },
+    "3": { htmlID: "ldl-shortterm",      durationMS: 36000, label: 'The Next 48 hours' },
+    "4": { htmlID: "ldl-daily",          durationMS: 16000, label: 'The Week Ahead' },
+    "5": { htmlID: "ldl-riseset",        durationMS: 16000, label: '' },
 }
 
 let totalDuration = 0;
@@ -40,104 +41,125 @@ const ldlDomCache = Object.freeze({
     currentTemp: document.getElementById('ldl-current-temp'),
     currentIcon: document.getElementById('ldl-current-icon'),
     currentCondition: document.getElementById('ldl-current-condition'),
-    currentWind: document.getElementById('ldl-current-wind-value'),
+    currentWindDirection: document.getElementById('ldl-current-wind-direction'),
+    currentWindSpeed: document.getElementById('ldl-current-wind-speed'),
+    currentWindGusts: document.getElementById('ldl-current-wind-gusts'),
+    currentWindArrow: document.getElementById('ldl-current-wind-arrow'),
     currentHumidity: document.getElementById('ldl-current-humidity-value'),
     currentDewpoint: document.getElementById('ldl-current-dewpoint-value'),
     currentPressure: document.getElementById('ldl-current-pressure-value'),
     currentVisib: document.getElementById('ldl-current-visibility-value'),
-    currentCeiling: document.getElementById('ldl-current-ceiling-value'),
-    currentFeelsLike: document.getElementById('ldl-current-feelslike-value'),
-    currentModule1: document.getElementById('ldl-current-module1'),
-    currentModule2: document.getElementById('ldl-current-module2'),
-    forecast0Name: document.getElementById('ldl-forecast-day0-name'),
-    forecast0Cond: document.getElementById('ldl-forecast-day0-condition'),
-    forecast0Icon: document.getElementById('ldl-day0-icon'),
-    forecast0Temp: document.getElementById('ldl-forecast-day0-temp'),
-    forecast0Precip: document.getElementById('ldl-forecast-day0-pop-value'),
-    forecast1Name: document.getElementById('ldl-forecast-day1-name'),
-    forecast1Cond: document.getElementById('ldl-forecast-day1-condition'),
-    forecast1Icon: document.getElementById('ldl-day1-icon'),
-    forecast1Temp: document.getElementById('ldl-forecast-day1-temp'),
-    forecast1Precip: document.getElementById('ldl-forecast-day1-pop-value'),
-    forecast0Container: document.getElementById('ldl-forecast-day0-container'),
-    forecast1Container: document.getElementById('ldl-forecast-day1-container'),
+    currentUv: document.getElementById('ldl-current-uv-value'),
+    carouselCurrent: document.getElementById('ldl-carousel-current'),
+    carouselTrack: document.getElementById('ldl-carousel-locations'),
+    nowcastMessage: document.getElementById('ldl-nowcast-message2'),
+    shorttermContainer: document.getElementById('ldl-shortterm-forecast-container'),
+    dailyContainer: document.getElementById('ldl-daily-forecast-container'),
+    ldlCurrent: document.getElementById('ldl-current'),
+    ldlHourly: document.getElementById('ldl-hourly'),
+    ldlPeriodSummary: document.getElementById('ldl-period-summary'),
+    ldlShortterm: document.getElementById('ldl-shortterm'),
+    ldlDaily: document.getElementById('ldl-daily'),
+    ldlRiseset: document.getElementById('ldl-riseset'),
     hourlyGroup: {
         ldlHourlyTime0: document.getElementById('ldl-hourly-time0'),
         ldlHourlyIcon0: document.getElementById('ldl-hourly-icon0'),
         ldlHourlyTemp0: document.getElementById('ldl-hourly-temp0'),
         ldlHourlyCondition0: document.getElementById('ldl-hourly-condition0'),
-        ldlHourlyPrecip0Group: document.getElementById('ldl-hourly-period0-precip-group'),
-        ldlHourlyPrecipIcon0: document.getElementById('ldl-hourly-precip-icon0'),
-        ldlHourlyPrecip0: document.getElementById('ldl-hourly-precip0'),
         ldlHourlyTime1: document.getElementById('ldl-hourly-time1'),
         ldlHourlyIcon1: document.getElementById('ldl-hourly-icon1'),
         ldlHourlyTemp1: document.getElementById('ldl-hourly-temp1'),
         ldlHourlyCondition1: document.getElementById('ldl-hourly-condition1'),
-        ldlHourlyPrecip1Group: document.getElementById('ldl-hourly-period1-precip-group'),
-        ldlHourlyPrecipIcon1: document.getElementById('ldl-hourly-precip-icon1'),
-        ldlHourlyPrecip1: document.getElementById('ldl-hourly-precip1'),
         ldlHourlyTime2: document.getElementById('ldl-hourly-time2'),
         ldlHourlyIcon2: document.getElementById('ldl-hourly-icon2'),
         ldlHourlyTemp2: document.getElementById('ldl-hourly-temp2'),
         ldlHourlyCondition2: document.getElementById('ldl-hourly-condition2'),
-        ldlHourlyPrecip2Group: document.getElementById('ldl-hourly-period2-precip-group'),
-        ldlHourlyPrecipIcon2: document.getElementById('ldl-hourly-precip-icon2'),
-        ldlHourlyPrecip2: document.getElementById('ldl-hourly-precip2'),
         ldlHourlyTime3: document.getElementById('ldl-hourly-time3'),
         ldlHourlyIcon3: document.getElementById('ldl-hourly-icon3'),
         ldlHourlyTemp3: document.getElementById('ldl-hourly-temp3'),
         ldlHourlyCondition3: document.getElementById('ldl-hourly-condition3'),
-        ldlHourlyPrecip3Group: document.getElementById('ldl-hourly-period3-precip-group'),
-        ldlHourlyPrecipIcon3: document.getElementById('ldl-hourly-precip-icon3'),
-        ldlHourlyPrecip3: document.getElementById('ldl-hourly-precip3'),
         ldlHourlyTime4: document.getElementById('ldl-hourly-time4'),
         ldlHourlyIcon4: document.getElementById('ldl-hourly-icon4'),
         ldlHourlyTemp4: document.getElementById('ldl-hourly-temp4'),
         ldlHourlyCondition4: document.getElementById('ldl-hourly-condition4'),
-        ldlHourlyPrecip4Group: document.getElementById('ldl-hourly-period4-precip-group'),
-        ldlHourlyPrecipIcon4: document.getElementById('ldl-hourly-precip-icon4'),
-        ldlHourlyPrecip4: document.getElementById('ldl-hourly-precip4'),
         ldlHourlyTime5: document.getElementById('ldl-hourly-time5'),
         ldlHourlyIcon5: document.getElementById('ldl-hourly-icon5'),
         ldlHourlyTemp5: document.getElementById('ldl-hourly-temp5'),
         ldlHourlyCondition5: document.getElementById('ldl-hourly-condition5'),
-        ldlHourlyPrecip5Group: document.getElementById('ldl-hourly-period5-precip-group'),
-        ldlHourlyPrecipIcon5: document.getElementById('ldl-hourly-precip-icon5'),
-        ldlHourlyPrecip5: document.getElementById('ldl-hourly-precip5'),
+        ldlHourlyTime6: document.getElementById('ldl-hourly-time6'),
+        ldlHourlyIcon6: document.getElementById('ldl-hourly-icon6'),
+        ldlHourlyTemp6: document.getElementById('ldl-hourly-temp6'),
+        ldlHourlyCondition6: document.getElementById('ldl-hourly-condition6'),
     },
-    aqiStatus: document.getElementById('ldl-aqi-status'),
-    aqiIndex: document.getElementById('ldl-aqi-index'),
-    aqiPrimaryPollutant: document.getElementById('ldl-aqi-primarypollutant'),
-    ldlCurrent: document.getElementById('ldl-current'),
-    ldlHourly: document.getElementById('ldl-hourly'),
-    ldlForecast: document.getElementById('ldl-forecast'),
-    ldlAqi: document.getElementById('ldl-aqi'),
-    ldlAlmanac: document.getElementById('ldl-riseset'),
-    riseTimeLabel: document.getElementById('ldl-rise-time-label'),
-    setTimeLabel: document.getElementById('ldl-set-time-label'),
-    sunProgressArch: document.getElementById('ldl-sun-progressarch'),
-    sunArchProgress: document.getElementById('ldl-sun-arch-progress'),
-    sunIndicator: document.getElementById('ldl-sun-indicator'),
-    almanacSunrise: document.getElementById('ldl-riseset-sunrise'),
-    almanacSunset: document.getElementById('ldl-riseset-sunset'),
-    ldlMoonPhaseIcon1: document.getElementById('ldl-moon-phase-icon1'),
-    ldlMoonPhaseIcon2: document.getElementById('ldl-moon-phase-icon2'),
-    ldlMoonPhaseIcon3: document.getElementById('ldl-moon-phase-icon3'),
-    ldlMoonPhaseIcon4: document.getElementById('ldl-moon-phase-icon4'),
-    ldlMoonPhaseName1: document.getElementById('ldl-moon-phase-name1'),
-    ldlMoonPhaseName2: document.getElementById('ldl-moon-phase-name2'),
-    ldlMoonPhaseName3: document.getElementById('ldl-moon-phase-name3'),
-    ldlMoonPhaseName4: document.getElementById('ldl-moon-phase-name4'),
-    ldlMoonPhaseIllumination1: document.getElementById('ldl-moon-phase-illumination1'),
-    ldlMoonPhaseIllumination2: document.getElementById('ldl-moon-phase-illumination2'),
-    ldlMoonPhaseIllumination3: document.getElementById('ldl-moon-phase-illumination3'),
-    ldlMoonPhaseIllumination4: document.getElementById('ldl-moon-phase-illumination4'),
 });
 
+const activeProviders = Object.values(brand.providers ?? {}).filter(p => p.showOnLDLDur !== null);
 
+const ldlProviderLogoEl = document.getElementById('ldl-provider-logo');
+const ldlProviderHeadingEl = document.getElementById('ldl-provider-extratext-heading');
+const ldlProviderTailingEl = document.getElementById('ldl-provider-extratext-tailing');
 
+function applyProviderExtraText(extraText, fade) {
+    const els = [ldlProviderHeadingEl, ldlProviderTailingEl];
+    if (fade) {
+        els.forEach(el => el?.classList.add('fading'));
+        return;
+    }
+    if (!extraText) {
+        if (ldlProviderHeadingEl) ldlProviderHeadingEl.textContent = '';
+        if (ldlProviderTailingEl) ldlProviderTailingEl.textContent = '';
+        return;
+    }
+    const applyStyle = el => {
+        el.style.fontFamily = extraText.font ?? 'inherit';
+        el.style.fontStyle = extraText.style ?? 'normal';
+        el.style.fontWeight = extraText.weight ?? '400';
+        el.style.fontSize = extraText.size ?? '0.8em';
+        el.style.textShadow = extraText.shadow ?? 'none';
+    };
+    if (ldlProviderHeadingEl) {
+        ldlProviderHeadingEl.textContent = extraText.heading ?? '';
+        applyStyle(ldlProviderHeadingEl);
+        ldlProviderHeadingEl.classList.remove('fading');
+    }
+    if (ldlProviderTailingEl) {
+        ldlProviderTailingEl.textContent = extraText.tailing ?? '';
+        applyStyle(ldlProviderTailingEl);
+        ldlProviderTailingEl.classList.remove('fading');
+    }
+}
 
+function initProviderLogoCycler() {
+    if (!ldlProviderLogoEl || activeProviders.length === 0) return;
 
+    const setProvider = (provider) => {
+        ldlProviderLogoEl.src = provider.providerLogo;
+        applyProviderExtraText(provider.extraText ?? null, false);
+    };
+
+    setProvider(activeProviders[0]);
+
+    if (activeProviders.length === 1) return;
+
+    let providerIndex = 0;
+
+    const cycleToNext = () => {
+        ldlProviderLogoEl.classList.add('fading');
+        applyProviderExtraText(null, true);
+
+        setTimeout(() => {
+            providerIndex = (providerIndex + 1) % activeProviders.length;
+            setProvider(activeProviders[providerIndex]);
+            ldlProviderLogoEl.classList.remove('fading');
+
+            setTimeout(cycleToNext, (activeProviders[providerIndex].showOnLDLDur ?? 120) * 1000);
+        }, 450);
+    };
+
+    setTimeout(cycleToNext, (activeProviders[0].showOnLDLDur ?? 120) * 1000);
+}
+
+initProviderLogoCycler();
 
 function initializeMarquee(retries = 3) {
   if (typeof $ === 'undefined' || typeof $.fn.marquee === 'undefined') {
@@ -197,6 +219,39 @@ export function requestBulletinCrawl(text, alertCategory, headlineText, country,
 export function cancelBulletinCrawl() {
   bulletinCrawlContainer.style.display = `none`
 }
+
+function staggerIn(els, step = 60, start = 0) {
+    Array.from(els).forEach((el, i) => {
+        el.style.transition = 'none'
+        el.style.opacity = '0'
+        el.style.transform = 'translateY(16px)'
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.35s ease, transform 0.35s ease'
+            el.style.opacity = '1'
+            el.style.transform = 'translateY(0)'
+        }, start + step * i)
+    })
+}
+
+function staggerInX(els, step = 55) {
+    Array.from(els).forEach((el, i) => {
+        el.style.transition = 'none'
+        el.style.opacity = '0'
+        el.style.transform = 'translateX(-20px) scale(0.97)'
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.28s ease, transform 0.28s ease'
+            el.style.opacity = '1'
+            el.style.transform = 'translateX(0) scale(1)'
+        }, step * i)
+    })
+}
+
+let shorttermPeriods = []
+let shorttermPagerTimeout = null
+let carouselCurrentX = 0
+let carouselTailIndex = 0
+let lastWindAngle = 0
+let windJiggleTimeout = null
 
 let currentLDLData = null;
 
@@ -267,11 +322,12 @@ async function LDLData() {
             console.log(`${logTheFrickinTime()} Current LDL location: ${locationName}`)
         }
 
-        appendLDLCurrent();
-        appendLDLForecast();
-        appendLDLHourly();
-        appendLDLAirQuality();
-        appendLDLAlmanac();
+        appendLDLCurrent()
+        appendLDLHourly()
+        appendLDLPeriodSummary()
+        appendLDLShortterm()
+        appendLDLNowcast()
+        appendLDLDaily()
 
     } catch (error) {
         console.error(`${logTheFrickinTime()} Error in LDLData:`, error);
@@ -279,141 +335,277 @@ async function LDLData() {
 }
 
 function appendLDLCurrent() {
-    if (!currentLDLData || !currentLDLData.current) return;
-    
-    const current = currentLDLData.current;
-    const c = ldlDomCache;
+    if (!currentLDLData?.current) return
 
-    if (c.currentTemp) c.currentTemp.textContent = `${current.temperature}${endingTemp}`
-    if (c.currentCondition) c.currentCondition.textContent = current.wxPhraseMedium ?? current.wxPhraseLong ?? "N/A"
-    if (c.currentWind) c.currentWind.textContent = `${current.windDirectionCardinal ?? "N/A"}, ${current.windSpeed ?? 0}${endingWind}`
+    const current = currentLDLData.current
+    const c = ldlDomCache
+
+    if (c.currentTemp) {
+        c.currentTemp.innerHTML = `${current.temperature}<span class="ldl-small-degrees">${endingTemp}</span>`
+    }
+    if (c.currentCondition) c.currentCondition.textContent = current.wxPhraseMedium ?? current.wxPhraseLong ?? 'N/A'
+
+    const cardinalExpand = { N: 'North', E: 'East', S: 'South', W: 'West' }
+    const windCardinal = (current.windDirectionCardinal ?? 'N/A').toString()
+    const windCardinalDisplay = cardinalExpand[windCardinal] ?? windCardinal
+    const windSpeed = Number(current.windSpeed ?? 0)
+    const windGust = Number(current.windGust ?? 0)
+    if (c.currentWindDirection) c.currentWindDirection.textContent = windCardinalDisplay
+    if (c.currentWindSpeed) c.currentWindSpeed.textContent = `${windSpeed}${endingWind}`
+    if (c.currentWindGusts) c.currentWindGusts.textContent = `${windGust}${endingWind} Gusts`
+
+    const windDirectionAngle = Number.isFinite(Number(current.windDirection))
+        ? Number(current.windDirection)
+        : 0
+
+    if (c.currentWindArrow) {
+        lastWindAngle = windDirectionAngle
+        c.currentWindArrow.style.transition = 'none'
+        c.currentWindArrow.style.transform = `translate(-50%, -50%) rotate(${windDirectionAngle - 330}deg) translateY(-108px)`
+    }
+
+    const windCompass = document.getElementById('ldl-current-wind-compass')
+    const ticksOuter = windCompass?.querySelector('.ldl-current-wind-ticks')
+    const ticksInner = windCompass?.querySelector('.ldl-current-wind-ticks-inner')
+    if (ticksOuter) {
+        ticksOuter.classList.remove('ldl-wind-idle-cw')
+        ticksOuter.style.transition = 'none'
+        ticksOuter.style.transform = 'rotate(-330deg)'
+    }
+    if (ticksInner) {
+        ticksInner.classList.remove('ldl-wind-idle-ccw')
+        ticksInner.style.transition = 'none'
+        ticksInner.style.transform = 'rotate(330deg)'
+    }
+
     if (c.currentHumidity) c.currentHumidity.textContent = `${current.relativeHumidity ?? 0}%`
     if (c.currentDewpoint) c.currentDewpoint.textContent = `${current.temperatureDewPoint ?? 0}${endingTemp}`
     if (c.currentPressure) c.currentPressure.textContent = `${current.pressureAltimeter ?? 0}${endingPressure}`
     if (c.currentVisib) c.currentVisib.textContent = `${Math.round(current.visibility ?? 0)}${endingDistance}`
-    if (c.currentFeelsLike) c.currentFeelsLike.textContent = `${current.temperatureFeelsLike ?? current.temperature}${endingTemp}`
+    if (c.currentUv) {
+        const uvi = current.uvIndex ?? '--'
+        const uvd = current.uvDescription ? ` ${current.uvDescription}` : ''
+        c.currentUv.textContent = `${uvi}${uvd}`
+    }
 
     if (c.currentIcon) {
-        const iconCode = current.iconCode;
-        const dayOrNight = current.dayOrNight;
-        const iconPath = weatherIcons[iconCode] ? weatherIcons[iconCode][dayOrNight === "D" ? 0 : 1] : 'not-available.svg'
+        const iconCode = current.iconCode
+        const dayOrNight = current.dayOrNight
+        const iconPath = weatherIcons[iconCode]?.[dayOrNight === 'D' ? 0 : 1] ?? 'not-available.svg'
         c.currentIcon.src = `/graphics/${iconDir}/${iconPath}`
-    }
-    
-    if (c.currentCeiling) {
-        const ceiling = current.cloudCeiling;
-        c.currentCeiling.textContent = (ceiling === null || ceiling === undefined) 
-            ? "Unlimited" 
-            : `${ceiling}${endingCeiling}`
     }
 }
 
 function appendLDLHourly() {
-    if (!currentLDLData || !currentLDLData.hourly) return;
+    if (!currentLDLData?.hourly) return
 
-    const hourly = currentLDLData.hourly;
-    const c = ldlDomCache.hourlyGroup;
+    const hourly = currentLDLData.hourly
+    const c = ldlDomCache.hourlyGroup
 
-    for (let i = 0; i < 6; i++) {
-        if (c[`ldlHourlyTime${i}`]) c[`ldlHourlyTime${i}`].textContent = formatTime(hourly.validTimeLocal[i]);
-        if (c[`ldlHourlyTemp${i}`]) c[`ldlHourlyTemp${i}`].textContent = `${hourly.temperature[i]}°`;
-        if (c[`ldlHourlyCondition${i}`]) c[`ldlHourlyCondition${i}`].textContent = hourly.wxPhraseShort[i] ?? "N/A";
-        
+    for (let i = 0; i < 7; i++) {
+        if (c[`ldlHourlyTime${i}`]) c[`ldlHourlyTime${i}`].textContent = formatTime(hourly.validTimeLocal[i])
+        if (c[`ldlHourlyTemp${i}`]) {
+            c[`ldlHourlyTemp${i}`].innerHTML = `${hourly.temperature[i]}<span class="ldl-small-degrees">${endingTemp}</span>`
+        }
+        if (c[`ldlHourlyCondition${i}`]) c[`ldlHourlyCondition${i}`].textContent = hourly.wxPhraseShort[i] ?? 'N/A'
         if (c[`ldlHourlyIcon${i}`]) {
-            const iconCode = hourly.iconCode[i];
-            const dayOrNight = hourly.dayOrNight[i];
-            const iconPath = weatherIcons[iconCode] ? weatherIcons[iconCode][dayOrNight === "D" ? 0 : 1] : 'not-available.svg';
-            c[`ldlHourlyIcon${i}`].src = `/graphics/${iconDir}/${iconPath}`;
-        }
-        /*
-        const precip = hourly.precipChance[i] ?? 0;
-        const precipType = hourly.precipType[i] ?? "precip";
-        if (c[`ldlHourlyPrecip${i}`]) c[`ldlHourlyPrecip${i}`].textContent = `${precip}%`;
-        if (c[`ldlHourlyPrecip${i}Group`]) {
-            c[`ldlHourlyPrecip${i}Group`].style.visibility = precip > 0 ? 'visible' : 'hidden';
-        }
-        if (c[`ldlHourlyPrecipIcon${i}`]) {
-            const rainIconPath = `/graphics/${iconDir}/rain.svg`;
-            const snowIconPath = `/graphics/${iconDir}/snow.svg`;
-
-            if (precipType === "precip" || precipType === "rain") {
-                c[`ldlHourlyPrecipIcon${i}`].style.backgroundImage = rainIconPath;
-            }
-            if (precipType === "snow") {
-                c[`ldlHourlyPrecipIcon${i}`].style.backgroundImage = snowIconPath;
-            }
-        }
-        */
-    }
-}
-
-function appendLDLForecast() {
-    if (!currentLDLData || !currentLDLData.forecast) return;
-    
-    const forecast = currentLDLData.forecast;
-    const c = ldlDomCache;
-
-    if (!forecast.daypart || !forecast.daypart[0]) return;
-    
-    const daypart = forecast.daypart[0];
-    
-    if (c.forecast0Name) c.forecast0Name.textContent = daypart.daypartName[0] ?? daypart.daypartName[1] ?? "Today"
-    if (c.forecast0Cond) c.forecast0Cond.textContent = daypart.wxPhraseShort[0] ?? daypart.wxPhraseShort[1] ?? "N/A"
-    if (c.forecast0Temp) c.forecast0Temp.textContent = `${daypart.temperature[0] ?? daypart.temperature[1] ?? "--"}°`
-    if (c.forecast0Precip) c.forecast0Precip.textContent = `${daypart.precipChance[0] ?? daypart.precipChance[1] ?? 0}%`
-
-    if (c.forecast0Icon) {
-        const dayOneIconCode = daypart.iconCode[0] ?? daypart.iconCode[1];
-        const dayOrNight = daypart.dayOrNight[0] ?? daypart.dayOrNight[1];
-        const iconPath = weatherIcons[dayOneIconCode] ? weatherIcons[dayOneIconCode][dayOrNight === "D" ? 0 : 1] : 'not-available.svg'
-        c.forecast0Icon.src = `/graphics/${iconDir}/${iconPath}`
-    }
-
-    if (daypart.daypartName[0] === null) {
-        if (c.forecast1Name) c.forecast1Name.textContent = daypart.daypartName[2] ?? "Tomorrow"
-        if (c.forecast1Cond) c.forecast1Cond.textContent = daypart.wxPhraseShort[2] ?? "N/A"
-        if (c.forecast1Temp) c.forecast1Temp.textContent = `${daypart.temperature[2] ?? "--"}°`
-        if (c.forecast1Precip) c.forecast1Precip.textContent = `${daypart.precipChance[2] ?? 0}%`
-
-        if (c.forecast1Icon) {
-            const dayTwoIconCode = daypart.iconCode[2]
-            const dayOrNight = daypart.dayOrNight[2]
-            const iconPath = weatherIcons[dayTwoIconCode] ? weatherIcons[dayTwoIconCode][dayOrNight === "D" ? 0 : 1] : 'not-available.svg'
-            c.forecast1Icon.src = `/graphics/${iconDir}/${iconPath}`
-        }
-    } else {
-        if (c.forecast1Name) c.forecast1Name.textContent = daypart.daypartName[1] ?? "Tonight"
-        if (c.forecast1Cond) c.forecast1Cond.textContent = daypart.wxPhraseShort[1] ?? "N/A"
-        if (c.forecast1Temp) c.forecast1Temp.textContent = `${daypart.temperature[1] ?? "--"}°`
-        if (c.forecast1Precip) c.forecast1Precip.textContent = `${daypart.precipChance[1] ?? 0}%`
-
-        if (c.forecast1Icon) {
-            const dayTwoIconCode = daypart.iconCode[1]
-            const dayOrNight = daypart.dayOrNight[1]
-            const iconPath = weatherIcons[dayTwoIconCode] ? weatherIcons[dayTwoIconCode][dayOrNight === "D" ? 0 : 1] : 'not-available.svg'
-            c.forecast1Icon.src = `/graphics/${iconDir}/${iconPath}`
+            const iconCode = hourly.iconCode[i]
+            const dayOrNight = hourly.dayOrNight[i]
+            const iconPath = weatherIcons[iconCode]?.[dayOrNight === 'D' ? 0 : 1] ?? 'not-available.svg'
+            c[`ldlHourlyIcon${i}`].src = `/graphics/${iconDir}/${iconPath}`
         }
     }
 }
 
-function appendLDLAirQuality() {
-    const c = ldlDomCache;
-    
-    if (!currentLDLData || !currentLDLData.aqi || !currentLDLData.aqi.globalairquality) {
-        if (c.aqiStatus) c.aqiStatus.textContent = "N/A"
-        if (c.aqiIndex) c.aqiIndex.textContent = "--"
-        if (c.aqiPrimaryPollutant) c.aqiPrimaryPollutant.textContent = "N/A"
-        return;
-    }
-    
-    const aqi = currentLDLData.aqi.globalairquality;
+function appendLDLPeriodSummary() {
+    if (!currentLDLData?.current || !currentLDLData?.forecast) return
 
-    if (c.aqiStatus) {
-        c.aqiStatus.style.color = `#${aqi.airQualityCategoryIndexColor ?? 'FFFFFF'}`
-        c.aqiStatus.textContent = aqi.airQualityCategory ?? "N/A"
+    const ps = ldlDomCache.ldlPeriodSummary
+    if (!ps) return
+
+    const current = currentLDLData.current
+    const forecast = currentLDLData.forecast
+
+    const nowTempEl = ps.querySelector('.ldl-now-temp')
+    if (nowTempEl) {
+        nowTempEl.innerHTML = `${current.temperature}<span class="ldl-small-degrees">${endingTemp}</span>`
     }
-    if (c.aqiIndex) c.aqiIndex.textContent = aqi.airQualityCategoryIndex ?? "--"
-    if (c.aqiPrimaryPollutant) c.aqiPrimaryPollutant.textContent = aqi.primaryPollutant ?? "N/A"
+
+    const todayHiEl = ps.querySelector('.ldl-today-highest .ldl-period-highest-temp')
+    if (todayHiEl) {
+        const hi = forecast.calendarDayTemperatureMax?.[0] ?? '--'
+        todayHiEl.innerHTML = `<span class="temp-point point-highest">🡅</span>${hi}<span class="ldl-small-degrees">${endingTemp}</span>`
+    }
+
+    const todayLoEl = ps.querySelector('.ldl-today-lowest .ldl-period-lowest-temp')
+    if (todayLoEl) {
+        const lo = forecast.calendarDayTemperatureMin?.[0] ?? '--'
+        todayLoEl.innerHTML = `<span class="temp-point point-lowest">🡇</span>${lo}<span class="ldl-small-degrees">${endingTemp}</span>`
+    }
+
+    const nextDayName = forecast.dayOfWeek?.[1] ?? ''
+    const nextDate = (() => {
+        const d = new Date()
+        d.setDate(d.getDate() + 1)
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    })()
+
+    const nextHiPeriodEl = ps.querySelector('.ldl-period-highest .ldl-period-highest-period')
+    if (nextHiPeriodEl) nextHiPeriodEl.textContent = nextDayName
+
+    const nextHiDateEl = ps.querySelector('.ldl-period-highest .ldl-period-highest-date')
+    if (nextHiDateEl) nextHiDateEl.textContent = nextDate
+
+    const nextHiTempEl = ps.querySelector('.ldl-period-highest .ldl-period-highest-temp')
+    if (nextHiTempEl) {
+        const hi = forecast.calendarDayTemperatureMax?.[1] ?? '--'
+        nextHiTempEl.innerHTML = `<span class="temp-point point-highest">🡅</span>${hi}<span class="ldl-small-degrees">${endingTemp}</span>`
+    }
+
+    const nextLoNight = nextDayName ? `${nextDayName} Night` : 'Tomorrow Night'
+
+    const nextLoPeriodEl = ps.querySelector('.ldl-period-lowest .ldl-period-lowest-period')
+    if (nextLoPeriodEl) nextLoPeriodEl.textContent = nextLoNight
+
+    const nextLoDateEl = ps.querySelector('.ldl-period-lowest .ldl-period-lowest-date')
+    if (nextLoDateEl) nextLoDateEl.textContent = nextDate
+
+    const nextLoTempEl = ps.querySelector('.ldl-period-lowest .ldl-period-lowest-temp')
+    if (nextLoTempEl) {
+        const lo = forecast.calendarDayTemperatureMin?.[1] ?? '--'
+        nextLoTempEl.innerHTML = `<span class="temp-point point-lowest">🡇</span>${lo}<span class="ldl-small-degrees">${endingTemp}</span>`
+    }
+}
+
+function appendLDLNowcast() {
+    const el = ldlDomCache.nowcastMessage
+    if (!el) return
+    const narrative = currentLDLData?.forecast?.daypart?.[0]?.narrative?.[0]
+        ?? currentLDLData?.forecast?.daypart?.[0]?.narrative?.[1]
+        ?? ''
+    el.textContent = narrative
+}
+
+function buildShorttermPeriods() {
+    if (!currentLDLData?.forecast?.daypart?.[0]) return []
+    const dp = currentLDLData.forecast.daypart[0]
+    const periods = []
+    for (let i = 0; i < Math.min(dp.daypartName?.length ?? 0, 6); i++) {
+        if (!dp.daypartName[i]) continue
+        periods.push({
+            title: dp.daypartName[i],
+            icon: weatherIcons[dp.iconCode[i]]?.[dp.dayOrNight[i] === 'D' ? 0 : 1] ?? 'not-available.svg',
+            temp: dp.temperature[i],
+            pop: dp.precipChance[i] ?? 0,
+            narrative: dp.narrative[i] ?? '',
+        })
+    }
+    return periods
+}
+
+function renderShorttermPeriod(period) {
+    const container = ldlDomCache.shorttermContainer
+    if (!container || !period) return
+    const titleEl = container.querySelector('#ldl-shortterm-period-title0')
+    const iconEl = container.querySelector('#ldl-shortterm-period-icon0')
+    const tempEl = container.querySelector('#ldl-shortterm-period-temp0')
+    const popEl = container.querySelector('#ldl-shortterm-period-pop0')
+    const narrativeEl = container.querySelector('#ldl-shortterm-period-narrative0')
+    if (titleEl) titleEl.textContent = period.title
+    if (iconEl) iconEl.src = `/graphics/${iconDir}/${period.icon}`
+    if (tempEl) tempEl.innerHTML = `${period.temp ?? '--'}<span class="ldl-small-degrees">${endingTemp}</span>`
+    if (popEl) {
+        if (period.pop > 0) {
+            popEl.textContent = `${period.pop}% Precip.`
+            popEl.style.visibility = 'visible'
+        } else {
+            popEl.style.visibility = 'hidden'
+        }
+    }
+    if (narrativeEl) narrativeEl.textContent = period.narrative
+}
+
+function appendLDLShortterm() {
+    shorttermPeriods = buildShorttermPeriods()
+    if (shorttermPeriods.length > 0) renderShorttermPeriod(shorttermPeriods[0])
+}
+
+function runShorttermPager() {
+    if (shorttermPagerTimeout) {
+        clearTimeout(shorttermPagerTimeout)
+        shorttermPagerTimeout = null
+    }
+    if (shorttermPeriods.length <= 1) return
+
+    const slideConfig = Object.values(ldlPresentationSlides).find(s => s.htmlID === 'ldl-shortterm')
+    const durationMS = slideConfig?.durationMS ?? 24000
+    const perPeriod = Math.floor(durationMS / shorttermPeriods.length)
+
+    let index = 0
+
+    const page = () => {
+        index = (index + 1) % shorttermPeriods.length
+        if (index === 0) return
+
+        const container = ldlDomCache.shorttermContainer
+        if (!container) return
+
+        container.style.transition = 'opacity 0.2s ease, transform 0.2s ease'
+        container.style.opacity = '0'
+        container.style.transform = 'translateX(-24px)'
+
+        setTimeout(() => {
+            renderShorttermPeriod(shorttermPeriods[index])
+            container.style.transform = 'translateX(24px)'
+            container.style.transition = 'none'
+            void container.offsetWidth
+            container.style.transition = 'opacity 0.2s ease, transform 0.2s ease'
+            container.style.opacity = '1'
+            container.style.transform = 'translateX(0)'
+        }, 200)
+
+        if (index < shorttermPeriods.length - 1) {
+            shorttermPagerTimeout = setTimeout(page, perPeriod)
+        }
+    }
+
+    shorttermPagerTimeout = setTimeout(page, perPeriod)
+}
+
+function appendLDLDaily() {
+    const container = ldlDomCache.dailyContainer
+    if (!container || !currentLDLData?.forecast) return
+
+    const forecast = currentLDLData.forecast
+    const dp = forecast.daypart?.[0]
+    container.innerHTML = ''
+
+    const days = Math.min(forecast.dayOfWeek?.length ?? 0, 7)
+    if (days === 0) return
+
+    for (let i = 0; i < days; i++) {
+        const dayAbbrev = forecast.dayOfWeek[i]?.slice(0, 3).toUpperCase() ?? '---'
+        const hiTemp = forecast.calendarDayTemperatureMax?.[i] ?? '--'
+        const loTemp = forecast.calendarDayTemperatureMin?.[i] ?? '--'
+        const dpDay = i * 2
+        const dpNight = i * 2 + 1
+        const dpIndex = dp?.daypartName?.[dpDay] != null ? dpDay : dpNight
+        const condition = dp?.wxPhraseShort?.[dpIndex] ?? '--'
+        const iconCode = dp?.iconCode?.[dpIndex]
+        const dayOrNight = dp?.dayOrNight?.[dpIndex] ?? 'D'
+        const iconPath = weatherIcons[iconCode]?.[dayOrNight === 'D' ? 0 : 1] ?? 'not-available.svg'
+
+        const card = document.createElement('div')
+        card.className = 'ldl-daily-period-summary'
+        card.innerHTML = `
+            <div class="ldl-daily-period-title">${dayAbbrev}</div>
+            <img class="ldl-daily-icon" src="/graphics/${iconDir}/${iconPath}" alt="${condition}">
+            <div class="ldl-daily-period-condition">${condition}</div>
+            <div class="ldl-daily-period-high">${hiTemp}°</div>
+            <div class="ldl-daily-period-low">${loTemp}°</div>
+        `
+        container.appendChild(card)
+    }
 }
 
 function appendLDLAlmanac() {
@@ -652,57 +844,8 @@ function hideLocationLabel() {
     }, 300);
 }
 
-function runCurrentSlide() {
-    const module1 = ldlDomCache.currentModule1;
-    const module2 = ldlDomCache.currentModule2;
-
-    if (!module1 || !module2) return;
-
-    module1.style.display = 'flex';
-    module2.style.display = 'none';
-
-    const currentSlide = ldlPresentationSlides[0];
-    const halfDuration = currentSlide.durationMS / 2;
-
-    setTimeout(() => {
-        module1.style.animation = 'fadeModule 0.2s ease-out';
-
-        setTimeout(() => {
-            module1.style.display = 'none';
-            module1.style.animation = '';
-            module2.style.display = 'flex';
-            module2.style.animation = 'switchModules 0.5s ease-out';
-        }, 200);
-
-    }, halfDuration - 300);
-}
-
-function runForecastSlide() {
-    const day0 = ldlDomCache.forecast0Container;
-    const day1 = ldlDomCache.forecast1Container;
-
-    if (!day0 || !day1) return;
-
-    day0.style.display = 'flex';
-    day1.style.display = 'none';
-
-    const forecastSlide = ldlPresentationSlides[2];
-    const halfDuration = forecastSlide.durationMS / 2;
-
-    setTimeout(() => {
-        day0.style.animation = 'fadeModule 0.2s ease-out';
-
-        setTimeout(() => {
-            day0.style.display = 'none';
-            day0.style.animation = '';
-            day1.style.display = 'flex';
-            day1.style.animation = 'switchModules 0.5s ease-out';
-        }, 100);
-
-    }, halfDuration - 300);
-}
-
 function triggerExitAnimation(slideID) {
+    if (slideID === 'ldl-current') stopWindJiggle()
     const slideElement = document.getElementById(slideID);
     if (!slideElement) return;
 
@@ -713,46 +856,275 @@ function triggerExitAnimation(slideID) {
     }, 200);
 }
 
+function stopWindJiggle() {
+    if (windJiggleTimeout) {
+        if (typeof windJiggleTimeout.cancel === 'function') windJiggleTimeout.cancel()
+        else clearTimeout(windJiggleTimeout)
+        windJiggleTimeout = null
+    }
+}
+
+function startWindJiggle(arrow, ticksOuter, ticksInner, baseAngle) {
+    stopWindJiggle()
+
+    const pickTarget = () => {
+        const spread = Math.random() < 0.15 ? 5 + Math.random() * 7 : 1 + Math.random() * 3.5
+        const dir = Math.random() < 0.5 ? 1 : -1
+        return baseAngle + spread * dir
+    }
+
+    let targetAngle = pickTarget()
+    let rafId = null
+    let startTime = null
+    let fromAngle = baseAngle
+    let segDur = 1200 + Math.random() * 1400
+
+    const EASE = (t) => {
+        const c1 = 1.70158, c2 = c1 * 1.525
+        return t < 0.5
+            ? (Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2
+            : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (2 * t - 2) + c2) + 2) / 2
+    }
+
+    const tick = (now) => {
+        if (!ldlDomCache.ldlCurrent || ldlDomCache.ldlCurrent.style.display === 'none') return
+
+        if (!startTime) startTime = now
+        const elapsed = now - startTime
+        const t = Math.min(elapsed / segDur, 1)
+        const eased = EASE(t)
+        const angle = fromAngle + (targetAngle - fromAngle) * eased
+        const tickOffset = angle - baseAngle
+
+        arrow.style.transition = 'none'
+        arrow.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-108px)`
+        if (ticksOuter) { ticksOuter.style.transition = 'none'; ticksOuter.style.transform = `rotate(${tickOffset}deg)` }
+        if (ticksInner) { ticksInner.style.transition = 'none'; ticksInner.style.transform = `rotate(${-tickOffset}deg)` }
+
+        if (t < 1) {
+            rafId = requestAnimationFrame(tick)
+        } else {
+            fromAngle = targetAngle
+            targetAngle = pickTarget()
+            segDur = 1000 + Math.random() * 1600
+            startTime = null
+            rafId = requestAnimationFrame(tick)
+        }
+    }
+
+    rafId = requestAnimationFrame(tick)
+
+    windJiggleTimeout = { cancel: () => { if (rafId) cancelAnimationFrame(rafId); rafId = null } }
+}
+
+function initCarousel() {
+    const track = ldlDomCache.carouselTrack
+    if (!track) return
+    const locations = locationConfig.ldlLocations ?? []
+    if (!locations.length) return
+
+    track.innerHTML = ''
+    track.style.transition = 'none'
+    track.style.transform = 'translateX(0)'
+    carouselCurrentX = 0
+
+    const count = Math.min(8, locations.length)
+    for (let i = 0; i < count; i++) {
+        appendCarouselPill(track, locations[i], i, false)
+    }
+    carouselTailIndex = count % locations.length
+
+    setCarouselActiveLocation(0)
+}
+
+function appendCarouselPill(track, name, locationIndex, fadeIn) {
+    const el = document.createElement('div')
+    el.className = 'ldl-carousel-location-entry'
+    el.dataset.locationIndex = locationIndex
+    el.textContent = name
+    if (fadeIn) {
+        el.style.opacity = '0'
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            el.style.transition = 'opacity 0.35s ease'
+            el.style.opacity = '1'
+        }))
+    }
+    track.appendChild(el)
+    return el
+}
+
+const CAROUSEL_CRAWL_SPEED = 200
+
+function scrollCarouselToLocation(index) {
+    const track = ldlDomCache.carouselTrack
+    if (!track) return
+    const locations = locationConfig.ldlLocations ?? []
+
+    const pills = Array.from(track.querySelectorAll('.ldl-carousel-location-entry'))
+    if (pills.length < 2) return
+
+    const scrollStep = pills[1].offsetLeft - pills[0].offsetLeft
+    const duration = (scrollStep / CAROUSEL_CRAWL_SPEED).toFixed(2)
+
+    pills[0].style.transition = 'opacity 0.22s ease'
+    pills[0].style.opacity = '0'
+
+    track.style.transition = `transform ${duration}s linear`
+    track.style.transform = `translateX(-${carouselCurrentX + scrollStep}px)`
+    carouselCurrentX += scrollStep
+
+    setCarouselActiveLocation(index)
+
+    setTimeout(() => {
+        pills[0].remove()
+
+        const nextName = locations[carouselTailIndex]
+        const nextIdx = carouselTailIndex
+        carouselTailIndex = (carouselTailIndex + 1) % locations.length
+        appendCarouselPill(track, nextName, nextIdx, true)
+
+        carouselCurrentX -= scrollStep
+        track.style.transition = 'none'
+        track.style.transform = `translateX(-${carouselCurrentX}px)`
+        void track.offsetWidth
+    }, parseFloat(duration) * 1000 + 60)
+}
+
+function setCarouselActiveLocation(index) {
+    const track = ldlDomCache.carouselTrack
+    if (!track) return
+    track.querySelectorAll('.ldl-carousel-location-entry').forEach(el => {
+        el.classList.toggle('ldl-location-carousel-current', Number(el.dataset.locationIndex) === index)
+    })
+}
+
+function updateCarousel(slide) {
+    const badge = ldlDomCache.carouselCurrent
+    if (!badge) return
+    badge.style.transition = 'opacity 0.18s ease'
+    badge.style.opacity = '0'
+    setTimeout(() => {
+        badge.textContent = slide.label ?? ''
+        badge.style.opacity = '1'
+    }, 180)
+}
+
 const slideElementMap = {
-    'ldl-current': () => ldlDomCache.ldlCurrent,
-    'ldl-forecast': () => ldlDomCache.ldlForecast,
-    'ldl-aqi': () => ldlDomCache.ldlAqi,
-    'ldl-riseset': () => ldlDomCache.ldlAlmanac,
-};
+    'ldl-current':        () => ldlDomCache.ldlCurrent,
+    'ldl-hourly':         () => ldlDomCache.ldlHourly,
+    'ldl-period-summary': () => ldlDomCache.ldlPeriodSummary,
+    'ldl-shortterm':      () => ldlDomCache.ldlShortterm,
+    'ldl-daily':          () => ldlDomCache.ldlDaily,
+    'ldl-riseset':        () => ldlDomCache.ldlRiseset,
+}
+
+const slideAnimations = {
+    'ldl-current': () => {
+        if (ldlDomCache.ldlCurrent) {
+            staggerIn(ldlDomCache.ldlCurrent.querySelectorAll('.ldl-current-detail'), 80, 200)
+        }
+        const compass = document.getElementById('ldl-current-wind-compass')
+        const arrow = ldlDomCache.currentWindArrow
+        const ticksOuter = compass?.querySelector('.ldl-current-wind-ticks')
+        const ticksInner = compass?.querySelector('.ldl-current-wind-ticks-inner')
+        if (!arrow) return
+        void arrow.offsetWidth
+        if (ticksOuter) void ticksOuter.offsetWidth
+        if (ticksInner) void ticksInner.offsetWidth
+
+        const WIND_DUR = '2.4s'
+        const WIND_EASE = 'cubic-bezier(0.34, 1.20, 0.64, 1)'
+        setTimeout(() => {
+            arrow.style.transition = `transform ${WIND_DUR} ${WIND_EASE}`
+            arrow.style.transform = `translate(-50%, -50%) rotate(${lastWindAngle}deg) translateY(-108px)`
+            if (ticksOuter) {
+                ticksOuter.style.transition = `transform ${WIND_DUR} ${WIND_EASE}`
+                ticksOuter.style.transform = 'rotate(0deg)'
+            }
+            if (ticksInner) {
+                ticksInner.style.transition = `transform ${WIND_DUR} ${WIND_EASE}`
+                ticksInner.style.transform = 'rotate(0deg)'
+            }
+        }, 16)
+
+        setTimeout(() => {
+            startWindJiggle(arrow, ticksOuter, ticksInner, lastWindAngle)
+        }, 2500)
+    },
+    'ldl-hourly': () => {
+        if (ldlDomCache.ldlHourly) {
+            staggerInX(ldlDomCache.ldlHourly.querySelectorAll('.ldl-hourly-period'), 55)
+        }
+    },
+    'ldl-period-summary': () => {
+        if (ldlDomCache.ldlPeriodSummary) {
+            staggerIn(ldlDomCache.ldlPeriodSummary.querySelectorAll('.ldl-period-now, .ldl-today-highest, .ldl-today-lowest, .ldl-period-highest, .ldl-period-lowest'), 80)
+        }
+    },
+    'ldl-shortterm': () => {
+        const el = ldlDomCache.shorttermContainer
+        if (!el) return
+        el.style.transition = 'none'
+        el.style.opacity = '0'
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.4s ease'
+            el.style.opacity = '1'
+        }, 150)
+    },
+    'ldl-daily': () => {
+        if (ldlDomCache.dailyContainer) {
+            staggerInX(ldlDomCache.dailyContainer.querySelectorAll('.ldl-daily-period-summary'), 60)
+        }
+    },
+    'ldl-riseset': () => {
+        const el = ldlDomCache.nowcastMessage
+        if (!el) return
+        el.style.transition = 'none'
+        el.style.opacity = '0'
+        el.style.transform = 'translateY(8px)'
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.5s ease, transform 0.5s ease'
+            el.style.opacity = '1'
+            el.style.transform = 'translateY(0)'
+        }, 300)
+    },
+}
 
 function showLDLSlide() {
-    const slide = ldlPresentationSlides[ldlSlideIndex];
-    const duration = slide.durationMS;
+    const slide = ldlPresentationSlides[ldlSlideIndex]
+    const duration = slide.durationMS
 
     if (config.verboseLogging === true) {
-        console.log(`${logTheFrickinTime()} Showing LDL slide: ${slide.htmlID} for ${duration}ms`)             
+        console.log(`${logTheFrickinTime()} Showing LDL slide: ${slide.htmlID} for ${duration}ms`)
     }
-    
-    const slideElement = slideElementMap[slide.htmlID]?.() || document.getElementById(slide.htmlID);
+
+    const slideElement = slideElementMap[slide.htmlID]?.() || document.getElementById(slide.htmlID)
     if (!slideElement) {
-        console.warn(`${logTheFrickinTime()} LDL slide element not found: ${slide.htmlID}`);
-        setTimeout(nextLDLSlide, 2000);
-        return;
+        console.warn(`${logTheFrickinTime()} LDL slide element not found: ${slide.htmlID}`)
+        setTimeout(nextLDLSlide, 2000)
+        return
     }
 
-    slideElement.style.cssText = 'display:block;animation:slideIn 1s ease-out';
+    slideElement.style.cssText = 'display:flex;animation:slideIn 0.6s ease-out'
+    updateCarousel(slide)
+    slideAnimations[slide.htmlID]?.()
 
-    if (slide.htmlID === 'ldl-current') {
-        runCurrentSlide();
-    }
-
-    if (slide.htmlID === 'ldl-forecast') {
-        runForecastSlide();
+    if (slide.htmlID === 'ldl-shortterm') {
+        runShorttermPager()
     }
 
     if (ldlSlideIndex === Object.keys(ldlPresentationSlides).length - 1) {
-        setTimeout(() => hideLocationLabel(), duration - 1000);
+        setTimeout(() => hideLocationLabel(), duration - 1000)
     }
 
-    setTimeout(() => triggerExitAnimation(slide.htmlID), duration - 1000);
+    setTimeout(() => triggerExitAnimation(slide.htmlID), duration - 1000)
 
     setTimeout(() => {
-        nextLDLSlide();
+        if (slide.htmlID === 'ldl-shortterm' && shorttermPagerTimeout) {
+            clearTimeout(shorttermPagerTimeout)
+            shorttermPagerTimeout = null
+        }
+        nextLDLSlide()
     }, duration)
 }
 
@@ -776,6 +1148,7 @@ async function nextLDLLocation() {
 
     ldlLocationIndex = (ldlLocationIndex + 1) % ldlLocations.length;
 
+    scrollCarouselToLocation(ldlLocationIndex)
     showLocationLabel();
     runProgressBar();
 
@@ -826,9 +1199,9 @@ export async function runInitialLDL() {
     ldlLocationIndex = 0;
     ldlSlideIndex = 0;
 
-    showLocationLabel();
-    runProgressBar();
-    
-    await LDLData();
-    showLDLSlide();
+    initCarousel()
+    showLocationLabel()
+    runProgressBar()
+    await LDLData()
+    showLDLSlide()
 }

@@ -1,15 +1,17 @@
-<img src="https://github.com/SSPWXR0/weatherhds1/blob/master/public/images/hdslogo_2024.png">
+<img src="https://github.com/meowraii/weatherhds1/blob/master/public/images/hdslogo_2024.png">
 <body>
   <h1>WeatherHDS (Weather HTML Display System)</h1>
 
-  <img src="https://github.com/SSPWXR0/weatherhds1/blob/master/public/images/hds_screenshots.jpg">
+  <img src="https://github.com/meowraii/weatherhds1/blob/master/public/images/hds_screenshots.jpg">
 
   <h2>Present continuous weather data on display screens, with easy deployment and free and open source software.</h2>
-  <p>WeatherHDS is a Node.JS app that simplifies the presentation of modern and updated weather graphics on digital displays or other types of broadcasts. Designed with modularity and infinite customizability in mind, thanks to WeatherHDS's simplified
-  underlying system completely built on standard web technologies.</p>
+  <p>WeatherHDS is a Go app that simplifies the presentation of modern and updated weather graphics on digital displays or other types of broadcasts. Designed with modularity and infinite customizability in mind, thanks to WeatherHDS's simplified underlying system completely built on standard web technologies.</p>
+
+  <h1>Building</h1>
+  <p>Requires Go 1.20+. To build, run <code>go build -o weatherhds</code> in the project root. The executable will just simply appear.</p>
+  <p>Or, you can download the latest release from the releases page: <a href="https://github.com/meowraii/weatherhds1/releases">Releases</a></p>
 
   <h1>Configuration</h1>
-  <p>Dependencies: express, node-cache, dotenv</p>
   <p>Main presentation, LDL locations, and system settings can be edited in <code>public/config.js</code>. Always restart the server for config changes!</p>
   <p>The system rotates between locations once the last slide of the presentation is reached, it should loop back on the next location.</p>
   <p>slides.js manages how the slides work. Currently, it switches between the HTML containers every 8 to 10 seconds.</p>
@@ -77,19 +79,10 @@
   <li><code>ldlClock</code>: Toggles the LDL clock independently of global <code>ldlClock</code> setting.</li>
 </ul>
 <p></p>
-
-
-
   <h1>Credits</h1>
     <p>Credit to ScentedOrange for making the air quality and 7 day high and low pages. | https://github.com/ScentedOrangeDEV</p>
     <p>Credit to LeWolfYT for providing solutions to issues regarding the 7 day highs and the LDL progress bars | https://github.com/LeWolfYT</p>
   <p>Weather icons (MIT): https://github.com/basmilius/weather-icons | Copy of license included in weather icon directory</p>
   <p>Google Material icons (APACHE 2.0): https://fonts.google.com/icons | https://www.apache.org/licenses/LICENSE-2.0</p>
   <p>weather videos (Pexels): https://www.pexels.com/license/</p>
-
-  <h1>Unresolved Issues</h1>
-  <p>Always report issues on the issues page!</p>
-  <ul>
-    <li>Memory leak (accumulating memory usage as the program operates)</li>
-  </ul> 
 </body>

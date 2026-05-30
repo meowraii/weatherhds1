@@ -12,11 +12,8 @@ const domElements = {
     wallpaper: document.getElementsByClassName("wallpaper")[0],
     ldl: document.getElementsByClassName("ldl-presentation")[0],
     ldlContainer: document.getElementsByClassName("ldl-weather")[0],
-    ldlBranding: document.getElementsByClassName("ldl-netlogo")[0],
     date: document.getElementById("date"),
     time: document.getElementById("time"),
-    dateLDL: document.getElementById("dateLDL"),
-    timeLDL: document.getElementById("timeLDL"),
     i2SidebarBuffer: document.getElementsByClassName("sidebar")[0],
     upnextLocation2: document.getElementById('upnext-location2'),
     upnextLocation3: document.getElementById('upnext-location3'),
@@ -24,13 +21,12 @@ const domElements = {
     marqueeTicker: document.getElementById('marquee-ticker')
 };
 
-const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, ldl, ldlContainer, ldlBranding, contentArea, cityTicker, slidesBlock } = domElements;
+const { viewport, mainSlides, regionalSlides, bumperSlides, wallpaper, ldl, ldlContainer, contentArea, cityTicker, slidesBlock } = domElements;
 const date = domElements.date;
 const time = domElements.time;
-const dateLDL = domElements.dateLDL;
-const timeLDL = domElements.timeLDL;
 
 let broadcastState = 0; // zero is good weather, one is bad weather.
+let localBackgroundObjectUrl = null;
 
 const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -81,9 +77,24 @@ function initBackgrounds() {
             async function fetchLocalBackground() {
                 const response = await fetch('/backgrounds/image');
                 if (response.ok) {
-                    const imageUrl = await response.text();
-                    wallpaper.style.backgroundImage = `url(${imageUrl})`;
-                    console.log(logTheFrickinTime, "Applied background image:", imageUrl);
+                    const contentType = response.headers.get('content-type') || '';
+
+                    if (contentType.startsWith('image/')) {
+                        const imageBlob = await response.blob();
+                        const objectUrl = URL.createObjectURL(imageBlob);
+
+                        if (localBackgroundObjectUrl) {
+                            URL.revokeObjectURL(localBackgroundObjectUrl);
+                        }
+
+                        localBackgroundObjectUrl = objectUrl;
+                        wallpaper.style.backgroundImage = `url(${objectUrl})`;
+                        console.log(logTheFrickinTime, "Applied streamed local background image", contentType);
+                    } else {
+                        const imageUrl = await response.text();
+                        wallpaper.style.backgroundImage = `url(${imageUrl})`;
+                        console.log(logTheFrickinTime, "Applied legacy local background image URL:", imageUrl);
+                    }
                 } else {
                     console.warn(logTheFrickinTime, "Failed to fetch background image");
                 }
@@ -105,11 +116,11 @@ function initBackgrounds() {
 }
 
 const VIDEO_MODES = Object.freeze({
-    vga:       { width: 1920, height: 1440, barWidth: "94%" },  // 4:3 - VGA
-    ntsc:      { width: 2160, height: 1440, barWidth: "94%" },  // 3:2 - NTSC
-    pal:       { width: 720,  height: 576,  barWidth: "94%" },  // 5:4 - PAL
-    tablet:    { width: 2304, height: 1440, barWidth: "90%" },  // 16:10 - tablet
-    hdtv:      { width: 2560, height: 1440, barWidth: "90%" },  // 16:9 - HDTV
+    vga:       { width: 1920, height: 1440, barWidth: "100%" },  // 4:3 - VGA
+    ntsc:      { width: 2160, height: 1440, barWidth: "100%" },  // 3:2 - NTSC
+    pal:       { width: 720,  height: 576,  barWidth: "100%" },  // 5:4 - PAL
+    tablet:    { width: 2304, height: 1440, barWidth: "100%" },  // 16:10 - tablet
+    hdtv:      { width: 2560, height: 1440, barWidth: "100%" },  // 16:9 - HDTV
 });
 
 const videoTypeParam = new URLSearchParams(window.location.search).get('videoType');
@@ -140,7 +151,6 @@ function viewportAspect() {
 
     viewport.style.cssText = `width:${width}px;transform-origin:top left;left:${centeredLeft}px;top:${centeredTop}px;transform:scale(${scaleRatio})`;
     
-    ldlContainer.style.width = barWidth;
     contentArea.style.width = barWidth;
 
     const mainVideoBlock = [
@@ -163,30 +173,12 @@ function viewportAspect() {
 
 window.addEventListener('resize', debounce(viewportAspect, 100));
 
-function clock() {
-    const now = new Date();
-    const dateStr = `${DAYS[now.getDay()]} ${MONTHS[now.getMonth()]} ${now.getDate()} ${now.getFullYear()}`;
-    const timeStr = dateFormatter.format(now);
-
-    if (date.textContent !== dateStr) {
-        date.textContent = dateStr;
-        dateLDL.textContent = dateStr;
-    }
-    time.textContent = timeStr;
-    timeLDL.textContent = timeStr;
-}
-
-clock();
-setInterval(clock, 1000);
-
 function presentationType() {
-
 
     const mainPres = new URLSearchParams(window.location.search).get('main');
     const ldlPres = new URLSearchParams(window.location.search).get('ldl');
     const backgrounds = new URLSearchParams(window.location.search).get('backgrounds');
     const repeatMain = new URLSearchParams(window.location.search).get('repeatMain');
-    const ldlClock = new URLSearchParams(window.location.search).get('ldlClock');
     const ldlBack = new URLSearchParams(window.location.search).get('ldlBack')
 
     if (mainPres !== null) {
@@ -208,11 +200,6 @@ function presentationType() {
         config.presentationConfig.repeatMain = parsed;
     }
 
-    if (ldlClock !== null) {
-        const parsed = ldlClock.toLowerCase() === 'true';
-        config.presentationConfig.ldlClock = parsed;
-    }
-
     if (ldlBack !== null) {
         const parsed = ldlBack.toLowerCase() === 'true';
         config.presentationConfig.ldlBack = parsed;
@@ -221,8 +208,6 @@ function presentationType() {
     if (config.presentationConfig.main != true) {
         wallpaper.style.display = `none`
         mainSlides.style.display = `none`
-    } else {
-        ldlBranding.style.display = `none`
     }
 
     if (config.presentationConfig.backgrounds != true) {
@@ -232,13 +217,9 @@ function presentationType() {
     }
 
     if (config.presentationConfig.ldl != true) {
-        if (config.presentationConfig.ldlClock) {
-            ldlBranding.style.display = `block`
-        }
         ldl.style.display = `none`;
     }
     if (config.presentationConfig.ldlBack === false) {
-        ldlBranding.style.display = `none`
         ldlContainer.style.borderLeft = `none`
         ldlContainer.style.borderRight = `none`
         ldlContainer.style.borderTop = `none`
@@ -247,31 +228,18 @@ function presentationType() {
     }
 }
 
-function scrollTicker() {
-    if (!config.tickerContent) {
-        if (domElements.ldlMarquee) domElements.ldlMarquee.style.display = 'none';
-        return;
-    }
-    
-    if (domElements.marqueeTicker) {
-        domElements.marqueeTicker.textContent = config.tickerContent;
-        $(domElements.marqueeTicker).marquee({
-            duration: 9000,
-            gap: 360,
-            delayBeforeStart: 0,
-            direction: 'left',
-            duplicated: true,
-            pauseOnHover: true,
-        });
-    }
-}
-
 window.onload = () => {
     viewportAspect();
     presentationType();
-    scrollTicker();
     initBackgrounds();
 };
+
+window.addEventListener('beforeunload', () => {
+    if (localBackgroundObjectUrl) {
+        URL.revokeObjectURL(localBackgroundObjectUrl);
+        localBackgroundObjectUrl = null;
+    }
+});
 
 const refreshInterval = config.refreshInterval * 60000;
 if (refreshInterval > 0) {

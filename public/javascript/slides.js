@@ -1,8 +1,9 @@
-import { config, locationConfig, versionID, serverConfig, bumperBackgroundsRandom } from "../config.js";
-import { appendDatatoMain, animateIntraday, daypartNames } from "./weather.js";
+import { config, locationConfig, versionID, serverConfig, bumperBackgroundsRandom, brand } from "../config.js";
+import { appendDatatoMain, animateIntraday, daypartNames, getShortTermPeriodCount, renderShortTermPeriod } from "./weather.js";
 import { serverHealth } from "./data.js";
 import { runRegionalPlayback } from "./national.js";
 import { resizeRadar } from "./radar.js";
+import { getVocallocalQueueForSlide, getVocallocalTotalDurationMsForSlide, isVocallocalEnabled } from "./vocallocal.js";
 
 const playlistSettings = {
     defaultAnimationIn: `mainPresentationSlideIn 500ms ease-in-out`,
@@ -26,7 +27,7 @@ const preferredPlaylist = {
         {
             htmlID: "current",
             title: "Current Conditions",
-            duration: 10000,
+            duration: 12000,
             dynamicFunction: runMainCurrentSlide,
             animationIn: playlistSettings.defaultAnimationIn,
             animationOut: playlistSettings.defaultAnimationOut
@@ -34,7 +35,7 @@ const preferredPlaylist = {
         {
             htmlID: "radar",
             title: "3 Hour Radar",
-            duration: 12000,
+            duration: 16000,
             dynamicFunction: runRadarSlide,
             animationIn: playlistSettings.defaultAnimationIn,
             animationOut: playlistSettings.defaultAnimationOut
@@ -50,7 +51,7 @@ const preferredPlaylist = {
         {
             htmlID: "forecast-shortterm-d1",
             title: "",
-            duration: 10000,
+            duration: 14000,
             dynamicFunction: null,
             animationIn: playlistSettings.defaultAnimationIn,
             animationOut: playlistSettings.defaultAnimationOut
@@ -58,7 +59,7 @@ const preferredPlaylist = {
         {
             htmlID: "forecast-shortterm-d2",
             title: "",
-            duration: 10000,
+            duration: 14000,
             dynamicFunction: null,
             animationIn: playlistSettings.defaultAnimationIn,
             animationOut: playlistSettings.defaultAnimationOut
@@ -66,7 +67,7 @@ const preferredPlaylist = {
         {
             htmlID: "forecast-extended",
             title: "Beyond",
-            duration: 10000,
+            duration: 12000,
             dynamicFunction: runExtendedSlide,
             animationIn: playlistSettings.defaultAnimationIn,
             animationOut: playlistSettings.defaultAnimationOut
@@ -74,7 +75,7 @@ const preferredPlaylist = {
         {
             htmlID: "7day-graph",
             title: "Daily Highs & Lows",
-            duration: 10000,
+            duration: 12000,
             dynamicFunction: null,
             animationIn: playlistSettings.defaultAnimationIn,
             animationOut: playlistSettings.defaultAnimationOut
@@ -82,7 +83,7 @@ const preferredPlaylist = {
         {
             htmlID: "airquality",
             title: "Current AQI",
-            duration: 10000,
+            duration: 12000,
             dynamicFunction: null,
             animationIn: playlistSettings.defaultAnimationIn,
             animationOut: playlistSettings.defaultAnimationOut
@@ -101,7 +102,7 @@ const preferredPlaylist = {
         {
             htmlID: "forecast-shortterm-d1",
             title: "",
-            duration: 10000,
+            duration: 14000,
             dynamicFunction: null,
             animationIn: playlistSettings.defaultAnimationIn,
             animationOut: playlistSettings.defaultAnimationOut
@@ -109,7 +110,7 @@ const preferredPlaylist = {
         {
             htmlID: "forecast-shortterm-d2",
             title: "",
-            duration: 10000,
+            duration: 14000,
             dynamicFunction: null,
             animationIn: playlistSettings.defaultAnimationIn,
             animationOut: playlistSettings.defaultAnimationOut
@@ -117,7 +118,7 @@ const preferredPlaylist = {
         {
             htmlID: "radar",
             title: "3 Hour Radar",
-            duration: 12000,
+            duration: 16000,
             dynamicFunction: runRadarSlide,
             animationIn: playlistSettings.defaultAnimationIn,
             animationOut: playlistSettings.defaultAnimationOut
@@ -128,7 +129,7 @@ const preferredPlaylist = {
         {
             htmlID: "radar",
             title: "",
-            duration: 20000,
+            duration: 30000,
             dynamicFunction: runRadarSlide,
             animationIn: null,
             animationOut: null
@@ -180,6 +181,24 @@ const domCache = {
 
 domCache.stationIdHdsver.innerText = versionID;
 
+const stationIdNetworkLogo = document.getElementById('station-id-network-logo');
+const stationIdProvider = document.getElementById('station-id-provider');
+const stationIdChannel = document.getElementById('station-id-channel');
+
+if (stationIdNetworkLogo && brand?.networkLogo) stationIdNetworkLogo.src = brand.networkLogo;
+if (stationIdNetworkLogo && brand?.networkName) stationIdNetworkLogo.alt = brand.networkName;
+
+const firstProviderEntry = brand?.providers ? Object.entries(brand.providers)[0] : null;
+if (firstProviderEntry) {
+    const [providerName, providerData] = firstProviderEntry;
+    if (stationIdProvider) stationIdProvider.textContent = providerName;
+    const vt = config.videoType === 'auto' ? 'hdtv' : config.videoType;
+    const channelEntry = providerData.channels
+        ? Object.values(providerData.channels).find(c => c.videoType === vt) ?? Object.values(providerData.channels)[0]
+        : null;
+    if (stationIdChannel && channelEntry) stationIdChannel.textContent = channelEntry.label ?? '';
+}
+
 const { radarDiv, regionalSlides, slideInfoIcon, slideInfoName, slideProgressBar } = domCache;
 
 function updateUpNext(queue, currentIdx) {
@@ -214,6 +233,107 @@ function updateUpNext(queue, currentIdx) {
 }
 
 let slideNearEnd, slideEnd;
+let vocallocalToken = 0;
+let vocallocalGroupActive = '';
+let vocallocalContext = null;
+let vocallocalSources = [];
+let vocallocalAbortController = null;
+
+setInterval(() => {
+    if (vocallocalSources.length > 0 && !isVocallocalEnabled()) {
+        stopVocallocalPlayback();
+    }
+}, 5000);
+
+function toVocallocalGroupId(slideId) {
+    return slideId;
+}
+
+function clearVocallocalSources() {
+    for (const source of vocallocalSources) {
+        try {
+            source.stop();
+        } catch {}
+        try {
+            source.disconnect();
+        } catch {}
+    }
+    vocallocalSources = [];
+}
+
+function ensureVocallocalContext() {
+    if (!vocallocalContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+            return null;
+        }
+        vocallocalContext = new AudioContextClass();
+    }
+    return vocallocalContext;
+}
+
+function stopVocallocalPlayback() {
+    vocallocalToken++;
+    if (vocallocalAbortController) {
+        vocallocalAbortController.abort();
+        vocallocalAbortController = null;
+    }
+    clearVocallocalSources();
+}
+
+async function playVocallocalForSlide(slideId, queueKey = null) {
+    if (!isVocallocalEnabled()) return;
+
+    const groupId = queueKey || toVocallocalGroupId(slideId);
+    const queue = getVocallocalQueueForSlide(groupId);
+    if (!queue || queue.length === 0) return;
+
+    const context = ensureVocallocalContext();
+    if (!context) {
+        return;
+    }
+
+    try {
+        if (context.state === 'suspended') {
+            await context.resume();
+        }
+    } catch {}
+
+    vocallocalAbortController = new AbortController();
+    const signal = vocallocalAbortController.signal;
+
+    const localToken = ++vocallocalToken;
+    let startAt = context.currentTime + 0.02;
+
+    for (const item of queue) {
+        if (localToken !== vocallocalToken) return;
+        const url = typeof item === 'string' ? item : item?.url;
+        if (!url) {
+            continue;
+        }
+        try {
+            const response = await fetch(url, { cache: 'force-cache', signal });
+            if (!response.ok) {
+                continue;
+            }
+            const bufferBytes = await response.arrayBuffer();
+            if (localToken !== vocallocalToken) return;
+            const audioBuffer = await context.decodeAudioData(bufferBytes.slice(0));
+            if (localToken !== vocallocalToken) return;
+            const source = context.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(context.destination);
+            const safeStartAt = Math.max(startAt, context.currentTime + 0.02);
+            source.start(safeStartAt);
+            vocallocalSources.push(source);
+            startAt = safeStartAt + audioBuffer.duration;
+        } catch {
+            if (signal.aborted) {
+                return;
+            }
+        }
+    }
+}
 
 const bumperDefs = {
     stationID:         { htmlID: "stationid", title: "Welcome!",            duration: 10000, isRegional: false },
@@ -349,9 +469,38 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
     const bumpers = document.querySelectorAll('.bumper-slide');
     const slideIds = new Set(Array.from(slides).map(el => el.id));
     const bumperIds = new Set(Array.from(bumpers).map(el => el.id));
-    const activeSlides = selectedPlaylist.filter(item =>
+    const baseSlides = selectedPlaylist.filter(item =>
         slideIds.has(item.htmlID) || bumperIds.has(item.htmlID)
     );
+    let activeSlides = baseSlides;
+
+    const firstShortTermIndex = baseSlides.findIndex((item) => item.htmlID === 'forecast-shortterm-d1' || item.htmlID === 'forecast-shortterm-d2');
+    if (firstShortTermIndex >= 0) {
+        const shortTermCount = Math.max(1, getShortTermPeriodCount());
+        const shortTermBase = baseSlides[firstShortTermIndex];
+        const shortTermTotalDurationMs = getVocallocalTotalDurationMsForSlide('forecast-shortterm');
+        const shortTermPerSlideDurationMs = shortTermTotalDurationMs > 0
+            ? Math.max(shortTermBase.duration, Math.ceil(shortTermTotalDurationMs / shortTermCount) + 250)
+            : shortTermBase.duration;
+
+        const shortTermSlides = [];
+        for (let periodIndex = 0; periodIndex < shortTermCount; periodIndex++) {
+            const htmlID = periodIndex % 2 === 0 ? 'forecast-shortterm-d1' : 'forecast-shortterm-d2';
+            shortTermSlides.push({
+                ...shortTermBase,
+                htmlID,
+                title: daypartNames[periodIndex] || shortTermBase.title,
+                shortTermPeriodIndex: periodIndex,
+                duration: shortTermPerSlideDurationMs,
+            });
+        }
+
+        activeSlides = [
+            ...baseSlides.slice(0, firstShortTermIndex),
+            ...shortTermSlides,
+            ...baseSlides.filter((item, index) => index > firstShortTermIndex && item.htmlID !== 'forecast-shortterm-d1' && item.htmlID !== 'forecast-shortterm-d2'),
+        ];
+    }
 
     let slideIndex = 0;
 
@@ -367,6 +516,8 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
     function showNextSlide() {
         if (slideIndex >= activeSlides.length) {
             slides.forEach(s => { s.style.display = "none"; });
+            stopVocallocalPlayback();
+            vocallocalGroupActive = '';
             call?.();
             return;
         }
@@ -387,6 +538,9 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
         let slideDisplayTitle = slide.title;
         if (slide.htmlID === 'forecast-shortterm-d1') slideDisplayTitle = daypartNames[0] || slide.title;
         if (slide.htmlID === 'forecast-shortterm-d2') slideDisplayTitle = daypartNames[1] || slide.title;
+        if (slide.shortTermPeriodIndex != null) {
+            slideDisplayTitle = daypartNames[slide.shortTermPeriodIndex] || slide.title;
+        }
         slideInfoName.textContent = slideDisplayTitle;
         slideInfoName.style.cssText = 'display:block;animation:switchModules 300ms ease-in-out forwards';
         slideInfoIcon.style.cssText = 'display:block;animation:switchModules 160ms ease-in-out forwards';
@@ -400,9 +554,21 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
         if (el) {
             el.style.display = "block";
             el.style.animation = slide.animationIn;
+            if (slide.shortTermPeriodIndex != null) {
+                renderShortTermPeriod(slide.htmlID, slide.shortTermPeriodIndex, true);
+            }
             if (typeof slide.dynamicFunction === "function") {
                 slide.dynamicFunction();
             }
+        }
+
+        const targetVocallocalGroup = slide.shortTermPeriodIndex != null
+            ? `forecast-shortterm-${slide.shortTermPeriodIndex}`
+            : toVocallocalGroupId(slide.htmlID);
+        if (isVocallocalEnabled() && targetVocallocalGroup !== vocallocalGroupActive) {
+            stopVocallocalPlayback();
+            vocallocalGroupActive = targetVocallocalGroup;
+            playVocallocalForSlide(slide.htmlID, targetVocallocalGroup);
         }
 
         if (slide.htmlID === 'radar') {
@@ -428,6 +594,8 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
 
             if (!config.presentationConfig.repeatMain && slideIndex === activeSlides.length - 1) {
                 slides.forEach(s => s.style.display = "none");
+                stopVocallocalPlayback();
+                vocallocalGroupActive = '';
                 call?.();
                 return;
             }

@@ -11,7 +11,7 @@
         <link rel="stylesheet" href="/css/cityticker.css">
         <link rel="stylesheet" href="/css/ldl.css">
         <link rel="stylesheet" href="/css/animations.css">
-        <link rel="icon" type="image/x-icon" href="./images/favicon.png">
+        <link rel="icon" type="image/x-icon" href="/images/favicon.png">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
         <script src="//cdn.jsdelivr.net/npm/jquery.marquee@1.6.0/jquery.marquee.min.js" type="text/javascript"></script>
@@ -20,6 +20,7 @@
         <script type="module" src="javascript/slides.js" defer></script>
         <script type="module" src="javascript/national.js" defer></script>
         <script type="module" src="javascript/main.js" defer></script>
+        <script type="module" src="javascript/clock.js" defer></script>
         <script type="module" src="/javascript/data.js"></script>
         <script type="module" src="javascript/cityticker.js" defer></script>
         <script type="module" src="javascript/ldl.js" defer></script>
@@ -45,15 +46,8 @@
             <div class="content-area">
             
                 <div class="sidebar">
-                    <div class="sidebar-channel-info">
-                        <div class="sidebar-logo-group">
-                            <div class="sidebar-channel-logo"></div>
-                        </div>
-
-                        <div class="sidebar-datetime">
-                            <div id="date"></div>
-                            <div id="time"></div>
-                        </div>
+                    <div class="sidebar-logo-group">
+                        <div class="sidebar-channel-logo"></div>
                     </div>
 
                     <div class="sidebar-haze-display"> <!-- optional integration for haze playout's song metadata and album art -->
@@ -174,21 +168,15 @@
                         </div>
                         <div class="bumper-slides">
                             <div id="stationid" class="bumper-slide">
-                                <div class="main-info-container main-slide-panel">
-                                    <div class="main-info-logos">
-                                        <div class="main-info-netlogo-container"></div>
-                                        <div class="main-info-operatorLogos">
-                                            <h6 class="main-info-logos-label">A project of</h6>
-                                            <div class="main-info-sspwxrlogo-container"></div>
-                                        </div>
+                                <div class="station-id-slide">
+                                    <div class="station-id-hdsinfo">
+                                        <img class="station-id-hds-logo" src="/images/hdslogo_2024.png" alt="WeatherHDS">
+                                        <span id="station-id-hdsver" class="station-id-version"></span>
                                     </div>
-                                    <div class="main-info-links">
-                                        <div id="station-id-affiliatename">KODI IP Cable Network</div>
-                                        <div id="station-id-channelid">www.kodicable.net</div>
-                                    </div>
-                                    <div class="main-info-hds1info">
-                                        <img class="hdsLogo" src="/images/hdslogo_2024.png" alt="WeatherHDS 1 logo">
-                                        <h6 id="station-id-hdsver" class="versionID"></h6>
+                                    <img class="station-id-network-logo" id="station-id-network-logo" src="" alt="">
+                                    <div class="station-id-lower">
+                                        <div class="station-id-provider" id="station-id-provider"></div>
+                                        <div class="station-id-channel" id="station-id-channel"></div>
                                     </div>
                                 </div>
                             </div>
@@ -593,296 +581,218 @@
                             </div>
                         </div>
                     </div>
-
+                    <div class="ldl-bulletin-crawl">
+                        <div class="ldl-bulletin-metadata-text" id="ldl-bulletin-metadata-text">
+                            <span class="bulletin-icon">⚠</span>
+                            <span class="bulletin-metadata-label"></span>
+                        </div>
+                        <div class="ldl-bulletin-text-container" id="ldl-bulletin-text"></div>
+                    </div>
                     <div class="cityticker">
                         <div class="cityticker-body">
                             <div class="cityticker-track"></div>
                         </div>
                     </div>
                 </div>
-
-
-
+                
             </div>
-
+            
             <div class="ldl-weather">
-                <div class="ldl-bulletin-crawl">
-                    <div class="ldl-bulletin-metadata-text" id="ldl-bulletin-metadata-text">
-                        <span class="bulletin-icon">⚠</span>
-                        <span class="bulletin-metadata-label"></span>
+                <div class="ldl-branding-area">
+                    <div class="ldl-date-time-container">
+                        <div id="ldl-date" class="ldl-date">Wed May 13, 2026</div>
+                        <div id="ldl-time" class="ldl-time">6:58:00 PM CST</div>
                     </div>
-                    <div class="ldl-bulletin-text-container" id="ldl-bulletin-text"></div>
+                    <div class="provider-logo-container">
+                        <span id="ldl-provider-extratext-heading" class="ldl-provider-extratext"></span>
+                        <img id="ldl-provider-logo" class="ldl-provider-logo" src="" alt="Provider logo">
+                        <span id="ldl-provider-extratext-tailing" class="ldl-provider-extratext"></span>
+                    </div>
                 </div>
-
-                <div class="ldl-container">
-                    <div class="ldl-netlogo">
-                        <div id="ldl-netlogo-container"></div>
-                        <div id="dateLDL"></div>
-                        <div id="timeLDL"></div>
-                    </div>
-                    <div class="ldl-presentation">
-                        <div class="ldl-presentation-container">
-
-                            <div id="ldl-current" class="ldl-presentation-slide">
-                                <div class="ldl-slide-container">
-                                    <div class="ldl-current-cond-temp">
-                                        <img class="ldl-icon" id="ldl-current-icon" src="/graphics/animated/partly-cloudy-day-rain.svg">
-                                        <div class="ldltext-primary" id="ldl-current-temp">100°C</div>
-                                        <div class="ldltext-secondary" id="ldl-current-condition">Sunny</div>
-                                    </div>
-                                    
-                                    <div class="ldl-current-wind">
-                                        <div class="ldltext-primarybutsmaller" id="ldl-current-wind-value">NNW, 120 km/h</div>
-                                        <div class="ldltext-secondary" id="ldl-current-wind-label">Wind</div>
-                                    </div>
-        
-                                    <div class="ldl-current-module" id="ldl-current-module1">
-                                        <div class="ldl-current-feelslike">
-                                            <div class="module-value" id="ldl-current-feelslike-value">1000°C</div>
-                                            Feels Like
-                                        </div>
-                                        <div class="ldl-current-humidity">
-                                            <div class="module-value" id="ldl-current-humidity-value">100%</div>
-                                            Humidity
-                                        </div>
-
-                                        <div class="ldl-current-pressure">
-                                            <div class="module-value" id="ldl-current-pressure-value">a lot</div>
-                                            Pressure
-                                        </div>
-                                    </div>
-        
-                                    <div class="ldl-current-module" id="ldl-current-module2">
-                                        <div class="ldl-current-visibility">
-                                            <div class="module-value" id="ldl-current-visibility-value">9999 km</div>
-                                            Visibility
-                                        </div>
-                                        <div class="ldl-current-ceiling">
-                                            <div class="module-value" id="ldl-current-ceiling-value">1600</div>
-                                            Ceiling
-                                        </div>
-                                        <div class="ldl-current-dewpoint">
-                                            <div class="module-value" id="ldl-current-dewpoint-value">1000°C</div>
-                                            Dewpoint
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="ldl-hourly" class="ldl-presentation-slide">
-                                <div class="ldl-slide-container">
-                                    <div class="ldl-hourly-period">
-                                        <div class="ldltext-secondarybutsmaller" id="ldl-hourly-time0">Now</div>
-                                        <div class="ldl-hourly-flex-items-container">
-                                            <img class="ldl-icon" id="ldl-hourly-icon0" src="/graphics/animated/partly-cloudy-day-rain.svg">
-                                            <div class="ldl-hourly-period-text-group">
-                                                <div class="ldltext-primarybutsmaller" id="ldl-hourly-temp0">12°C</div>
-                                                <div class="ldltext-secondarybutsmaller" id="ldl-hourly-condition0">Sunny</div>
-                                            </div>
-                                            <div class="ldl-hourly-precip-text-icon-group" id="ldl-hourly-period0-precip-group">
-                                                <div class="ldl-precip-icon" id="ldl-hourly-precip-icon0"></div>
-                                                <div class="ldltext-tertiary" id="ldl-hourly-precip0">100%</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="ldl-hourly-period">
-                                        <div class="ldltext-secondarybutsmaller" id="ldl-hourly-time1">3 PM</div>
-                                        <div class="ldl-hourly-flex-items-container">
-                                            <img class="ldl-icon" id="ldl-hourly-icon1" src="/graphics/animated/partly-cloudy-day-rain.svg">
-                                            <div class="ldl-hourly-period-text-group">
-                                                <div class="ldltext-primarybutsmaller" id="ldl-hourly-temp1">12°C</div>
-                                                <div class="ldltext-secondarybutsmaller" id="ldl-hourly-condition1">Sunny</div>
-                                            </div>
-                                            <div class="ldl-hourly-precip-text-icon-group" id="ldl-hourly-period1-precip-group">
-                                                <div class="ldl-precip-icon" id="ldl-hourly-precip-icon1"></div>
-                                                <div class="ldltext-tertiary" id="ldl-hourly-precip1">100%</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="ldl-hourly-period">
-                                        <div class="ldltext-secondarybutsmaller" id="ldl-hourly-time2">4 PM</div>
-                                        <div class="ldl-hourly-flex-items-container">
-                                            <img class="ldl-icon" id="ldl-hourly-icon2" src="/graphics/animated/partly-cloudy-day-rain.svg">
-                                            <div class="ldl-hourly-period-text-group">
-                                                <div class="ldltext-primarybutsmaller" id="ldl-hourly-temp2">12°C</div>
-                                                <div class="ldltext-secondarybutsmaller" id="ldl-hourly-condition2">Sunny</div>
-                                            </div>
-                                            <div class="ldl-hourly-precip-text-icon-group" id="ldl-hourly-period2-precip-group">
-                                                <div class="ldl-precip-icon" id="ldl-hourly-precip-icon2"></div>
-                                                <div class="ldltext-tertiary" id="ldl-hourly-precip2">100%</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="ldl-hourly-period">
-                                        <div class="ldltext-secondarybutsmaller" id="ldl-hourly-time3">5 PM</div>
-                                        <div class="ldl-hourly-flex-items-container">
-                                            <img class="ldl-icon" id="ldl-hourly-icon3" src="/graphics/animated/partly-cloudy-day-rain.svg">
-                                            <div class="ldl-hourly-period-text-group">
-                                                <div class="ldltext-primarybutsmaller" id="ldl-hourly-temp3">12°C</div>
-                                                <div class="ldltext-secondarybutsmaller" id="ldl-hourly-condition3">Sunny</div>
-                                            </div>
-                                            <div class="ldl-hourly-precip-text-icon-group" id="ldl-hourly-period3-precip-group">
-                                                <div class="ldl-precip-icon" id="ldl-hourly-precip-icon3"></div>
-                                                <div class="ldltext-tertiary" id="ldl-hourly-precip3">100%</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="ldl-hourly-period">
-                                        <div class="ldltext-secondarybutsmaller" id="ldl-hourly-time4">6 PM</div>
-                                        <div class="ldl-hourly-flex-items-container">
-                                            <img class="ldl-icon" id="ldl-hourly-icon4" src="/graphics/animated/partly-cloudy-day-rain.svg">
-                                            <div class="ldl-hourly-period-text-group">
-                                                <div class="ldltext-primarybutsmaller" id="ldl-hourly-temp4">12°C</div>
-                                                <div class="ldltext-secondarybutsmaller" id="ldl-hourly-condition4">Sunny</div>
-                                            </div>
-                                            <div class="ldl-hourly-precip-text-icon-group" id="ldl-hourly-period4-precip-group">
-                                                <div class="ldl-precip-icon" id="ldl-hourly-precip-icon4"></div>
-                                                <div class="ldltext-tertiary" id="ldl-hourly-precip4">100%</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="ldl-hourly-period">
-                                        <div class="ldltext-secondarybutsmaller" id="ldl-hourly-time5">7 PM</div>
-                                        <div class="ldl-hourly-flex-items-container">
-                                            <img class="ldl-icon" id="ldl-hourly-icon5" src="/graphics/animated/partly-cloudy-day-rain.svg">
-                                            <div class="ldl-hourly-period-text-group">
-                                                <div class="ldltext-primarybutsmaller" id="ldl-hourly-temp5">12°C</div>
-                                                <div class="ldltext-secondarybutsmaller" id="ldl-hourly-condition5">Sunny</div>
-                                            </div>
-                                            <div class="ldl-hourly-precip-text-icon-group" id="ldl-hourly-period5-precip-group">
-                                                <div class="ldl-precip-icon" id="ldl-hourly-precip-icon5"></div>
-                                                <div class="ldltext-tertiary" id="ldl-hourly-precip5">100%</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-        
-                            <div id="ldl-forecast" class="ldl-presentation-slide">
-                                <div class="ldl-slide-container">
-                                    <div class="ldl-day" id="ldl-forecast-day0-container">
-                                        <div class="ldl-forecast-day-cond">
-                                            <div class="ldltext-secondary" id="ldl-forecast-day0-name">Today</div>
-                                            <div class="ldltext-secondary" id="ldl-forecast-day0-condition">Sunny</div>
-                                        </div>
-            
-                                        <img class="ldl-icon" id="ldl-day0-icon" src="/graphics/animated/partly-cloudy-day-rain.svg">
-            
-                                        <div class="ldltext-primary" id="ldl-forecast-day0-temp">12°/17°</div>
-            
-                                        <div class="ldltext-primary" id="ldl-forecast-day0-pop-value">1000%</div>
-            
-                                        <div class="ldltext-secondary" id="ldl-forecast-day0-pop-value">Chance of<br>precipitation</div>
-                                    </div>
-        
-                                    <div class="ldl-day" id="ldl-forecast-day1-container">
-                                        <div class="ldl-forecast-day-cond">
-                                            <div class="ldltext-secondary" id="ldl-forecast-day1-name">Tomorrow</div>
-                                            <div class="ldltext-secondary" id="ldl-forecast-day1-condition">A mix of sun and cloud</div>
-                                        </div>
-            
-                                        <img class="ldl-icon" id="ldl-day1-icon" src="/graphics/animated/partly-cloudy-day-rain.svg">
-            
-                                        <div class="ldltext-primary" id="ldl-forecast-day1-temp">12°/17°</div>
-            
-                                        <div class="ldltext-primary" id="ldl-forecast-day1-pop-value">1000%</div>
-            
-                                        <div class="ldltext-secondary" id="ldl-forecast-day1-pop-value">Chance of<br>precipitation</div>
-                                    </div>
-        
-                                </div>
-                            </div>
-
-                            <div id="ldl-riseset" class="ldl-presentation-slide">
-                                <div class="ldl-slide-container">
-                                    <div class="ldl-sun-progressarch" id="ldl-sun-progressarch">
-                                        <div class="ldl-sun-arch-container">
-                                            <div class="ldl-sun-arch-track"></div>
-                                            <div class="ldl-sun-arch-progress" id="ldl-sun-arch-progress"></div>
-                                            <div class="ldl-sun-indicator" id="ldl-sun-indicator"></div>
-                                        </div>
-                                        <div class="ldl-sun-times-container">
-                                            <div class="ldl-sun-time">
-                                                <span class="ldl-sun-time-label" id="ldl-rise-time-label">sunrise</span>
-                                                <span class="ldl-sun-time-value" id="ldl-riseset-sunrise">6:00a</span>
-                                            </div>
-                                            <div class="ldl-sun-time">
-                                                <span class="ldl-sun-time-label" id="ldl-set-time-label">sunset</span>
-                                                <span class="ldl-sun-time-value" id="ldl-riseset-sunset">6:00p</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <br>
-                                    <div class="ldl-moon-phase-container">
-                                        <img class="ldl-moon-phase-icon" id="ldl-moon-phase-icon1" src="/graphics/animated/moon-waning-crescent.svg">
-                                        <div class="ldl-moon-phase-text-container">
-                                            <div class="ldltext-secondary" id="ldl-moon-phase-name1">Full Moon</div>
-                                            <div class="ldltext-tertiary" id="ldl-moon-phase-illumination1">Jan 28</div>
-                                        </div>
-                                    </div>
-                                    <div class="ldl-moon-phase-container">
-                                        <img class="ldl-moon-phase-icon" id="ldl-moon-phase-icon2" src="/graphics/animated/moon-waning-crescent.svg">
-                                        <div class="ldl-moon-phase-text-container">
-                                            <div class="ldltext-secondary" id="ldl-moon-phase-name2">Full Moon</div>
-                                            <div class="ldltext-tertiary" id="ldl-moon-phase-illumination2">Jan 28</div>
-                                        </div>
-                                    </div>
-                                    <div class="ldl-moon-phase-container">
-                                        <img class="ldl-moon-phase-icon" id="ldl-moon-phase-icon3" src="/graphics/animated/moon-waning-crescent.svg">
-                                        <div class="ldl-moon-phase-text-container">
-                                            <div class="ldltext-secondary" id="ldl-moon-phase-name3">Full Moon</div>
-                                            <div class="ldltext-tertiary" id="ldl-moon-phase-illumination3">Jan 28</div>
-                                        </div>
-                                    </div>
-                                    <div class="ldl-moon-phase-container">
-                                        <img class="ldl-moon-phase-icon" id="ldl-moon-phase-icon4" src="/graphics/animated/moon-waning-crescent.svg">
-                                        <div class="ldl-moon-phase-text-container">
-                                            <div class="ldltext-secondary" id="ldl-moon-phase-name4">Full Moon</div>
-                                            <div class="ldltext-tertiary" id="ldl-moon-phase-illumination4">Jan 28</div>
-                                        </div>
-                                    </div>
-
-
-                                    
-                                </div>
-                            </div>
-        
-                            <div id="ldl-aqi" class="ldl-presentation-slide">
-                                <div class="ldl-slide-container">
-                                    <div class="ldltext-secondary">Air Quality<br>Now</div>
-        
-                                    <div class="ldltext-primary" id="ldl-aqi-status">Good</div>
-        
-                                    <div class="ldltext-secondary">Air Quality<br>Index</div>
-        
-                                    <div class="ldltext-primary" id="ldl-aqi-index">28</div>
-        
-                                    <div class="ldltext-secondary">Primary<br>Pollutant</div>
-        
-                                    <div class="ldltext-primary" id="ldl-aqi-primarypollutant">O3</div>
-        
-                                </div>
-                            </div>
-                        </div>
-                        <div id="ldl-location">
-                            <div class="ldl-location-progressbar-container">
-                                <div id="ldl-location-progressbar"></div>
-                            </div>
-                            
-                            <div class="ldl-bottomtext-container">
-                                <div class="ldl-locationlabel-container">
-                                    <div class="ldltext-secondary" id="ldl-location-label"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="ldl-main-content">
                     
+                    <div class="ldl-container">
+                        <div class="ldl-carousel-container">
+                            <div class="ldl-carousel-current" id="ldl-carousel-current"></div>
+                            <div class="ldl-carousel-locations" id="ldl-carousel-locations"></div>
+                        </div>
+                     
+                        <div class="ldl-slides">
+                            <div class="ldl-slide" id="ldl-alert">
+                                <div class="ldl-alert-message">
+                                    <span>FOR OUR AREA:</span>
+                                    <span id="ldl-alert-message-1"> <!-- to be created dynamically depending on how much alerts there are. note that each alert add more time to show this slide each cycle. if there are no alerts, completely remove this from the cycle -->
+                                        <icon class="ldl-alert-icon" src="/graphics/ux/alert.svg">
+                                        <span class="ldl-alert-texts">
+                                            <div>Environment Canada has issued an</div>
+                                            <div>Orange Warning - Severe Thunderstorm</div>
+                                            <div>From 9:00 AM to 6:00 PM</div>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="ldl-slide" id="ldl-current">
+                                <div class="ldl-current-summary-group"> <!-- display name "Now" on the carousel -->
+                                    <img id="ldl-current-icon" class="ldl-current-icon" src="/graphics/animated/not-available.svg">
+                                    <span class="ldl-current-summary-texts">
+                                        <div id="ldl-current-condition" class="ldl-current-condition">No Data</div>
+                                        <div id="ldl-current-temp" class="ldl-current-temp">64<span class="ldl-small-degrees">°C</span></div>
+                                    </span>
+                                </div>
+                                <div class="ldl-current-details-group">
+                                    <div class="ldl-current-wind-direction-indicator">
+                                        <div class="ldl-current-wind-compass" id="ldl-current-wind-compass">
+                                            <div class="ldl-current-wind-ring"></div>
+                                            <div class="ldl-current-wind-ticks"></div>
+                                            <div class="ldl-current-wind-ticks-inner"></div>
+                                            <div class="ldl-current-wind-inner">
+                                                <div id="ldl-current-wind-direction">NNW</div>
+                                                <div id="ldl-current-wind-speed">0 km/h</div>
+                                                <div id="ldl-current-wind-gusts">0 Gusts</div>
+                                            </div>
+                                            <div class="ldl-current-wind-arrow" id="ldl-current-wind-arrow"></div>
+                                        </div>
+                                    </div>
+                                    <div class="ldl-current-details-extra">
+                                        <div class="ldl-current-detail" id="ldl-current-dewpoint">
+                                            <div class="ldl-current-label">Dewpoint</div>
+                                            <div class="ldl-current-value" id="ldl-current-dewpoint-value">-- <span class="ldl-small-degrees">°C</span></div>
+                                        </div>
+                                        <div class="ldl-current-detail" id="ldl-current-visibility">
+                                            <div class="ldl-current-label">Visibility</div>
+                                            <div id="ldl-current-visibility-value">-- km</div>
+                                        </div>
+                                        <div class="ldl-current-detail" id="ldl-current-uv">
+                                            <div class="ldl-current-label">UV Index</div>
+                                            <div id="ldl-current-uv-value">--</div>
+                                        </div>
+                                        <!--<div class="ldl-current-detail" id="ldl-current-uv">
+                                            <div class="ldl-current-label"></div>
+                                            <div id="ldl-current-uv-value">--</div>
+                                        </div>-->
+                                    </div>
+                                    <div class="ldl-current-details-extra">
+                                        <div class="ldl-current-detail" id="ldl-current-humidity">
+                                            <div class="ldl-current-label">Humidity</div>
+                                            <div class="ldl-current-value" id="ldl-current-humidity-value">--%</div>
+                                        </div>
+                                        <div class="ldl-current-detail" id="ldl-current-pressure">
+                                            <div class="ldl-current-label">Pressure</div>
+                                            <div id="ldl-current-pressure-value">-- hPa</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ldl-slide" id="ldl-hourly"> <!-- display name "Next 6 Hours" -->
+                                <div class="ldl-hourly-forecast-container" id="ldl-hourly-forecast-container">
+                                    <div class="ldl-hourly-period">
+                                        <div class="ldl-hourly-time" id="ldl-hourly-time0">This hour</div>
+                                        <img class="ldl-hourly-icon" id="ldl-hourly-icon0" src="/graphics/animated/not-available.svg">
+                                        <div class="ldl-hourly-temp" id="ldl-hourly-temp0">98<span class="ldl-small-degrees">°C</span></div>
+                                        <div class="ldl-hourly-condition" id="ldl-hourly-condition0">Mainly Stupid</div>
+                                    </div>
+                                    <div class="ldl-hourly-period">
+                                        <div class="ldl-hourly-time" id="ldl-hourly-time1">12 AM</div>
+                                        <img class="ldl-hourly-icon" id="ldl-hourly-icon1" src="/graphics/animated/not-available.svg">
+                                        <div class="ldl-hourly-temp" id="ldl-hourly-temp1">--<span class="ldl-small-degrees">°C</span></div>
+                                        <div class="ldl-hourly-condition" id="ldl-hourly-condition1">Mainly Stupid</div>
+                                    </div>
+                                    <div class="ldl-hourly-period">
+                                        <div class="ldl-hourly-time" id="ldl-hourly-time2">1 AM</div>
+                                        <img class="ldl-hourly-icon" id="ldl-hourly-icon2" src="/graphics/animated/not-available.svg">
+                                        <div class="ldl-hourly-temp" id="ldl-hourly-temp2"><span class="temp-point point-highest">🡅</span>143<span class="ldl-small-degrees">°C</span></div> <!-- highest/lowest for this day or night -->
+                                        <div class="ldl-hourly-condition" id="ldl-hourly-condition2">Mainly Stupid</div>
+                                    </div>
+                                    <div class="ldl-hourly-period">
+                                        <div class="ldl-hourly-time" id="ldl-hourly-time3">2 AM</div>
+                                        <img class="ldl-hourly-icon" id="ldl-hourly-icon3" src="/graphics/animated/not-available.svg">
+                                        <div class="ldl-hourly-temp" id="ldl-hourly-temp3">--<span class="ldl-small-degrees">°C</span></div>
+                                        <div class="ldl-hourly-condition" id="ldl-hourly-condition3">Mainly Stupid</div>
+                                    </div>
+                                    <div class="ldl-hourly-period">
+                                        <div class="ldl-hourly-time" id="ldl-hourly-time4">2 AM</div>
+                                        <img class="ldl-hourly-icon" id="ldl-hourly-icon4" src="/graphics/animated/not-available.svg">
+                                        <div class="ldl-hourly-temp" id="ldl-hourly-temp4"><span class="temp-point point-lowest">🡇</span>--<span class="ldl-small-degrees">°C</span></div>
+                                        <div class="ldl-hourly-condition" id="ldl-hourly-condition4">Mainly Stupid</div>
+                                    </div>
+                                    <div class="ldl-hourly-period">
+                                        <div class="ldl-hourly-time" id="ldl-hourly-time5">2 AM</div>
+                                        <img class="ldl-hourly-icon" id="ldl-hourly-icon5" src="/graphics/animated/not-available.svg">
+                                        <div class="ldl-hourly-temp" id="ldl-hourly-temp5">--<span class="ldl-small-degrees">°C</span></div>
+                                        <div class="ldl-hourly-condition" id="ldl-hourly-condition5">Mainly Stupid</div>
+                                    </div>
+                                    <div class="ldl-hourly-period">
+                                        <div class="ldl-hourly-time" id="ldl-hourly-time6">2 AM</div>
+                                        <img class="ldl-hourly-icon" id="ldl-hourly-icon6" src="/graphics/animated/not-available.svg">
+                                        <div class="ldl-hourly-temp" id="ldl-hourly-temp6">--<span class="ldl-small-degrees">°C</span></div>
+                                        <div class="ldl-hourly-condition" id="ldl-hourly-condition6">Mainly Stupid</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ldl-slide" id="ldl-period-summary"> <!-- display name "Period Normals"-->
+                                <div class="ldl-period-summary-container">
+                                    <div class="ldl-period-high-lows-group">
+                                        <div class="ldl-period-now">
+                                            <div class="ldl-period-label">Now</div>
+                                            <div class="ldl-now-temp">20<span class="ldl-small-degrees">°C</span></div>
+                                        </div>
+                                        <div class="ldl-today-highest">
+                                            <div class="ldl-today-highest-period">Today's</div>
+                                            <div class="ldl-daytemp-label">High</div>
+                                            <div class="ldl-period-highest-temp"><span class="temp-point point-highest">🡅</span>20<span class="ldl-small-degrees">°C</span></div>
+                                        </div>
+                                        <div class="ldl-today-lowest">
+                                            <div class="ldl-today-lowest-period">Tonight's</div>
+                                            <div class="ldl-daytemp-label">Low</div>
+                                            <div class="ldl-period-lowest-temp"><span class="temp-point point-lowest">🡇</span>20<span class="ldl-small-degrees">°C</span></div>
+                                        </div>
+                                        <div class="ldl-period-highest">
+                                            <div class="ldl-period-highest-period">Monday</div>
+                                            <div class="ldl-period-highest-date ldl-daytemp-label">May 17th</div>
+                                            <div class="ldl-period-highest-temp"><span class="temp-point point-highest">🡅</span>20<span class="ldl-small-degrees">°C</span></div>
+                                        </div>
+                                        <div class="ldl-period-lowest">
+                                            <div class="ldl-period-lowest-period">Monday Night</div>
+                                            <div class="ldl-period-lowest-date ldl-daytemp-label">May 17th</div>
+                                            <div class="ldl-period-lowest-temp"><span class="temp-point point-lowest">🡇</span>20<span class="ldl-small-degrees">°C</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ldl-slide" id="ldl-shortterm"> <!-- display name "Next 48 Hours"-->
+                                <div class="ldl-shortterm-forecast-container" id="ldl-shortterm-forecast-container"> <!-- also dynamically build this for 4 periods and flip through each period as pages-->
+                                    <div class="ldl-shortterm-period-summary">
+                                        <img class="ldl-shortterm-icon" id="ldl-shortterm-period-icon0" src="/graphics/animated/not-available.svg">
+                                        <div class="ldl-shortterm-period-temp" id="ldl-shortterm-period-temp0">12<span class="ldl-small-degrees">°C</span></div>
+                                        <div class="ldl-shortterm-pop" id="ldl-shortterm-period-pop0">20% Precip.</div> <!-- only show if not zero -->
+                                    </div>
+                                    <div class="ldl-shortterm-period-text">
+                                        <span class="ldl-shortterm-period-title" id="ldl-shortterm-period-title0">
+                                            Tonight
+                                        </span>
+
+                                        <span id="ldl-shortterm-period-narrative0">
+                                            Partly cloudy early followed by increasing clouds with showers developing later in the day. High 18C. Winds WNW at 15 to 30 km/h. Chance of rain 40%.
+                                        </span>
+                                    </div>
+                                        
+                                </div>
+                            </div>
+
+                            <div class="ldl-slide" id="ldl-daily"> <!-- display name "The Week Ahead" -->
+                                <div class="ldl-daily-forecast-container" id="ldl-daily-forecast-container"> <!-- dynamically build this for 7 periods lined up horizontally. -->
+                                    <div class="ldl-daily-period-summary">
+                                        <div class="ldl-daily-period-title" id="ldl-daily-period-title0">WED</div>
+                                        <img class="ldl-daily-icon" id="ldl-daily-period-icon0" src="/graphics/animated/not-available.svg">
+                                        <div class="ldl-daily-period-condition" id="ldl-daily-period-condition0">Partly Cloudy</div>
+                                        <div class="ldl-daily-period-high" id="ldl-daily-period-high0">12°</div> <!-- color orange below icon-->
+                                        <div class="ldl-daily-period-low" id="ldl-daily-period-low0">-12°</div> <!-- color blue, below high temperature slotted down in between periods.-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>

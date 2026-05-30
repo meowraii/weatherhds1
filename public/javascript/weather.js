@@ -1,6 +1,7 @@
 import { requestWxData, serverHealth } from './data.js'
 import { weatherIcons, locationConfig, serverConfig, config, displayUnits } from "../config.js";
 import { drawMap } from './radar.js';
+import { isVocallocalEnabled, prefetchMainVocallocal } from './vocallocal.js'
 
 export const upNextLocationText = document.getElementById('upnext-location');
 export const currentLocationText = document.getElementById('current-location');
@@ -25,6 +26,108 @@ const selectedDisplayUnits = displayUnits[serverConfig.units] || displayUnits['m
 let endingTemp = selectedDisplayUnits.endingTemp, endingWind = selectedDisplayUnits.endingWind, endingDistance = selectedDisplayUnits.endingDistance, endingPressure = selectedDisplayUnits.endingPressure, endingCeiling = selectedDisplayUnits.endingCeiling;
 
 export let daypartNames = []
+let shortTermForecastPeriods = []
+
+const FORECAST_CHAR_MS = 15
+const forecastTypewriterTimers = new Map()
+
+function typewriterInto(el, text, charMs = 4) {
+    const prev = forecastTypewriterTimers.get(el)
+    if (prev) { clearTimeout(prev); forecastTypewriterTimers.delete(el) }
+    el.textContent = ''
+    let i = 0
+    const step = () => {
+        if (i <= text.length) {
+            el.textContent = text.slice(0, i++)
+            forecastTypewriterTimers.set(el, setTimeout(step, charMs))
+        } else {
+            forecastTypewriterTimers.delete(el)
+        }
+    }
+    step()
+}
+
+export function getShortTermPeriodCount() {
+    return shortTermForecastPeriods.length
+}
+
+const SKY_CONDITION_SUFFIX_PATTERN = /\b(cloudy|clear|sunny|overcast|fair)\b$/i
+
+function normalizeConditionText(value) {
+    if (typeof value !== 'string') {
+        return ''
+    }
+    return value.trim().replace(/\s+/g, ' ')
+}
+
+function buildCurrentConditionClause(conditionText) {
+    const normalized = normalizeConditionText(conditionText)
+    if (!normalized) {
+        return 'with current conditions'
+    }
+
+    if (normalized.includes('/')) {
+        const parts = normalized.split('/').map((part) => normalizeConditionText(part)).filter(Boolean)
+        const lead = (parts[0] || '').toLowerCase()
+        const tail = parts.slice(1).map((part) => part.toLowerCase()).join(' and ')
+        if (SKY_CONDITION_SUFFIX_PATTERN.test(lead)) {
+            return tail ? `under ${lead} skies, with ${tail}` : `under ${lead} skies`
+        }
+        return tail ? `with ${lead}, and ${tail}` : `with ${lead}`
+    }
+
+    const lowered = normalized.toLowerCase()
+    if (SKY_CONDITION_SUFFIX_PATTERN.test(lowered)) {
+        return `under ${lowered} skies`
+    }
+    return `with ${lowered}`
+}
+
+function getIconPath(iconCode, dayOrNight) {
+    const iconSet = weatherIcons[iconCode]
+    if (!iconSet) {
+        return 'not-available.svg'
+    }
+    return iconSet[dayOrNight === 'D' ? 0 : 1] || 'not-available.svg'
+}
+
+function getAvifPath(iconCode) {
+    const iconSet = weatherIcons[iconCode]
+    if (!iconSet || !iconSet[2]) {
+        return null
+    }
+    return `/images/avif/${iconSet[2]}`
+}
+
+export function renderShortTermPeriod(slideId, periodIndex, animate = false) {
+    const period = shortTermForecastPeriods[periodIndex]
+    if (!period) {
+        return
+    }
+    const suffix = slideId === 'forecast-shortterm-d2' ? '2' : '1'
+    const titleEl = getCachedElement(`forecast-shorttermd${suffix}-title`)
+    const conditionEl = getCachedElement(`forecast-shorttermd${suffix}-condition`)
+    const tempEl = getCachedElement(`forecast-shorttermd${suffix}-temp`)
+    const textEl = getCachedElement(`forecast-shorttermd${suffix}-text`)
+    const iconEl = getCachedElement(`main-forecast-shorttermd${suffix}-icon`)
+    const summaryEl = getCachedElement(`forecast-shorttermd${suffix}-summary`)
+
+    if (titleEl) titleEl.textContent = period.title || ''
+    if (conditionEl) conditionEl.textContent = period.condition || ''
+    if (tempEl) tempEl.textContent = period.temperature
+    if (textEl) {
+        if (animate) typewriterInto(textEl, period.narrative || '', FORECAST_CHAR_MS)
+        else textEl.textContent = period.narrative || ''
+    }
+    if (iconEl) {
+        const iconPath = getIconPath(period.iconCode, period.dayOrNight)
+        iconEl.src = `/graphics/${iconDir}/${iconPath}`
+    }
+    if (summaryEl) {
+        const avifPath = getAvifPath(period.iconCode)
+        summaryEl.style.backgroundImage = avifPath ? `url(${avifPath})` : ''
+    }
+}
 
 export function formatTime(timeString) {
     const date = new Date(timeString)
@@ -80,10 +183,33 @@ export async function appendDatatoMain(locale, locType) {
             airQuality = wxData?.weather?.["v3-wx-globalAirQuality"]?.globalairquality ?? null;
             pollen = wxData?.weather?.pollenData?.pollenForecast12hour ?? null;
 
-            daypartNames = [
-                forecast.daypart[0].daypartName[0] ?? forecast.daypart[0].daypartName[1],
-                forecast.daypart[0].daypartName[2] ?? forecast.daypart[0].daypartName[3],
-            ]
+            shortTermForecastPeriods = []
+            const daypartData = forecast?.daypart?.[0]
+            const daypartNamesRaw = Array.isArray(daypartData?.daypartName) ? daypartData.daypartName : []
+            for (let index = 0; index < daypartNamesRaw.length; index++) {
+                const title = daypartData?.daypartName?.[index]
+                const condition = daypartData?.wxPhraseLong?.[index]
+                const temperature = daypartData?.temperature?.[index]
+                const narrative = daypartData?.narrative?.[index]
+                const iconCode = daypartData?.iconCode?.[index]
+                const dayOrNight = daypartData?.dayOrNight?.[index]
+                if (title == null && condition == null && temperature == null && narrative == null) {
+                    continue
+                }
+                shortTermForecastPeriods.push({
+                    title: title || '',
+                    condition: condition || '',
+                    temperature: `${temperature ?? '--'}${endingTemp}`,
+                    narrative: narrative || '',
+                    iconCode,
+                    dayOrNight: dayOrNight || 'D'
+                })
+                if (shortTermForecastPeriods.length >= 4) {
+                    break
+                }
+            }
+
+            daypartNames = shortTermForecastPeriods.map((period) => period.title)
 
             if (serverHealth === 0) {
 
@@ -110,6 +236,37 @@ export async function appendDatatoMain(locale, locType) {
             } else {
                 console.warn(logTheFrickinTime, "Server is unreachable, cannot fetch weather data.")
 
+            }
+
+            try {
+                if (isVocallocalEnabled()) {
+                    const languageCode = (wxData?.metadata?.localeData?.countryCode || '').toLowerCase() === 'ca' ? 'en' : 'en'
+                    const localeName = wxData?.metadata?.localeData?.localeName || (locale || '').split(',')[0] || 'your area'
+                    const currentTemp = Number.isFinite(current?.temperature) ? current.temperature : null
+                    const currentConditionClause = buildCurrentConditionClause(current?.wxPhraseLong)
+                    const currentNarration = currentTemp == null
+                        ? ''
+                        : `Currently in ${localeName}: ${currentTemp} degrees ${currentConditionClause}.`
+                    const forecastDayOne = forecast?.daypart?.[0]?.daypartName?.[0] ?? forecast?.daypart?.[0]?.daypartName?.[1] ?? ''
+                    const forecastDayTwo = forecast?.daypart?.[0]?.daypartName?.[2] ?? forecast?.daypart?.[0]?.daypartName?.[3] ?? ''
+                    const forecastNarrativeDay1 = forecast?.daypart?.[0]?.narrative?.[0] ?? forecast?.daypart?.[0]?.narrative?.[1] ?? ''
+                    const forecastNarrativeDay2 = forecast?.daypart?.[0]?.narrative?.[2] ?? forecast?.daypart?.[0]?.narrative?.[3] ?? ''
+                    const forecastShortTermPeriods = shortTermForecastPeriods.map((period) => ({
+                        daypart: period.title,
+                        narrative: period.narrative,
+                    }))
+                    await prefetchMainVocallocal({
+                        language: languageCode,
+                        currentNarration,
+                        forecastDayOne,
+                        forecastDayTwo,
+                        forecastNarrativeDay1,
+                        forecastNarrativeDay2,
+                        forecastShortTermPeriods,
+                    })
+                }
+            } catch (error) {
+                console.warn(logTheFrickinTime, 'Vocallocal prefetch failed:', error)
             }
     }
 
@@ -267,38 +424,8 @@ export async function appendDatatoMain(locale, locType) {
     }
 
     function buildShortTermForecast() {
-        const dataMapShortTerm = {
-            "forecast-shorttermd1-title": forecast.daypart[0].daypartName[0] ?? forecast.daypart[0].daypartName[1],
-            "forecast-shorttermd1-condition": forecast.daypart[0].wxPhraseLong[0] ?? forecast.daypart[0].wxPhraseLong[1],
-            "forecast-shorttermd1-temp": `${forecast.daypart[0].temperature[0] ?? forecast.daypart[0].temperature[1]}${endingTemp}`,
-            "forecast-shorttermd1-text": forecast.daypart[0].narrative[0] ?? forecast.daypart[0].narrative[1],
-            "forecast-shorttermd2-title": forecast.daypart[0].daypartName[2] ?? forecast.daypart[0].daypartName[3],
-            "forecast-shorttermd2-condition": forecast.daypart[0].wxPhraseLong[2] ?? forecast.daypart[0].wxPhraseLong[3],
-            "forecast-shorttermd2-temp": `${forecast.daypart[0].temperature[2] ?? forecast.daypart[0].temperature[3]}${endingTemp}`,
-            "forecast-shorttermd2-text": forecast.daypart[0].narrative[2] ?? forecast.daypart[0].narrative[3],
-        };
-
-        appendTextContent(dataMapShortTerm)
-
-        console.log(daypartNames)
-
-        const vidBack = getCachedElement('forecast-shorttermd1-summary');
-        const vidBack2 = getCachedElement('forecast-shorttermd2-summary');
-
-        const dayOneIcon = getCachedElement('main-forecast-shorttermd1-icon');
-        const dayTwoIcon = getCachedElement('main-forecast-shorttermd2-icon');
-
-        if (forecast.daypart[0].daypartName[0] === null) {
-            setDayIcon(dayOneIcon, 'forecast', 1);
-            setDayIcon(dayTwoIcon, 'forecast', 2);
-            setDayIcon(vidBack, 'fcVideoBack', 1);
-            setDayIcon(vidBack2, 'fcVideoBack', 2);
-        } else {
-            setDayIcon(dayOneIcon, 'forecast', 0);
-            setDayIcon(dayTwoIcon, 'forecast', 1);
-            setDayIcon(vidBack, 'fcVideoBack', 0);
-            setDayIcon(vidBack2, 'fcVideoBack', 1);
-        }
+        renderShortTermPeriod('forecast-shortterm-d1', 0, false)
+        renderShortTermPeriod('forecast-shortterm-d2', 1, false)
     }
 
     function buildExtendedForecast() {
