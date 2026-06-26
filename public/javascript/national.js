@@ -22,7 +22,6 @@ const dom = {
     slideInfoIcon: document.getElementById("slide-info-icon"),
     slideInfoName: document.getElementById("slide-info-name"),
     slideProgressBar: document.getElementById("slide-progress-bar"),
-    currentLocationName: document.getElementById("upnext-current-location-name"),
 };
 
 function iconPath(iconCode, dayOrNight) {
@@ -225,7 +224,6 @@ function hideSlide(slideId) {
 }
 
 function updateSlideInfo(locationName, slideLabel, totalDuration) {
-    if (dom.currentLocationName) dom.currentLocationName.textContent = locationName;
     if (dom.slideInfoName) {
         dom.slideInfoName.textContent = slideLabel;
         dom.slideInfoName.style.cssText = "display:block;animation:switchModules 300ms ease-in-out forwards";

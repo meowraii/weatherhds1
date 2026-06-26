@@ -76,6 +76,13 @@ export let config = {
 
     "vocallocal": {
       "enabled": true, // whether or not to use vocallocal to narrate conditions and forecasts.
+      "voice": {
+        "engine": "auto", // auto tries native ONNX/sherpa first when the server is built with native_tts, then falls back to Piper.
+        "name": "en_us-lessac-medium",
+        "rate": -1,
+        "pitch": 2,
+        "volume": 100
+      },
       "blackout": { // disable vocallocals during this timerange. useful for when you have an IntelliStar 2 and you dont want the AI to disrupt Jim Cantore's beautiful voiceovers.
         "enabled": true,
         "timing": [

@@ -163,7 +163,7 @@ func (s *Service) fileLock(path string) *sync.Mutex {
 func normalizeVoiceConfig(config VoiceConfig, language string) VoiceConfig {
 	output := config
 	if strings.TrimSpace(output.Engine) == "" {
-		output.Engine = "piper"
+		output.Engine = "auto"
 	}
 	if strings.TrimSpace(output.Voice) == "" {
 		output.Voice = "en_us-lessac-medium"
@@ -307,40 +307,15 @@ func (s *Service) resolveTTS(voice VoiceConfig) (*piper.TTS, error) {
 }
 
 func (s *Service) synthesizeHFCMale(ctx context.Context, outputPath string, text string, voice VoiceConfig) error {
-	binaryPath, err := s.ensurePiperBinary()
-	if err != nil {
-		return err
-	}
-	modelPath, configPath, err := s.ensureHFCMaleModel()
-	if err != nil {
-		return err
-	}
-	lengthScale, noiseScale, noiseW := piperEmotionTuning(voice)
-	cmd := exec.CommandContext(
-		ctx,
-		binaryPath,
-		"--model", modelPath,
-		"--config", configPath,
-		"--output_file", outputPath,
-		"--length_scale", fmt.Sprintf("%.2f", lengthScale),
-		"--noise_scale", fmt.Sprintf("%.2f", noiseScale),
-		"--noise_w", fmt.Sprintf("%.2f", noiseW),
-	)
-	cmd.Stdin = strings.NewReader(text)
-	stderr := bytes.NewBuffer(nil)
-	cmd.Stderr = stderr
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("piper hfc_male synthesis failed: %w: %s", err, strings.TrimSpace(stderr.String()))
-	}
-	return nil
+	return s.synthesizeDownloadedPiper(ctx, outputPath, text, voice, s.ensureHFCMaleModel, "hfc_male")
 }
 
 func (s *Service) synthesizeLessac(ctx context.Context, outputPath string, text string, voice VoiceConfig) error {
+	return s.synthesizeDownloadedPiper(ctx, outputPath, text, voice, s.ensureLessacModel, "lessac")
+}
+
+func (s *Service) synthesizePiperExecutable(ctx context.Context, outputPath string, text string, voice VoiceConfig, modelPath string, configPath string, label string) error {
 	binaryPath, err := s.ensurePiperBinary()
-	if err != nil {
-		return err
-	}
-	modelPath, configPath, err := s.ensureLessacModel()
 	if err != nil {
 		return err
 	}
@@ -359,7 +334,7 @@ func (s *Service) synthesizeLessac(ctx context.Context, outputPath string, text 
 	stderr := bytes.NewBuffer(nil)
 	cmd.Stderr = stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("piper lessac synthesis failed: %w: %s", err, strings.TrimSpace(stderr.String()))
+		return fmt.Errorf("piper %s synthesis failed: %w: %s", label, err, strings.TrimSpace(stderr.String()))
 	}
 	return nil
 }
@@ -397,6 +372,9 @@ func (s *Service) ensurePiperBinary() (string, error) {
 	}
 	if configured := strings.TrimSpace(os.Getenv("PIPER_EXE")); configured != "" {
 		if fileExists(configured) {
+			if err := ensureExecutableFile(configured); err != nil {
+				return "", err
+			}
 			s.piperExe = configured
 			return s.piperExe, nil
 		}
@@ -413,11 +391,29 @@ func (s *Service) ensurePiperBinary() (string, error) {
 	}
 	for _, candidate := range candidates {
 		if fileExists(candidate) {
+			if err := ensureExecutableFile(candidate); err != nil {
+				return "", err
+			}
 			s.piperExe = candidate
 			return s.piperExe, nil
 		}
 	}
 	return "", fmt.Errorf("piper binary not found in %s", binDir)
+}
+
+func ensureExecutableFile(path string) error {
+	if runtime.GOOS == "windows" {
+		return nil
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	mode := info.Mode().Perm()
+	if mode&0o111 != 0 {
+		return nil
+	}
+	return os.Chmod(path, mode|0o755)
 }
 
 func installPiperBinAsset(destinationDir string) error {
@@ -435,7 +431,7 @@ func installPiperBinAsset(destinationDir string) error {
 	metaPath := filepath.Join(destinationDir, "dist.json")
 	if existingMeta, readErr := os.ReadFile(metaPath); readErr == nil {
 		if bytes.Equal(existingMeta, metaBytes) {
-			return nil
+			return ensurePiperExecutableBits(destinationDir)
 		}
 	}
 	tempDir, err := os.MkdirTemp(filepath.Dir(destinationDir), "piper-bin-")
@@ -478,7 +474,11 @@ func installPiperBinAsset(destinationDir string) error {
 			if err := os.MkdirAll(filepath.Dir(targetPath), 0o755); err != nil {
 				return err
 			}
-			output, err := os.Create(targetPath)
+			mode := header.FileInfo().Mode().Perm()
+			if mode == 0 {
+				mode = 0o644
+			}
+			output, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
 			if err != nil {
 				return err
 			}
@@ -487,6 +487,9 @@ func installPiperBinAsset(destinationDir string) error {
 				return err
 			}
 			if err := output.Close(); err != nil {
+				return err
+			}
+			if err := os.Chmod(targetPath, mode); err != nil {
 				return err
 			}
 		}
@@ -501,7 +504,30 @@ func installPiperBinAsset(destinationDir string) error {
 		return err
 	}
 	_ = os.RemoveAll(backupDir)
-	return nil
+	return ensurePiperExecutableBits(destinationDir)
+}
+
+func ensurePiperExecutableBits(destinationDir string) error {
+	if runtime.GOOS == "windows" {
+		return nil
+	}
+	return filepath.WalkDir(destinationDir, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() || entry.Name() != "piper" {
+			return nil
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		mode := info.Mode().Perm()
+		if mode&0o111 != 0 {
+			return nil
+		}
+		return os.Chmod(path, mode|0o755)
+	})
 }
 
 func selectPiperBinFS() (fs.FS, error) {

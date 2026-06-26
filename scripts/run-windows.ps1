@@ -1,5 +1,5 @@
 param(
-    [string]$ExePath = 'bin/weatherhds.exe',
+    [string]$ExePath = 'dist/WeatherHDS-Windows-x86_64-Portable/WeatherHDS Server.exe',
     [int]$Port = 3000,
     [switch]$SkipBuild
 )

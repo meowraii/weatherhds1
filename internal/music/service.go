@@ -209,7 +209,7 @@ func (s *Service) playbackLoop() {
 
 		track, ok := s.nextTrack()
 		if !ok {
-			s.setEmpty("No supported Opus/Ogg files found in ./Music")
+			s.setEmpty(unsupportedLibraryMessage())
 			if !sleepContext(s.ctx, 30*time.Second) {
 				return
 			}
@@ -274,6 +274,13 @@ func (s *Service) setEmpty(message string) {
 }
 
 func (s *Service) playTrack(track Track) error {
+	if !isOggOpusExtension(filepath.Ext(track.path)) {
+		return s.playNativeTrack(track)
+	}
+	return s.playOggOpusTrack(track)
+}
+
+func (s *Service) playOggOpusTrack(track Track) error {
 	file, err := os.Open(track.path)
 	if err != nil {
 		return err
@@ -398,6 +405,11 @@ func scanLibrary(root string) ([]Track, []string) {
 }
 
 func isSupportedExtension(ext string) bool {
+	return isOggOpusExtension(ext) || isNativeAudioExtension(ext)
+}
+
+func isOggOpusExtension(ext string) bool {
+	ext = strings.ToLower(ext)
 	return ext == ".ogg" || ext == ".opus"
 }
 

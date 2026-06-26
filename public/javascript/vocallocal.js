@@ -222,12 +222,14 @@ function toForecastDaypartText(value, referenceTime = new Date()) {
 }
 
 function expressiveVoice(language) {
+    const vocalConfig = config?.vocallocal || {}
+    const voiceConfig = vocalConfig.voice || {}
     return {
-        engine: 'piper',
-        voice: 'en_us-lessac-medium',
-        rate: -1,
-        pitch: 2,
-        volume: 100,
+        engine: voiceConfig.engine || 'auto',
+        voice: voiceConfig.name || voiceConfig.voice || 'en_us-lessac-medium',
+        rate: Number.isFinite(voiceConfig.rate) ? voiceConfig.rate : -1,
+        pitch: Number.isFinite(voiceConfig.pitch) ? voiceConfig.pitch : 2,
+        volume: Number.isFinite(voiceConfig.volume) ? voiceConfig.volume : 100,
         language,
     }
 }
