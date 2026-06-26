@@ -1,10 +1,14 @@
+import { config } from "../config.js";
+
+const perf = config.performance ?? {};
+
 const DEFAULTS = {
     mapStyle: "mapbox://styles/peytonwdym/clov0gd3u00mj01pe1wmhb2j5",
     product: "twcRadarHcMosaic",
-    totalFrames: 48,
-    frameDelay: 150,
+    totalFrames: Number(perf.mainRadarFrames ?? 48),
+    frameDelay: Number(perf.radarFrameDelay ?? 150),
     loopGap: 1000,
-    maxLoops: 12,
+    maxLoops: Number(perf.mainRadarLoops ?? 12),
     maxTTL: 6,
     flyDuration: 2500,
     labelTextSize: 40,
@@ -357,8 +361,14 @@ export class RadarMap {
         if (!this.#slices.length || this.#loops >= this.#opts.maxLoops) return;
 
         this.#animTimer = setInterval(() => {
+            if (!this.#isVisible()) {
+                this.#stopAnimation();
+                return;
+            }
+
             if (this.#frame >= this.#slices.length) {
                 clearInterval(this.#animTimer);
+                this.#animTimer = null;
                 this.#loopTimer = setTimeout(() => {
                     this.#frame = 0;
                     this.#loops++;
@@ -368,6 +378,8 @@ export class RadarMap {
             }
 
             const ts = this.#slices[this.#frame];
+            const previousFrame = this.#frame === 0 ? this.#slices.length - 1 : this.#frame - 1;
+            const previousTs = this.#slices[previousFrame];
 
             if (this.#timeEl) {
                 this.#timeEl.textContent = formatTime(ts.ts);
@@ -377,18 +389,14 @@ export class RadarMap {
                 this.#onFrame(this.#frame, this.#slices.length, ts);
             }
 
-            for (let i = 0; i < this.#slices.length; i++) {
-                this.#map.setPaintProperty(
-                    `radarlayer_${this.#slices[i].ts}`,
-                    "raster-opacity",
-                    i === this.#frame ? this.#opts.radarOpacity : 0
-                );
+            if (previousTs && previousTs.ts !== ts.ts) {
+                this.#map.setPaintProperty(`radarlayer_${previousTs.ts}`, "raster-opacity", 0);
             }
+            this.#map.setPaintProperty(`radarlayer_${ts.ts}`, "raster-opacity", this.#opts.radarOpacity);
 
             this.#frame++;
         }, this.#opts.frameDelay);
 
-        this.#loops++;
     }
 }
 

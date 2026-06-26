@@ -8,10 +8,10 @@
 	--regionalRowGap: clamp(6px, 0.48vw, 10px);
 	--regionalRowPaddingY: clamp(7px, 0.55vw, 12px);
 	--regionalRowPaddingX: clamp(16px, 1vw, 24px);
-	--regionalRowRadius: calc(var(--radius) - 16px);
-	--regionalPanelBorder: rgba(255, 255, 255, 0.12);
-	--regionalPanelSurface: linear-gradient(155deg, rgba(16, 18, 24, 0.84), rgba(36, 38, 44, 0.72));
-	--regionalPanelHighlight: radial-gradient(circle at top left, rgba(162, 210, 255, 0.18), transparent 38%);
+	--regionalRowRadius: 8px;
+	--regionalPanelBorder: rgba(205, 232, 255, 0.18);
+	--regionalPanelSurface: var(--glass-surface);
+	--regionalPanelHighlight: linear-gradient(135deg, rgba(115, 190, 255, 0.18), transparent 48%);
 }
 
 .national-slides {
@@ -56,9 +56,9 @@
 	border-radius: var(--radius);
 	border: 1px solid var(--regionalPanelBorder);
 	background: var(--regionalPanelHighlight), var(--regionalPanelSurface);
-	backdrop-filter: blur(26px) saturate(180%);
-	-webkit-backdrop-filter: blur(26px) saturate(180%);
-	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+	backdrop-filter: blur(86px) saturate(185%);
+	-webkit-backdrop-filter: blur(86px) saturate(185%);
+	box-shadow: var(--glass-shadow);
 	transform: translateZ(0);
 	backface-visibility: hidden;
 }
@@ -99,11 +99,11 @@
 	font-size: var(--fontSizeRegionalPanel);
 	font-weight: 600;
 	text-shadow: 0 2px 10px rgba(0, 0, 0, 0.48);
-	background: linear-gradient(180deg, rgba(9, 11, 17, 0.42), rgba(9, 11, 17, 0.16));
-	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	background: linear-gradient(180deg, rgba(6, 22, 36, 0.58), rgba(8, 29, 47, 0.2));
+	border-bottom: 1px solid rgba(205, 232, 255, 0.14);
 	flex-shrink: 0;
-	backdrop-filter: blur(30px) saturate(180%);
-	-webkit-backdrop-filter: blur(30px) saturate(180%);
+	backdrop-filter: blur(72px) saturate(190%);
+	-webkit-backdrop-filter: blur(72px) saturate(190%);
 	box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.03);
 }
 
@@ -139,11 +139,11 @@
 	min-height: 0;
 	width: auto;
 	margin: 0 var(--regionalPanelPadding) var(--regionalPanelPadding);
-	border-radius: calc(var(--radius) - 10px);
+	border-radius: 8px;
 	overflow: hidden;
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-	background: rgba(8, 12, 18, 0.28);
+	border: 1px solid rgba(205, 232, 255, 0.14);
+	box-shadow: var(--glass-highlight);
+	background: rgba(4, 15, 26, 0.32);
 }
 
 #national-radar-map .mapboxgl-canvas,
@@ -174,9 +174,9 @@
 	padding: var(--regionalRowPaddingY) var(--regionalRowPaddingX) var(--regionalRowPaddingY) calc(var(--regionalRowPaddingX) + 8px);
 	gap: clamp(10px, 0.72vw, 16px);
 	border-radius: var(--regionalRowRadius);
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	background: linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 24px rgba(0, 0, 0, 0.12);
+	border: 1px solid rgba(205, 232, 255, 0.13);
+	background: var(--glass-surface-soft);
+	box-shadow: var(--glass-highlight);
 	overflow: hidden;
 	transform: translateZ(0);
 }
@@ -189,12 +189,12 @@
 	bottom: 15%;
 	width: 4px;
 	border-radius: 999px;
-	background: linear-gradient(180deg, rgba(162, 210, 255, 0.96), rgba(162, 210, 255, 0.2));
-	box-shadow: 0 0 14px rgba(162, 210, 255, 0.28);
+	background: linear-gradient(180deg, rgba(112, 194, 255, 0.96), rgba(47, 158, 244, 0.25));
+	box-shadow: 0 0 14px rgba(47, 158, 244, 0.25);
 }
 
 .class-national-location-slimcard:nth-child(even) {
-	background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025));
+	background: linear-gradient(135deg, rgba(22, 64, 94, 0.42), rgba(7, 24, 40, 0.42));
 }
 
 .national-location-name {

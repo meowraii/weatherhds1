@@ -1,5 +1,15 @@
 import { config } from "../config.js";
 import { fetchOnlineBackground } from "./data.js";
+import "./glass_cache.js";
+
+const performanceConfig = config.performance ?? {};
+const liveBlurParam = new URLSearchParams(window.location.search).get('liveBlur');
+if (performanceConfig.disableLiveBackdropBlur !== false && liveBlurParam !== 'true') {
+    document.body.classList.add('performance-static-glass');
+}
+if (performanceConfig.lightweightMotion !== false) {
+    document.body.classList.add('performance-lightweight-motion');
+}
 
 const domElements = {
     viewport: document.getElementsByClassName("view")[0],

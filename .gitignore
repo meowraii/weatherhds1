@@ -4,8 +4,11 @@
 .env
 .DS_Store
 .vscode
+/Music/
 build
 weatherhds.exe
+./weatherhds-server.err.log
+./weatherhds-server.out.log
 /bin/
 /resource_windows_amd64.syso
 /build/windows/weatherhds.ico

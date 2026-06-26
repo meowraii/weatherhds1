@@ -6,9 +6,39 @@ export let serverHealth = 0; // if set to one then that means the heartbeat fail
 let onlineBg;
 let bgUrl;
 const logTheFrickinTime = `[data.js] | ${new Date().toLocaleString()} |`;
+const REQUEST_CACHE_MS = 2 * 60 * 1000;
+const requestCache = new Map();
+const inFlightRequests = new Map();
 
 import { runInitialLDL, requestBulletinCrawl, cancelBulletinCrawl } from "./ldl.js";
 import { config, serverConfig, locationConfig } from "../config.js";
+
+async function cachedJSONRequest(key, url, options = {}) {
+  const now = Date.now();
+  const cached = requestCache.get(key);
+  if (cached && now - cached.time < REQUEST_CACHE_MS) {
+    return cached.value;
+  }
+  if (inFlightRequests.has(key)) {
+    return inFlightRequests.get(key);
+  }
+
+  const request = fetch(url, options)
+    .then(async response => {
+      if (response.status === 204) return null;
+      if (!response.ok) throw new Error(`request failed (${response.status})`);
+      return response.json();
+    })
+    .then(value => {
+      requestCache.set(key, { time: Date.now(), value });
+      return value;
+    })
+    .finally(() => {
+      inFlightRequests.delete(key);
+    });
+  inFlightRequests.set(key, request);
+  return request;
+}
 
 export async function requestWxData(location, locType) {
   let wxData = {
@@ -17,8 +47,10 @@ export async function requestWxData(location, locType) {
   };
 
   try {
-    const wxResponse = await fetch(`/data/${encodeURIComponent(location)}?locType=${locType}`);
-    wxData = await wxResponse.json();
+    wxData = await cachedJSONRequest(
+      `wx:${locType}:${location}`,
+      `/data/${encodeURIComponent(location)}?locType=${locType}`
+    );
   } catch (error) {
     console.error(logTheFrickinTime, "Error fetching weather data from backend:", error);
 
@@ -55,13 +87,10 @@ export async function requestWxData(location, locType) {
 
 export async function requestAlertData(location) {
   try {
-    const alertResponse = await fetch(`/data/alerts/${encodeURIComponent(location)}`);
-    
-    if (alertResponse.status === 204) {
-      return null;
-    }
-    
-    const rawAlertData = await alertResponse.json();
+    const rawAlertData = await cachedJSONRequest(
+      `alert:${location}`,
+      `/data/alerts/${encodeURIComponent(location)}`
+    );
 
     if (typeof rawAlertData === 'string') {
       return null;

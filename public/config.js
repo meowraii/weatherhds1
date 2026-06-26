@@ -45,9 +45,33 @@ export let config = {
     "currentConditionsGradient": true, // current conditions gradient based on current time relative to sunrise or sunset.
     "staticIcons": false, // would you like icons that dont move?
 
-    "haze": { // connect and display a screen bug of a haze playout instance on the sidebar.
+    "performance": {
+      "disableLiveBackdropBlur": true, // turns expensive live CSS backdrop blur into static glass surfaces.
+      "cachedBackdropGlass": true, // pre-renders a blurred/tinted wallpaper copy and reuses it for glass panels.
+      "glassCacheScale": 0.42, // lower = faster and softer, higher = sharper but more memory.
+      "glassCacheBlurPx": 28,
+      "lightweightMotion": true, // avoids JS-driven per-frame decoration where a CSS transition or static state works.
+      "cityTickerFps": 60, // ticker frame cap. 60 keeps the LDL ticker fluid on standard displays.
+      "forecastTextSlideMs": 220,
+      "mainRadarFrames": 48,
+      "mainRadarLoops": 12,
+      "sidebarRadarFrames": 24,
+      "sidebarRadarLoops": Infinity,
+      "radarFrameDelay": 150,
+      "chartDevicePixelRatio": 1
+    },
+
+    "music": {
       "enabled": true,
-      "socketUrl": "http://172.16.1.31:8080" // URL of the haze playout socket.
+      "websocketPath": "/music/ws",
+      "artPath": "/music/art",
+      "showWhenStopped": false,
+      "ducking": {
+        "enabled": true,
+        "volume": 0.25,
+        "fadeMs": 350,
+        "releaseMs": 700
+      }
     },
 
     "vocallocal": {
@@ -56,8 +80,8 @@ export let config = {
         "enabled": true,
         "timing": [
           {
-            "minuteInterval": 8, // start the blackout every x minutes. so if this is set to 8, it will start a blackout at 12:08, 12:16, 12:24, and so on.
-            "tenMinInterval": null, // or you can set it to start every x ten minutes, so if this is set to 3, it will start a blackout at 12:03, 12:13, 12:23, and so on.
+            "minuteInterval": null, // start the blackout every x minutes. so if this is set to 8, it will start a blackout at 12:08, 12:16, 12:24, and so on.
+            "tenMinInterval": 8, // start the blackout on this minute inside every ten-minute block. so if this is set to 8, it will start at 12:08, 12:18, 12:28, and so on.
             "hourInterval": null, // or you can set it to start every x hours, so if this is set to 2, it will start a blackout at 12:00, 2:00, 4:00, and so on.
             "quarterDayInterval": null, // or you can set it to start every x quarter days (6 hours), so if this is set to 1, it will start a blackout at 12:00, 6:00, 12:00, 6:00, and so on.
             "dayInterval": null, // or you can set it to start every x days, so if this is set to 1, it will start a blackout at 12:00 every day, and so on.
@@ -506,7 +530,7 @@ export const weatherIcons = {
   "18": ["overcast-day-sleet.svg", "overcast-night-sleet.svg", "sleetDay1.avif"],
   "19": ["dust-wind.svg", "dust-wind.svg", null],
   "20": ["overcast-day-fog.svg", "overcast-night-fog.svg", "fog.avif"],
-  "21": ["overcast-day-haze.svg", "overcast-night-haze.svg", "foggyDay1.avif"],
+  "21": ["overcast-day-mist.svg", "overcast-night-mist.svg", "foggyDay1.avif"],
   "22": ["overcast-day-smoke.svg", "overcast-night-smoke.svg", null],
   "23": ["wind.svg", "wind.svg", "windyDay1.avif"],
   "24": ["wind.svg", "wind.svg", "windyDay2.avif"],
@@ -570,4 +594,4 @@ export const holidayMapping = {
 
 
 
-export const versionID = '26.05.14';
+export const versionID = '26.06.26';

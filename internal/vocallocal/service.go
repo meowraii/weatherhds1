@@ -38,6 +38,7 @@ type Service struct {
 	dataPath  string
 	ttsByKey  map[string]*piper.TTS
 	piperExe  string
+	fileLocks map[string]*sync.Mutex
 }
 
 func NewService(publicDir string) (*Service, error) {
@@ -52,12 +53,11 @@ func NewService(publicDir string) (*Service, error) {
 		baseURL:   "/persistentCache/vocalclips",
 		dataPath:  filepath.Join(basePath, "piper-data"),
 		ttsByKey:  map[string]*piper.TTS{},
+		fileLocks: map[string]*sync.Mutex{},
 	}, nil
 }
 
 func (s *Service) EnsureClips(ctx context.Context, request ClipRequest) (ClipResponse, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	language := strings.TrimSpace(strings.ToLower(request.Language))
 	if language == "" {
 		language = "en"
@@ -107,12 +107,10 @@ func (s *Service) EnsureClips(ctx context.Context, request ClipRequest) (ClipRes
 		absolutePath := filepath.Join(s.basePath, filepath.FromSlash(relativePath))
 		cached := fileExists(absolutePath)
 		if !cached {
-			if err := os.MkdirAll(filepath.Dir(absolutePath), 0o755); err != nil {
+			if err := s.ensureClip(ctx, absolutePath, sentence, voice); err != nil {
 				return ClipResponse{}, err
 			}
-			if err := s.synthesizeClip(ctx, absolutePath, sentence, voice); err != nil {
-				return ClipResponse{}, err
-			}
+			cached = false
 		}
 		durationSeconds, _ := wavDurationSeconds(absolutePath)
 		clips = append(clips, ClipDescriptor{
@@ -135,6 +133,31 @@ func (s *Service) clipRelativePath(clipKind string, voiceFingerprint string, lan
 	sum := sha1.Sum([]byte(language + "|" + section + "|" + sentence))
 	fileName := hex.EncodeToString(sum[:]) + ".wav"
 	return filepath.ToSlash(filepath.Join(clipKind, voiceFingerprint, language, section, fileName))
+}
+
+func (s *Service) ensureClip(ctx context.Context, absolutePath string, sentence string, voice VoiceConfig) error {
+	lock := s.fileLock(absolutePath)
+	lock.Lock()
+	defer lock.Unlock()
+
+	if fileExists(absolutePath) {
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(absolutePath), 0o755); err != nil {
+		return err
+	}
+	return s.synthesizeClip(ctx, absolutePath, sentence, voice)
+}
+
+func (s *Service) fileLock(path string) *sync.Mutex {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	lock := s.fileLocks[path]
+	if lock == nil {
+		lock = &sync.Mutex{}
+		s.fileLocks[path] = lock
+	}
+	return lock
 }
 
 func normalizeVoiceConfig(config VoiceConfig, language string) VoiceConfig {
@@ -251,7 +274,9 @@ func (s *Service) synthesizeClip(ctx context.Context, outputPath string, text st
 	if err != nil {
 		return err
 	}
+	s.mu.Lock()
 	wav, err := tts.Synthesize(text)
+	s.mu.Unlock()
 	if err != nil {
 		return err
 	}
@@ -264,6 +289,8 @@ func (s *Service) resolveTTS(voice VoiceConfig) (*piper.TTS, error) {
 		voiceName = "jenny"
 	}
 	cacheKey := voiceName
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if cached, ok := s.ttsByKey[cacheKey]; ok {
 		return cached, nil
 	}
@@ -363,6 +390,8 @@ func piperEmotionTuning(voice VoiceConfig) (float64, float64, float64) {
 }
 
 func (s *Service) ensurePiperBinary() (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if s.piperExe != "" && fileExists(s.piperExe) {
 		return s.piperExe, nil
 	}
@@ -487,6 +516,8 @@ func selectPiperBinFS() (fs.FS, error) {
 }
 
 func (s *Service) ensureHFCMaleModel() (string, string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	modelDir := filepath.Join(s.dataPath, "hfc-male-medium")
 	if err := os.MkdirAll(modelDir, 0o755); err != nil {
 		return "", "", err
@@ -507,6 +538,8 @@ func (s *Service) ensureHFCMaleModel() (string, string, error) {
 }
 
 func (s *Service) ensureLessacModel() (string, string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	modelDir := filepath.Join(s.dataPath, "lessac-medium")
 	if err := os.MkdirAll(modelDir, 0o755); err != nil {
 		return "", "", err

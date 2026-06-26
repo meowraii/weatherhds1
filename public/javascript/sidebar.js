@@ -1,17 +1,21 @@
 import { requestWxData } from './data.js';
-import { weatherIcons, locationConfig, serverConfig, displayUnits } from '../config.js';
+import { weatherIcons, locationConfig, serverConfig, displayUnits, config } from '../config.js';
 import { RadarMap } from './radar.js';
 
+const perf = config.performance ?? {};
+const iconDir = config.staticIcons ? "static" : "animated";
+
 const radarInstance = new RadarMap('sidebar-radar-map', {
-    totalFrames:  18,
-    frameDelay:   220,
-    loopGap:      1500,
-    maxLoops:     Infinity,
+    totalFrames:  Number(perf.sidebarRadarFrames ?? 24),
+    frameDelay:   Number(perf.radarFrameDelay ?? 150),
+    loopGap:      2000,
+    maxLoops:     Number(perf.sidebarRadarLoops ?? Infinity),
     labelTextSize: 22,
 });
 
-const CHAR_MS = 0.1;
-const HOLD_MS = 5000;
+const SUMMARY_HOLD_MS = 5000;
+const SUMMARY_SLIDE_MS = 220;
+const VALUE_SLIDE_MS = 200;
 
 const conditionsLocation = document.getElementById('sidebar-conditions-location');
 const conditionsTemp     = document.getElementById('sidebar-conditions-temp');
@@ -29,46 +33,117 @@ const lineEl = (() => {
 let latestLines   = [];
 let summaryRunning = false;
 let lineIdx       = 0;
-let cancelCurrent = null;
+let summaryCycleTimer = null;
+let summaryTransitionTimer = null;
+const slideTextTimers = new WeakMap();
+
+function formatTemp(value) {
+    const displayValue = value ?? '--';
+    return `${displayValue}<span class="small-degrees">${endingTemp}</span>`;
+}
+
+function formatSummaryLine(label, value) {
+    return `<span class="sidebar-summary-label">${label}</span><span class="sidebar-summary-value">${value}</span>`;
+}
+
+function formatSidebarLocationName(value) {
+    return String(value ?? '').replace(/,\s*[A-Z]{2}(?=\s*$|,)/, '');
+}
+
+function setSlidingText(el, value) {
+    if (!el) return;
+
+    const next = value == null ? '' : String(value);
+    const isReady = el.dataset.sidebarTextReady === 'true';
+
+    if (!isReady || el.innerHTML === next) {
+        el.innerHTML = next;
+        el.dataset.sidebarTextReady = 'true';
+        el.classList.remove('sidebar-slide-out', 'sidebar-slide-in');
+        return;
+    }
+
+    const oldTimer = slideTextTimers.get(el);
+    if (oldTimer) clearTimeout(oldTimer);
+
+    el.classList.remove('sidebar-slide-in');
+    el.classList.add('sidebar-slide-out');
+
+    const timer = setTimeout(() => {
+        el.innerHTML = next;
+        el.classList.remove('sidebar-slide-out');
+        el.classList.add('sidebar-slide-in');
+        slideTextTimers.delete(el);
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                el.classList.remove('sidebar-slide-in');
+            });
+        });
+    }, VALUE_SLIDE_MS);
+
+    slideTextTimers.set(el, timer);
+}
 
 function updateSidebarSummary(lines) {
-    latestLines = lines;
-    if (!summaryRunning && summaryContainer) {
+    latestLines = lines.filter(line => typeof line === 'string' && line.length > 0);
+
+    if (!summaryContainer || !lineEl) return;
+
+    if (!latestLines.length) {
+        clearTimeout(summaryCycleTimer);
+        clearTimeout(summaryTransitionTimer);
+        summaryRunning = false;
+        lineEl.textContent = '';
+        return;
+    }
+
+    if (!summaryRunning) {
         summaryRunning = true;
-        playLine();
+        lineIdx = 0;
+        showSummaryLine(true);
     }
 }
 
-function playLine() {
-    if (!latestLines.length) return;
-    if (lineIdx >= latestLines.length) lineIdx = 0;
+function scheduleNextSummaryLine() {
+    clearTimeout(summaryCycleTimer);
+    summaryCycleTimer = setTimeout(() => showSummaryLine(false), SUMMARY_HOLD_MS);
+}
 
-    const target = latestLines[lineIdx] ?? '';
-    let charIdx   = 0;
-    let cancelled = false;
-    let timer     = null;
-
-    if (cancelCurrent) cancelCurrent();
-    cancelCurrent = () => { cancelled = true; clearTimeout(timer); };
-
-    lineEl.textContent = '';
-
-    function type() {
-        if (cancelled) return;
-        if (charIdx <= target.length) {
-            lineEl.textContent = target.slice(0, charIdx++);
-            timer = setTimeout(type, CHAR_MS);
-        } else {
-            timer = setTimeout(() => {
-                if (cancelled) return;
-                lineEl.textContent = '';
-                lineIdx++;
-                playLine();
-            }, HOLD_MS);
-        }
+function showSummaryLine(immediate = false) {
+    if (!latestLines.length) {
+        summaryRunning = false;
+        return;
     }
 
-    type();
+    if (lineIdx >= latestLines.length) lineIdx = 0;
+    const target = latestLines[lineIdx] ?? '';
+    lineIdx = (lineIdx + 1) % latestLines.length;
+
+    clearTimeout(summaryCycleTimer);
+    clearTimeout(summaryTransitionTimer);
+
+    if (immediate) {
+        lineEl.classList.remove('is-sliding-out', 'is-sliding-in');
+        lineEl.innerHTML = target;
+        scheduleNextSummaryLine();
+        return;
+    }
+
+    lineEl.classList.add('is-sliding-out');
+    summaryTransitionTimer = setTimeout(() => {
+        lineEl.innerHTML = target;
+        lineEl.classList.remove('is-sliding-out');
+        lineEl.classList.add('is-sliding-in');
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                lineEl.classList.remove('is-sliding-in');
+            });
+        });
+
+        scheduleNextSummaryLine();
+    }, SUMMARY_SLIDE_MS);
 }
 
 const REFRESH_MS = 10 * 60 * 1000;
@@ -99,14 +174,14 @@ async function refreshSidebar() {
     const current = wxData?.weather?.['v3-wx-observations-current'] ?? null;
     if (!current) return;
 
-    const displayName = primaryGroup.locations[0].displayName ?? primaryLocation;
+    const displayName = formatSidebarLocationName(primaryGroup.locations[0].displayName ?? primaryLocation);
     const iconEntry   = weatherIcons[current.iconCode];
     const iconFile    = iconEntry ? iconEntry[current.dayorNight === 'D' ? 0 : 1] : 'not-available.svg';
 
-    if (conditionsLocation) conditionsLocation.textContent = displayName;
-    if (conditionsTemp)     conditionsTemp.textContent     = `${current.temperature}${endingTemp}`;
-    if (conditionsPhrase)   conditionsPhrase.textContent   = current.wxPhraseLong;
-    if (conditionsIcon)     conditionsIcon.src              = `/graphics/animated/${iconFile}`;
+    setSlidingText(conditionsLocation, displayName);
+    setSlidingText(conditionsTemp, formatTemp(current.temperature));
+    setSlidingText(conditionsPhrase, current.wxPhraseLong);
+    if (conditionsIcon)     conditionsIcon.src              = `/graphics/${iconDir}/${iconFile}`;
 
     const ceiling   = current.cloudCeiling == null ? 'Unlimited' : `${current.cloudCeiling}${endingCeiling}`;
     const month     = MONTHS[new Date().getMonth()];
@@ -114,14 +189,14 @@ async function refreshSidebar() {
     const precipStr = precip != null ? `${precip} ${endingMeasurement}` : '--';
 
     updateSidebarSummary([
-        `Pressure: ${current.pressureAltimeter} ${endingPressure}`,
-        `Wind: ${current.windDirectionCardinal} ${current.windSpeed} ${endingWind}`,
-        `Dewpoint: ${current.temperatureDewPoint}${endingTemp}`,
-        `Humidity: ${current.relativeHumidity}%`,
-        `Visibility: ${current.visibility} ${endingDistance}`,
-        `Ceiling: ${ceiling}`,
-        `UV Index: ${current.uvIndex}`,
-        `${month} Precip.: ${precipStr}`,
+        formatSummaryLine('Pressure', `${current.pressureAltimeter} ${endingPressure}`),
+        formatSummaryLine('Wind', `${current.windDirectionCardinal} ${current.windSpeed} ${endingWind}`),
+        formatSummaryLine('Dewpoint', formatTemp(current.temperatureDewPoint)),
+        formatSummaryLine('Humidity', `${current.relativeHumidity}%`),
+        formatSummaryLine('Visibility', `${current.visibility} ${endingDistance}`),
+        formatSummaryLine('Ceiling', ceiling),
+        formatSummaryLine('UV Index', current.uvIndex),
+        formatSummaryLine(`${month} Precip.`, precipStr),
     ]);
 }
 

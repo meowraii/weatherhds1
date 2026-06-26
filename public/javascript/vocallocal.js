@@ -102,8 +102,6 @@ const FORECAST_TONIGHT_ALIASES = new Set([
     'tonight',
 ])
 
-const RECURRENCE_ANCHOR_MS = new Date(1970, 0, 1, 0, 0, 0, 0).getTime()
-
 function toIntegerOrNull(value) {
     if (value == null) {
         return null
@@ -116,11 +114,20 @@ function toIntegerOrNull(value) {
     return integer > 0 ? integer : null
 }
 
-function isWithinRecurringWindow(nowMs, periodMs, offsetMs, durationMs) {
+function localDayElapsedMs(now) {
+    return now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime()
+}
+
+function localCalendarElapsedMs(now) {
+    const dayCount = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / (24 * 60 * 60 * 1000))
+    return (dayCount * 24 * 60 * 60 * 1000) + localDayElapsedMs(now)
+}
+
+function isWithinRecurringWindow(elapsedMs, periodMs, offsetMs, durationMs) {
     if (durationMs <= 0 || periodMs <= 0) {
         return false
     }
-    const elapsed = nowMs - RECURRENCE_ANCHOR_MS - offsetMs
+    const elapsed = elapsedMs - offsetMs
     const phase = ((elapsed % periodMs) + periodMs) % periodMs
     return phase < durationMs
 }
@@ -131,7 +138,7 @@ function isBlackoutRuleActive(rule, now = new Date()) {
         return false
     }
 
-    const nowMs = now.getTime()
+    const elapsedMs = localDayElapsedMs(now)
     const durationMs = durationMinutes * 60 * 1000
     const minuteInterval = toIntegerOrNull(rule?.minuteInterval)
     const tenMinInterval = toIntegerOrNull(rule?.tenMinInterval)
@@ -139,19 +146,19 @@ function isBlackoutRuleActive(rule, now = new Date()) {
     const quarterDayInterval = toIntegerOrNull(rule?.quarterDayInterval)
     const dayInterval = toIntegerOrNull(rule?.dayInterval)
 
-    if (minuteInterval != null && isWithinRecurringWindow(nowMs, minuteInterval * 60 * 1000, 0, durationMs)) {
+    if (minuteInterval != null && isWithinRecurringWindow(elapsedMs, minuteInterval * 60 * 1000, 0, durationMs)) {
         return true
     }
-    if (tenMinInterval != null && tenMinInterval < 10 && isWithinRecurringWindow(nowMs, 10 * 60 * 1000, tenMinInterval * 60 * 1000, durationMs)) {
+    if (tenMinInterval != null && tenMinInterval < 10 && isWithinRecurringWindow(elapsedMs, 10 * 60 * 1000, tenMinInterval * 60 * 1000, durationMs)) {
         return true
     }
-    if (hourInterval != null && isWithinRecurringWindow(nowMs, hourInterval * 60 * 60 * 1000, 0, durationMs)) {
+    if (hourInterval != null && isWithinRecurringWindow(elapsedMs, hourInterval * 60 * 60 * 1000, 0, durationMs)) {
         return true
     }
-    if (quarterDayInterval != null && isWithinRecurringWindow(nowMs, quarterDayInterval * 6 * 60 * 60 * 1000, 0, durationMs)) {
+    if (quarterDayInterval != null && isWithinRecurringWindow(elapsedMs, quarterDayInterval * 6 * 60 * 60 * 1000, 0, durationMs)) {
         return true
     }
-    if (dayInterval != null && isWithinRecurringWindow(nowMs, dayInterval * 24 * 60 * 60 * 1000, 0, durationMs)) {
+    if (dayInterval != null && isWithinRecurringWindow(localCalendarElapsedMs(now), dayInterval * 24 * 60 * 60 * 1000, 0, durationMs)) {
         return true
     }
     return false

@@ -198,8 +198,8 @@
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  backdrop-filter: blur(60px) saturate(140%);
-  -webkit-backdrop-filter: blur(60px) saturate(140%);
+  backdrop-filter: blur(104px) saturate(185%);
+  -webkit-backdrop-filter: blur(104px) saturate(185%);
   padding: 2% 8%;
   border-radius: var(--radius);
   position: relative;

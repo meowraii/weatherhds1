@@ -252,6 +252,8 @@ let carouselCurrentX = 0
 let carouselTailIndex = 0
 let lastWindAngle = 0
 let windJiggleTimeout = null
+const ldlDailyCards = []
+let ldlDailyCardsInitialized = false
 
 let currentLDLData = null;
 
@@ -496,6 +498,7 @@ function buildShorttermPeriods() {
             title: dp.daypartName[i],
             icon: weatherIcons[dp.iconCode[i]]?.[dp.dayOrNight[i] === 'D' ? 0 : 1] ?? 'not-available.svg',
             temp: dp.temperature[i],
+            dayOrNight: dp.dayOrNight[i] ?? 'D',
             pop: dp.precipChance[i] ?? 0,
             narrative: dp.narrative[i] ?? '',
         })
@@ -513,7 +516,11 @@ function renderShorttermPeriod(period) {
     const narrativeEl = container.querySelector('#ldl-shortterm-period-narrative0')
     if (titleEl) titleEl.textContent = period.title
     if (iconEl) iconEl.src = `/graphics/${iconDir}/${period.icon}`
-    if (tempEl) tempEl.innerHTML = `${period.temp ?? '--'}<span class="ldl-small-degrees">${endingTemp}</span>`
+    if (tempEl) {
+        tempEl.classList.toggle('ldl-temp-high', period.dayOrNight === 'D')
+        tempEl.classList.toggle('ldl-temp-low', period.dayOrNight !== 'D')
+        tempEl.innerHTML = `${period.temp ?? '--'}<span class="ldl-small-degrees">${endingTemp}</span>`
+    }
     if (popEl) {
         if (period.pop > 0) {
             popEl.textContent = `${period.pop}% Precip.`
@@ -576,17 +583,17 @@ function appendLDLDaily() {
     const container = ldlDomCache.dailyContainer
     if (!container || !currentLDLData?.forecast) return
 
-    const forecast = currentLDLData.forecast
-    const dp = forecast.daypart?.[0]
-    container.innerHTML = ''
+    const days = buildDailyPeriods(currentLDLData.forecast)
+    ensureLDLDailyCards(container, days.length)
+    renderLDLDailyCards(days)
+}
 
-    const days = Math.min(forecast.dayOfWeek?.length ?? 0, 7)
-    if (days === 0) return
+function buildDailyPeriods(forecast) {
+    const dp = forecast?.daypart?.[0]
+    const days = Math.min(forecast?.dayOfWeek?.length ?? 0, 7)
+    const periods = []
 
     for (let i = 0; i < days; i++) {
-        const dayAbbrev = forecast.dayOfWeek[i]?.slice(0, 3).toUpperCase() ?? '---'
-        const hiTemp = forecast.calendarDayTemperatureMax?.[i] ?? '--'
-        const loTemp = forecast.calendarDayTemperatureMin?.[i] ?? '--'
         const dpDay = i * 2
         const dpNight = i * 2 + 1
         const dpIndex = dp?.daypartName?.[dpDay] != null ? dpDay : dpNight
@@ -595,16 +602,83 @@ function appendLDLDaily() {
         const dayOrNight = dp?.dayOrNight?.[dpIndex] ?? 'D'
         const iconPath = weatherIcons[iconCode]?.[dayOrNight === 'D' ? 0 : 1] ?? 'not-available.svg'
 
-        const card = document.createElement('div')
-        card.className = 'ldl-daily-period-summary'
-        card.innerHTML = `
-            <div class="ldl-daily-period-title">${dayAbbrev}</div>
-            <img class="ldl-daily-icon" src="/graphics/${iconDir}/${iconPath}" alt="${condition}">
-            <div class="ldl-daily-period-condition">${condition}</div>
-            <div class="ldl-daily-period-high">${hiTemp}°</div>
-            <div class="ldl-daily-period-low">${loTemp}°</div>
-        `
+        periods.push({
+            title: forecast.dayOfWeek[i]?.slice(0, 3).toUpperCase() ?? '---',
+            condition,
+            iconUrl: `/graphics/${iconDir}/${iconPath}`,
+            high: `${forecast.calendarDayTemperatureMax?.[i] ?? '--'}°`,
+            low: `${forecast.calendarDayTemperatureMin?.[i] ?? '--'}°`,
+            pop: dp?.precipChance?.[dpIndex] != null ? `${dp.precipChance[dpIndex]}%` : '--',
+        })
+    }
+
+    return periods
+}
+
+function createLDLDailyCard() {
+    const card = document.createElement('div')
+    card.className = 'ldl-daily-period-summary'
+
+    const title = document.createElement('div')
+    title.className = 'ldl-daily-period-title'
+
+    const icon = document.createElement('img')
+    icon.className = 'ldl-daily-icon'
+
+    const condition = document.createElement('div')
+    condition.className = 'ldl-daily-period-condition'
+
+    const pop = document.createElement('div')
+    pop.className = 'ldl-daily-period-pop'
+
+    const high = document.createElement('div')
+    high.className = 'ldl-daily-period-high'
+
+    const low = document.createElement('div')
+    low.className = 'ldl-daily-period-low'
+
+    card.append(title, icon, condition, pop, high, low)
+    card._weatherHDSDaily = { title, icon, condition, pop, high, low }
+    return card
+}
+
+function ensureLDLDailyCards(container, count) {
+    if (!ldlDailyCardsInitialized) {
+        container.querySelectorAll('.ldl-daily-period-summary').forEach(card => card.remove())
+        ldlDailyCards.length = 0
+        ldlDailyCardsInitialized = true
+    }
+
+    while (ldlDailyCards.length < count) {
+        const card = createLDLDailyCard()
+        ldlDailyCards.push(card)
         container.appendChild(card)
+    }
+
+    for (let i = 0; i < ldlDailyCards.length; i++) {
+        const card = ldlDailyCards[i]
+        if (card.parentNode !== container) {
+            container.appendChild(card)
+        }
+        card.style.display = i < count ? 'grid' : 'none'
+    }
+}
+
+function renderLDLDailyCards(days) {
+    for (let i = 0; i < ldlDailyCards.length; i++) {
+        const card = ldlDailyCards[i]
+        const day = days[i]
+        if (!day) continue
+        const parts = card._weatherHDSDaily
+        parts.title.textContent = day.title
+        parts.condition.textContent = day.condition
+        parts.pop.textContent = day.pop
+        parts.high.textContent = day.high
+        parts.low.textContent = day.low
+        if (parts.icon.src !== day.iconUrl) {
+            parts.icon.src = day.iconUrl
+        }
+        parts.icon.alt = day.condition
     }
 }
 
@@ -866,6 +940,10 @@ function stopWindJiggle() {
 
 function startWindJiggle(arrow, ticksOuter, ticksInner, baseAngle) {
     stopWindJiggle()
+    if (config.performance?.lightweightMotion !== false) {
+        windJiggleTimeout = null
+        return
+    }
 
     const pickTarget = () => {
         const spread = Math.random() < 0.15 ? 5 + Math.random() * 7 : 1 + Math.random() * 3.5
@@ -928,20 +1006,32 @@ function initCarousel() {
     track.style.transform = 'translateX(0)'
     carouselCurrentX = 0
 
-    const count = Math.min(8, locations.length)
-    for (let i = 0; i < count; i++) {
-        appendCarouselPill(track, locations[i], i, false)
-    }
-    carouselTailIndex = count % locations.length
+    fillCarouselTrack(track, locations)
 
     setCarouselActiveLocation(0)
+}
+
+function fillCarouselTrack(track, locations) {
+    const container = track.parentElement
+    const currentBadge = ldlDomCache.carouselCurrent
+    const visibleWidth = Math.max(0, (container?.clientWidth ?? 0) - (currentBadge?.offsetWidth ?? 0))
+    const targetWidth = Math.max(visibleWidth, window.innerWidth * 0.5) + 360
+    let guard = 0
+
+    while ((track.scrollWidth < targetWidth || track.children.length < 2) && guard < locations.length * 4) {
+        const locationIndex = guard % locations.length
+        appendCarouselPill(track, locations[locationIndex], locationIndex, false)
+        guard++
+    }
+
+    carouselTailIndex = guard % locations.length
 }
 
 function appendCarouselPill(track, name, locationIndex, fadeIn) {
     const el = document.createElement('div')
     el.className = 'ldl-carousel-location-entry'
     el.dataset.locationIndex = locationIndex
-    el.textContent = name
+    el.textContent = formatLDLCarouselLocationName(name)
     if (fadeIn) {
         el.style.opacity = '0'
         requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -951,6 +1041,10 @@ function appendCarouselPill(track, name, locationIndex, fadeIn) {
     }
     track.appendChild(el)
     return el
+}
+
+function formatLDLCarouselLocationName(name) {
+    return String(name ?? '').replace(/,\s*SK\b/g, '')
 }
 
 const CAROUSEL_CRAWL_SPEED = 200
@@ -986,7 +1080,6 @@ function scrollCarouselToLocation(index) {
         carouselCurrentX -= scrollStep
         track.style.transition = 'none'
         track.style.transform = `translateX(-${carouselCurrentX}px)`
-        void track.offsetWidth
     }, parseFloat(duration) * 1000 + 60)
 }
 
@@ -1170,9 +1263,11 @@ function runProgressBar() {
     }
 
     progressBar.style.animation = 'none';
+    progressBar.style.transform = 'scaleX(0)';
     progressBar.style.display = 'block';
-    void progressBar.offsetWidth;
-    progressBar.style.animation = `ldlProgressBar ${totalDurationSec}s linear`;
+    requestAnimationFrame(() => {
+        progressBar.style.animation = `ldlProgressBar ${totalDurationSec}s linear`;
+    });
 
     progressBarTimeout = setTimeout(() => {
         progressBar.style.display = 'none';

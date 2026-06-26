@@ -6,15 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
+	"weatherhds/internal/music"
 	"weatherhds/internal/providers"
 	"weatherhds/internal/vocallocal"
 
@@ -23,9 +26,17 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Run(ctx context.Context) error {
+func Run(ctx context.Context, embeddedWebroot fs.FS) error {
 	logger := bootLogger()
-	_ = godotenv.Load()
+	workspaceDir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	runtimePaths, err := ensureRuntimeFiles(workspaceDir, embeddedWebroot)
+	if err != nil {
+		return err
+	}
+	_ = godotenv.Load(runtimePaths.EnvPath)
 	twcAPIKey := strings.TrimSpace(os.Getenv("TWC_API_KEY"))
 	twcEnabled := twcAPIKey != ""
 	mapboxTokenRaw := strings.TrimSpace(os.Getenv("MAPBOX_API_KEY"))
@@ -33,16 +44,12 @@ func Run(ctx context.Context) error {
 	if mapboxTokenRaw != "" {
 		mapboxToken = &mapboxTokenRaw
 	}
-	cfg := loadConfigFromEnv()
-	workspaceDir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	publicDir := filepath.Join(workspaceDir, "public")
-	versionID := loadVersionFromConfig(filepath.Join(publicDir, "config.js"))
+	cfg := loadConfig(runtimePaths.ConfigPath)
+	publicDir := runtimePaths.PublicDir
+	versionID := loadVersionFromConfig(runtimePaths.ConfigPath)
 	printStartupArt()
 	logInfo(logger, "server", "==========================================================================================================")
-	logInfo(logger, "server", "WeatherHDS daemon v%s", versionID)
+	logInfo(logger, "server", "WeatherHDS Server v%s", versionID)
 	logInfo(logger, "server", "Created by raiii. (c) SSPWXR/raii 2025")
 	logInfo(logger, "server", "User contributors: ScentedOrangeDev, LeWolfYt,")
 	if !twcEnabled {
@@ -53,8 +60,18 @@ func Run(ctx context.Context) error {
 		return err
 	}
 	ttlCache := NewTTLCache(time.Duration(cfg.CacheValidTime) * time.Second)
-	client := &http.Client{Timeout: 20 * time.Second}
+	client := &http.Client{
+		Timeout: 20 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 20,
+			IdleConnTimeout:     90 * time.Second,
+		},
+	}
 	twc := providers.NewTWCClient(client, twcAPIKey, "en-US", cfg.Units, localeCache, ttlCache, func(format string, args ...any) {
+		if strings.HasPrefix(format, "Cache hit") || strings.HasPrefix(format, "Returned cache key") {
+			return
+		}
 		logInfo(logger, "providers/twc", format, args...)
 	})
 	backgrounds := NewBackgroundManager(publicDir)
@@ -62,14 +79,32 @@ func Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	musicService, err := music.NewService(filepath.Join(workspaceDir, "Music"), func(format string, args ...any) {
+		logInfo(logger, "music", format, args...)
+	})
+	if err != nil {
+		return err
+	}
+	musicService.Start(ctx)
 
 	e := echo.New()
 	e.HideBanner = true
 	e.Use(middleware.Recover())
+	e.Use(staticCacheHeaders)
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			start := time.Now()
 			err := next(c)
-			logInfo(logger, "server/http", "HTTP %s %s %d", c.Request().Method, c.Request().URL.Path, c.Response().Status)
+			status := c.Response().Status
+			if status == 0 {
+				status = http.StatusOK
+			}
+			elapsed := time.Since(start)
+			isLongLived := c.Request().URL.Path == "/music/ws"
+			isError := status >= http.StatusInternalServerError || (err != nil && status >= http.StatusBadRequest)
+			if isError || (!isLongLived && elapsed >= 500*time.Millisecond) {
+				logInfo(logger, "server/http", "HTTP %s %s %d %s", c.Request().Method, c.Request().URL.Path, status, elapsed.Round(time.Millisecond))
+			}
 			return err
 		}
 	})
@@ -113,7 +148,6 @@ func Run(ctx context.Context) error {
 		}
 		location := c.Param("location")
 		locType := c.QueryParam("locType")
-		logInfo(logger, "server/api", "GET request from client: %s and fetching for location type as %s", c.Path(), locType)
 		requestContext := c.Request().Context()
 		if strings.Contains(location, "|") || strings.Contains(location, ";") {
 			delimiter := "|"
@@ -222,6 +256,18 @@ func Run(ctx context.Context) error {
 		}
 		return c.JSON(http.StatusOK, response)
 	})
+	e.GET("/music/ws", func(c echo.Context) error {
+		musicService.HandleWebSocket(c.Response(), c.Request())
+		return nil
+	})
+	e.GET("/music/state", func(c echo.Context) error {
+		musicService.HandleState(c.Response(), c.Request())
+		return nil
+	})
+	e.GET("/music/art/:trackID", func(c echo.Context) error {
+		musicService.HandleArt(c.Response(), c.Request(), c.Param("trackID"))
+		return nil
+	})
 	e.File("/", filepath.Join(publicDir, "index.html"))
 	e.Static("/persistentCache", filepath.Join(workspaceDir, "persistentCache"))
 	e.Static("/", publicDir)
@@ -249,8 +295,21 @@ func Run(ctx context.Context) error {
 	}
 }
 
-func loadConfigFromEnv() AppConfig {
+func loadConfig(configPath string) AppConfig {
 	cfg := AppConfig{Units: "m", WebPort: 3000, CacheValidTime: 720}
+	payload, err := os.ReadFile(configPath)
+	if err == nil {
+		serverConfig := extractJSObjectAssignment(string(payload), "serverConfig")
+		if value := extractJSString(serverConfig, "units"); value != "" {
+			cfg.Units = value
+		}
+		if value := extractJSInt(serverConfig, "webPort"); value > 0 {
+			cfg.WebPort = value
+		}
+		if value := extractJSInt(serverConfig, "cacheValidTime"); value > 0 {
+			cfg.CacheValidTime = value
+		}
+	}
 	if value := strings.TrimSpace(os.Getenv("UNITS")); value != "" {
 		cfg.Units = value
 	}
@@ -270,6 +329,60 @@ func loadConfigFromEnv() AppConfig {
 		}
 	}
 	return cfg
+}
+
+func extractJSObjectAssignment(source string, name string) string {
+	pattern := regexp.MustCompile(`(?s)\b` + regexp.QuoteMeta(name) + `\s*=\s*\{(.*?)\n\}`)
+	matches := pattern.FindStringSubmatch(source)
+	if len(matches) < 2 {
+		return ""
+	}
+	return matches[1]
+}
+
+func extractJSString(source string, key string) string {
+	pattern := regexp.MustCompile(`["']` + regexp.QuoteMeta(key) + `["']\s*:\s*["']([^"']+)["']`)
+	matches := pattern.FindStringSubmatch(source)
+	if len(matches) < 2 {
+		return ""
+	}
+	return strings.TrimSpace(matches[1])
+}
+
+func extractJSInt(source string, key string) int {
+	pattern := regexp.MustCompile(`["']` + regexp.QuoteMeta(key) + `["']\s*:\s*([0-9]+)`)
+	matches := pattern.FindStringSubmatch(source)
+	if len(matches) < 2 {
+		return 0
+	}
+	value, err := strconv.Atoi(matches[1])
+	if err != nil {
+		return 0
+	}
+	return value
+}
+
+func staticCacheHeaders(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		path := c.Request().URL.Path
+		if isCacheableStaticPath(path) {
+			c.Response().Header().Set("Cache-Control", "public, max-age=3600")
+		}
+		return next(c)
+	}
+}
+
+func isCacheableStaticPath(path string) bool {
+	if path == "/" || path == "/config.js" || path == "/heartbeat" {
+		return false
+	}
+	extension := strings.ToLower(filepath.Ext(path))
+	switch extension {
+	case ".avif", ".webp", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".css", ".js", ".ogg", ".wav", ".json":
+		return true
+	default:
+		return false
+	}
 }
 
 func jsonDecode(response *http.Response, target any) error {

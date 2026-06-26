@@ -1,5 +1,5 @@
 import { config, locationConfig, versionID, serverConfig, bumperBackgroundsRandom, brand } from "../config.js";
-import { appendDatatoMain, animateIntraday, daypartNames, getShortTermPeriodCount, renderShortTermPeriod } from "./weather.js";
+import { appendDatatoMain, animateIntraday, daypartNames, getShortTermPeriodCount, renderShortTermPeriod, runShortTermProduct, stopShortTermProduct } from "./weather.js";
 import { serverHealth } from "./data.js";
 import { runRegionalPlayback } from "./national.js";
 import { resizeRadar } from "./radar.js";
@@ -13,8 +13,7 @@ const playlistSettings = {
 const iconMappings = [
     // { id: "current", icon: "/graphics/ux/thermometer-snowflake.svg" }, we have a function for current conditions. no need.
     { id: "forecast-intraday", icon: "/graphics/ux/calendar-clock.svg" },
-    { id: "forecast-shortterm-d1", icon: "/graphics/ux/calendar-1.svg" },
-    { id: "forecast-shortterm-d2", icon: "/graphics/ux/calendar-1.svg" },
+    { id: "forecast-shortterm", icon: "/graphics/ux/calendar-1.svg" },
     { id: "forecast-extended", icon: "/graphics/ux/calendar-1.svg" },
     { id: "7day-graph", icon: "/graphics/ux/calendar-1.svg" },
     { id: "airquality", icon: "/graphics/ux/leaf.svg" },
@@ -49,16 +48,8 @@ const preferredPlaylist = {
             animationOut: playlistSettings.defaultAnimationOut
         },
         {
-            htmlID: "forecast-shortterm-d1",
-            title: "",
-            duration: 14000,
-            dynamicFunction: null,
-            animationIn: playlistSettings.defaultAnimationIn,
-            animationOut: playlistSettings.defaultAnimationOut
-        },
-        {
-            htmlID: "forecast-shortterm-d2",
-            title: "",
+            htmlID: "forecast-shortterm",
+            title: "Next 48 Hours",
             duration: 14000,
             dynamicFunction: null,
             animationIn: playlistSettings.defaultAnimationIn,
@@ -100,16 +91,8 @@ const preferredPlaylist = {
             animationOut: playlistSettings.defaultAnimationOut
         },
         {
-            htmlID: "forecast-shortterm-d1",
-            title: "",
-            duration: 14000,
-            dynamicFunction: null,
-            animationIn: playlistSettings.defaultAnimationIn,
-            animationOut: playlistSettings.defaultAnimationOut
-        },
-        {
-            htmlID: "forecast-shortterm-d2",
-            title: "",
+            htmlID: "forecast-shortterm",
+            title: "Next 48 Hours",
             duration: 14000,
             dynamicFunction: null,
             animationIn: playlistSettings.defaultAnimationIn,
@@ -157,6 +140,7 @@ const domCache = {
     slideInfoName: document.getElementById('slide-info-name'),
     slideProgressBar: document.getElementById('slide-progress-bar'),
     currentLocationName: document.getElementById('upnext-current-location-name'),
+    mainUpnextCarouselTrack: document.getElementById('main-upnext-carousel-track'),
     upnextLocName1: document.getElementById('upnext-loc-name1'),
     upnextLocName2: document.getElementById('upnext-loc-name2'),
     upnextLocName3: document.getElementById('upnext-loc-name3'),
@@ -201,17 +185,117 @@ if (firstProviderEntry) {
 
 const { radarDiv, regionalSlides, slideInfoIcon, slideInfoName, slideProgressBar } = domCache;
 
+let mainUpnextCarouselX = 0;
+let mainUpnextCarouselTailIndex = 0;
+let mainUpnextCarouselKey = '';
+let mainUpnextCarouselIndex = -1;
+const MAIN_UPNEXT_CAROUSEL_SPEED = 220;
+
+function getUpNextDisplayName(item) {
+    return item?.displayName || 'Please Standby...';
+}
+
+function getMainUpNextQueueKey(queue) {
+    return queue.map(item => `${item.type}:${getUpNextDisplayName(item)}`).join('|');
+}
+
+function appendMainUpNextPill(track, item, itemIndex, fadeIn = false) {
+    const el = document.createElement('div');
+    el.className = 'main-upnext-carousel-entry';
+    el.dataset.queueIndex = itemIndex;
+    el.textContent = getUpNextDisplayName(item);
+    if (fadeIn) {
+        el.style.opacity = '0';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            el.style.transition = 'opacity 0.35s ease';
+            el.style.opacity = '1';
+        }));
+    }
+    track.appendChild(el);
+    return el;
+}
+
+function fillMainUpNextCarousel(track, queue, currentIdx) {
+    const viewport = track.parentElement;
+    const targetWidth = Math.max(viewport?.clientWidth ?? 0, window.innerWidth * 0.45) + 520;
+    let guard = 1;
+
+    while ((track.scrollWidth < targetWidth || track.children.length < 3) && guard < queue.length * 4) {
+        const itemIndex = (currentIdx + guard) % queue.length;
+        appendMainUpNextPill(track, queue[itemIndex], itemIndex, false);
+        guard++;
+    }
+
+    mainUpnextCarouselTailIndex = (currentIdx + guard) % queue.length;
+}
+
+function initMainUpNextCarousel(queue, currentIdx) {
+    const track = domCache.mainUpnextCarouselTrack;
+    if (!track) return;
+
+    track.innerHTML = '';
+    track.style.transition = 'none';
+    track.style.transform = 'translateX(0)';
+    mainUpnextCarouselX = 0;
+    fillMainUpNextCarousel(track, queue, currentIdx);
+}
+
+function scrollMainUpNextCarousel(queue) {
+    const track = domCache.mainUpnextCarouselTrack;
+    if (!track || queue.length < 2) return;
+
+    const pills = Array.from(track.querySelectorAll('.main-upnext-carousel-entry'));
+    if (pills.length < 2) return;
+
+    const scrollStep = pills[1].offsetLeft - pills[0].offsetLeft;
+    if (!Number.isFinite(scrollStep) || scrollStep <= 0) return;
+
+    const duration = (scrollStep / MAIN_UPNEXT_CAROUSEL_SPEED).toFixed(2);
+    pills[0].style.transition = 'opacity 0.22s ease';
+    pills[0].style.opacity = '0';
+
+    track.style.transition = `transform ${duration}s linear`;
+    track.style.transform = `translateX(-${mainUpnextCarouselX + scrollStep}px)`;
+    mainUpnextCarouselX += scrollStep;
+
+    setTimeout(() => {
+        pills[0].remove();
+        appendMainUpNextPill(track, queue[mainUpnextCarouselTailIndex], mainUpnextCarouselTailIndex, true);
+        mainUpnextCarouselTailIndex = (mainUpnextCarouselTailIndex + 1) % queue.length;
+
+        mainUpnextCarouselX -= scrollStep;
+        track.style.transition = 'none';
+        track.style.transform = `translateX(-${mainUpnextCarouselX}px)`;
+    }, parseFloat(duration) * 1000 + 60);
+}
+
 function updateUpNext(queue, currentIdx) {
     const current = queue[currentIdx];
     const upcoming = [1, 2, 3].map(i => queue[(currentIdx + i) % queue.length]);
+    const nextCarouselKey = getMainUpNextQueueKey(queue);
+    const shouldUseCarousel = Boolean(domCache.mainUpnextCarouselTrack);
+    const isSequentialCarouselStep = mainUpnextCarouselIndex >= 0
+        && currentIdx === (mainUpnextCarouselIndex + 1) % queue.length
+        && nextCarouselKey === mainUpnextCarouselKey;
 
     if (domCache.currentLocationName) {
         requestAnimationFrame(() => {
             domCache.currentLocationName.style.animation = 'none';
             void domCache.currentLocationName.offsetWidth;
             domCache.currentLocationName.style.animation = 'bonr 0.5s ease-in-out forwards';
-            domCache.currentLocationName.textContent = current?.displayName || 'Please Standby...';
+            domCache.currentLocationName.textContent = getUpNextDisplayName(current);
         });
+    }
+
+    if (shouldUseCarousel) {
+        if (nextCarouselKey !== mainUpnextCarouselKey || !domCache.mainUpnextCarouselTrack.children.length || !isSequentialCarouselStep) {
+            initMainUpNextCarousel(queue, currentIdx);
+        } else {
+            scrollMainUpNextCarousel(queue);
+        }
+        mainUpnextCarouselKey = nextCarouselKey;
+        mainUpnextCarouselIndex = currentIdx;
+        return;
     }
 
     const upnextEls = [domCache.upnextLocName1, domCache.upnextLocName2, domCache.upnextLocName3];
@@ -237,10 +321,13 @@ let vocallocalToken = 0;
 let vocallocalGroupActive = '';
 let vocallocalContext = null;
 let vocallocalSources = [];
+let vocallocalAudioElements = [];
 let vocallocalAbortController = null;
-
+let pendingVocallocalPlayback = null;
+let vocallocalDuckTimer = null;
+const SHORT_TERM_VOCALLOCAL_HOLD_MS = 3000;
 setInterval(() => {
-    if (vocallocalSources.length > 0 && !isVocallocalEnabled()) {
+    if ((vocallocalSources.length > 0 || vocallocalAudioElements.length > 0) && !isVocallocalEnabled()) {
         stopVocallocalPlayback();
     }
 }, 5000);
@@ -259,6 +346,33 @@ function clearVocallocalSources() {
         } catch {}
     }
     vocallocalSources = [];
+
+    for (const audio of vocallocalAudioElements) {
+        try {
+            audio.pause();
+        } catch {}
+        audio.removeAttribute('src');
+        try {
+            audio.load();
+        } catch {}
+    }
+    vocallocalAudioElements = [];
+}
+
+function dispatchMusicDuckStart() {
+    clearTimeout(vocallocalDuckTimer);
+    document.dispatchEvent(new CustomEvent('music-duck-start'));
+}
+
+function dispatchMusicDuckEnd() {
+    clearTimeout(vocallocalDuckTimer);
+    vocallocalDuckTimer = null;
+    document.dispatchEvent(new CustomEvent('music-duck-end'));
+}
+
+function scheduleMusicDuckEnd(delayMs) {
+    clearTimeout(vocallocalDuckTimer);
+    vocallocalDuckTimer = setTimeout(dispatchMusicDuckEnd, Math.max(0, delayMs));
 }
 
 function ensureVocallocalContext() {
@@ -274,23 +388,129 @@ function ensureVocallocalContext() {
 
 function stopVocallocalPlayback() {
     vocallocalToken++;
+    pendingVocallocalPlayback = null;
     if (vocallocalAbortController) {
         vocallocalAbortController.abort();
         vocallocalAbortController = null;
     }
     clearVocallocalSources();
+    dispatchMusicDuckEnd();
+}
+
+function markVocallocalPlaybackPending(slideId, queueKey) {
+    pendingVocallocalPlayback = { slideId, queueKey };
+}
+
+function retryPendingVocallocalPlayback() {
+    if (!pendingVocallocalPlayback || !isVocallocalEnabled()) return;
+    const { slideId, queueKey } = pendingVocallocalPlayback;
+    pendingVocallocalPlayback = null;
+    stopVocallocalPlayback();
+    playVocallocalForSlide(slideId, queueKey);
+}
+
+document.addEventListener('pointerdown', retryPendingVocallocalPlayback, { passive: true });
+document.addEventListener('keydown', retryPendingVocallocalPlayback);
+document.addEventListener('touchstart', retryPendingVocallocalPlayback, { passive: true });
+
+function resolveVocallocalClipUrl(url) {
+    try {
+        return new URL(url, window.location.href).href;
+    } catch {
+        return url;
+    }
+}
+
+function waitForAudioElement(audio, signal) {
+    return new Promise((resolve) => {
+        const done = () => {
+            audio.removeEventListener('ended', done);
+            audio.removeEventListener('error', done);
+            signal?.removeEventListener('abort', done);
+            resolve();
+        };
+        audio.addEventListener('ended', done, { once: true });
+        audio.addEventListener('error', done, { once: true });
+        signal?.addEventListener('abort', done, { once: true });
+    });
+}
+
+function waitForVocallocalDelay(delayMs, signal) {
+    return new Promise((resolve) => {
+        if (signal?.aborted) {
+            resolve(false);
+            return;
+        }
+
+        let timer = null;
+        const done = (completed) => {
+            clearTimeout(timer);
+            signal?.removeEventListener('abort', onAbort);
+            resolve(completed);
+        };
+        const onAbort = () => done(false);
+
+        signal?.addEventListener('abort', onAbort, { once: true });
+        timer = setTimeout(() => done(true), Math.max(0, delayMs));
+    });
+}
+
+async function playVocallocalWithAudioElements(queue, signal, localToken) {
+    dispatchMusicDuckStart();
+    let completed = false;
+    for (const item of queue) {
+        if (localToken !== vocallocalToken || signal?.aborted) {
+            dispatchMusicDuckEnd();
+            return true;
+        }
+        const url = typeof item === 'string' ? item : item?.url;
+        if (!url) continue;
+
+        const audio = new Audio(resolveVocallocalClipUrl(url));
+        audio.preload = 'auto';
+        audio.playsInline = true;
+        vocallocalAudioElements.push(audio);
+
+        try {
+            await audio.play();
+            await waitForAudioElement(audio, signal);
+        } catch (error) {
+            dispatchMusicDuckEnd();
+            if (!signal?.aborted) {
+                console.warn('Vocallocal playback was blocked by the browser:', error);
+            }
+            return false;
+        } finally {
+            audio.removeAttribute('src');
+            try {
+                audio.load();
+            } catch {}
+        }
+    }
+    completed = true;
+    if (completed) dispatchMusicDuckEnd();
+    return true;
 }
 
 async function playVocallocalForSlide(slideId, queueKey = null) {
-    if (!isVocallocalEnabled()) return;
+    if (!isVocallocalEnabled()) return false;
 
     const groupId = queueKey || toVocallocalGroupId(slideId);
     const queue = getVocallocalQueueForSlide(groupId);
-    if (!queue || queue.length === 0) return;
+    if (!queue || queue.length === 0) return false;
+    dispatchMusicDuckStart();
+
+    vocallocalAbortController = new AbortController();
+    const signal = vocallocalAbortController.signal;
+    const localToken = ++vocallocalToken;
 
     const context = ensureVocallocalContext();
     if (!context) {
-        return;
+        if (!await playVocallocalWithAudioElements(queue, signal, localToken)) {
+            markVocallocalPlaybackPending(slideId, groupId);
+            return false;
+        }
+        return true;
     }
 
     try {
@@ -299,14 +519,19 @@ async function playVocallocalForSlide(slideId, queueKey = null) {
         }
     } catch {}
 
-    vocallocalAbortController = new AbortController();
-    const signal = vocallocalAbortController.signal;
+    if (context.state === 'suspended') {
+        if (!await playVocallocalWithAudioElements(queue, signal, localToken)) {
+            markVocallocalPlaybackPending(slideId, groupId);
+            return false;
+        }
+        return true;
+    }
 
-    const localToken = ++vocallocalToken;
     let startAt = context.currentTime + 0.02;
+    let scheduledClips = 0;
 
     for (const item of queue) {
-        if (localToken !== vocallocalToken) return;
+        if (localToken !== vocallocalToken) return false;
         const url = typeof item === 'string' ? item : item?.url;
         if (!url) {
             continue;
@@ -317,21 +542,37 @@ async function playVocallocalForSlide(slideId, queueKey = null) {
                 continue;
             }
             const bufferBytes = await response.arrayBuffer();
-            if (localToken !== vocallocalToken) return;
+            if (localToken !== vocallocalToken) return false;
             const audioBuffer = await context.decodeAudioData(bufferBytes.slice(0));
-            if (localToken !== vocallocalToken) return;
+            if (localToken !== vocallocalToken) return false;
             const source = context.createBufferSource();
             source.buffer = audioBuffer;
             source.connect(context.destination);
             const safeStartAt = Math.max(startAt, context.currentTime + 0.02);
             source.start(safeStartAt);
             vocallocalSources.push(source);
+            scheduledClips++;
             startAt = safeStartAt + audioBuffer.duration;
         } catch {
             if (signal.aborted) {
-                return;
+                return false;
             }
         }
+    }
+
+    if (scheduledClips === 0 && localToken === vocallocalToken && !signal.aborted) {
+        if (!await playVocallocalWithAudioElements(queue, signal, localToken)) {
+            markVocallocalPlaybackPending(slideId, groupId);
+            return false;
+        }
+        return true;
+    } else if (scheduledClips > 0 && localToken === vocallocalToken && !signal.aborted) {
+        const remainingMs = (startAt - context.currentTime) * 1000;
+        scheduleMusicDuckEnd(remainingMs);
+        return await waitForVocallocalDelay(remainingMs, signal);
+    } else {
+        dispatchMusicDuckEnd();
+        return false;
     }
 }
 
@@ -462,9 +703,6 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
     await appendDatatoMain(locationName, locType);
     await new Promise(r => setTimeout(r, 300));
 
-    totalSlideDurationMS = selectedPlaylist.reduce((acc, slide) => acc + slide.duration, 0);
-    totalSlideDurationSec = totalSlideDurationMS / 1000;
-
     const slides = document.querySelectorAll('.main-slide');
     const bumpers = document.querySelectorAll('.bumper-slide');
     const slideIds = new Set(Array.from(slides).map(el => el.id));
@@ -474,35 +712,37 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
     );
     let activeSlides = baseSlides;
 
-    const firstShortTermIndex = baseSlides.findIndex((item) => item.htmlID === 'forecast-shortterm-d1' || item.htmlID === 'forecast-shortterm-d2');
+    const firstShortTermIndex = baseSlides.findIndex((item) => item.htmlID === 'forecast-shortterm');
     if (firstShortTermIndex >= 0) {
         const shortTermCount = Math.max(1, getShortTermPeriodCount());
         const shortTermBase = baseSlides[firstShortTermIndex];
-        const shortTermTotalDurationMs = getVocallocalTotalDurationMsForSlide('forecast-shortterm');
-        const shortTermPerSlideDurationMs = shortTermTotalDurationMs > 0
-            ? Math.max(shortTermBase.duration, Math.ceil(shortTermTotalDurationMs / shortTermCount) + 250)
-            : shortTermBase.duration;
-
-        const shortTermSlides = [];
-        for (let periodIndex = 0; periodIndex < shortTermCount; periodIndex++) {
-            const htmlID = periodIndex % 2 === 0 ? 'forecast-shortterm-d1' : 'forecast-shortterm-d2';
-            shortTermSlides.push({
-                ...shortTermBase,
-                htmlID,
-                title: daypartNames[periodIndex] || shortTermBase.title,
-                shortTermPeriodIndex: periodIndex,
-                duration: shortTermPerSlideDurationMs,
-            });
+        const fallbackPerPeriodMs = Math.max(2500, Math.floor(shortTermBase.duration / shortTermCount));
+        let shortTermProductDurationMs = 0;
+        for (let index = 0; index < shortTermCount; index++) {
+            const periodAudioMs = getVocallocalTotalDurationMsForSlide(`forecast-shortterm-${index}`);
+            shortTermProductDurationMs += (periodAudioMs > 0 ? periodAudioMs : fallbackPerPeriodMs) + SHORT_TERM_VOCALLOCAL_HOLD_MS;
         }
+        const shortTermSlide = {
+            ...shortTermBase,
+            htmlID: 'forecast-shortterm',
+            title: shortTermBase.title || 'Next 48 Hours',
+            shortTermProduct: true,
+            shortTermFallbackPeriodMs: fallbackPerPeriodMs,
+            duration: Math.max(shortTermBase.duration, shortTermProductDurationMs),
+        };
 
         activeSlides = [
             ...baseSlides.slice(0, firstShortTermIndex),
-            ...shortTermSlides,
-            ...baseSlides.filter((item, index) => index > firstShortTermIndex && item.htmlID !== 'forecast-shortterm-d1' && item.htmlID !== 'forecast-shortterm-d2'),
+            shortTermSlide,
+            ...baseSlides.filter((item, index) => index > firstShortTermIndex && item.htmlID !== 'forecast-shortterm'),
         ];
     }
 
+    totalSlideDurationMS = activeSlides.reduce((acc, slide) => acc + slide.duration, 0);
+    totalSlideDurationSec = totalSlideDurationMS / 1000;
+
     let slideIndex = 0;
+    let shortTermSequenceToken = 0;
 
     let isFreezing = null;
     function areWeFreezingToDeath() {
@@ -514,6 +754,9 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
     }
 
     function showNextSlide() {
+        stopShortTermProduct();
+        shortTermSequenceToken++;
+
         if (slideIndex >= activeSlides.length) {
             slides.forEach(s => { s.style.display = "none"; });
             stopVocallocalPlayback();
@@ -536,11 +779,6 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
             slideInfoIcon.src = '/graphics/ux/calendar-1.svg';
         }
         let slideDisplayTitle = slide.title;
-        if (slide.htmlID === 'forecast-shortterm-d1') slideDisplayTitle = daypartNames[0] || slide.title;
-        if (slide.htmlID === 'forecast-shortterm-d2') slideDisplayTitle = daypartNames[1] || slide.title;
-        if (slide.shortTermPeriodIndex != null) {
-            slideDisplayTitle = daypartNames[slide.shortTermPeriodIndex] || slide.title;
-        }
         slideInfoName.textContent = slideDisplayTitle;
         slideInfoName.style.cssText = 'display:block;animation:switchModules 300ms ease-in-out forwards';
         slideInfoIcon.style.cssText = 'display:block;animation:switchModules 160ms ease-in-out forwards';
@@ -554,17 +792,18 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
         if (el) {
             el.style.display = "block";
             el.style.animation = slide.animationIn;
-            if (slide.shortTermPeriodIndex != null) {
-                renderShortTermPeriod(slide.htmlID, slide.shortTermPeriodIndex, true);
+            if (slide.shortTermProduct === true) {
+                runShortTermVocallocalSequence(slide, el, shortTermSequenceToken);
+                return;
+            } else if (slide.htmlID === 'forecast-shortterm') {
+                runShortTermProduct(slide.duration);
             }
             if (typeof slide.dynamicFunction === "function") {
                 slide.dynamicFunction();
             }
         }
 
-        const targetVocallocalGroup = slide.shortTermPeriodIndex != null
-            ? `forecast-shortterm-${slide.shortTermPeriodIndex}`
-            : toVocallocalGroupId(slide.htmlID);
+        const targetVocallocalGroup = toVocallocalGroupId(slide.htmlID);
         if (isVocallocalEnabled() && targetVocallocalGroup !== vocallocalGroupActive) {
             stopVocallocalPlayback();
             vocallocalGroupActive = targetVocallocalGroup;
@@ -603,6 +842,96 @@ async function runSlideSet(locationName, selectedPlaylist, locType, call) {
             slideIndex++;
             showNextSlide();
         }, slideDurationMS);
+    }
+
+    async function waitForShortTermHold(localToken) {
+        await new Promise(resolve => setTimeout(resolve, SHORT_TERM_VOCALLOCAL_HOLD_MS));
+        return localToken === shortTermSequenceToken;
+    }
+
+    async function transitionShortTermPeriod(index) {
+        const container = document.getElementById('forecast-shortterm-content');
+        if (!container || index === 0) {
+            renderShortTermPeriod(index, true);
+            if (container && index === 0) {
+                container.style.transition = 'none';
+                container.style.opacity = '0';
+                container.style.transform = 'translateX(24px)';
+                setTimeout(() => {
+                    container.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                    container.style.opacity = '1';
+                    container.style.transform = 'translateX(0)';
+                }, 150);
+            }
+            return;
+        }
+
+        container.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        container.style.opacity = '0';
+        container.style.transform = 'translateX(-24px)';
+
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        renderShortTermPeriod(index, true);
+        container.style.transform = 'translateX(24px)';
+        container.style.transition = 'none';
+        void container.offsetWidth;
+        container.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        container.style.opacity = '1';
+        container.style.transform = 'translateX(0)';
+    }
+
+    async function runShortTermVocallocalSequence(slide, el, localToken) {
+        const count = Math.max(1, getShortTermPeriodCount());
+
+        for (let index = 0; index < count; index++) {
+            if (localToken !== shortTermSequenceToken) return;
+
+            await transitionShortTermPeriod(index);
+            if (localToken !== shortTermSequenceToken) return;
+
+            const periodQueueKey = `forecast-shortterm-${index}`;
+            stopVocallocalPlayback();
+            vocallocalGroupActive = periodQueueKey;
+
+            const played = await playVocallocalForSlide(slide.htmlID, periodQueueKey);
+            if (localToken !== shortTermSequenceToken) return;
+
+            if (!played) {
+                const fallbackMs = slide.shortTermFallbackPeriodMs ?? Math.max(2500, Math.floor(14000 / count));
+                await new Promise(resolve => setTimeout(resolve, fallbackMs));
+                if (localToken !== shortTermSequenceToken) return;
+            }
+
+            if (!await waitForShortTermHold(localToken)) return;
+        }
+
+        if (localToken !== shortTermSequenceToken) return;
+
+        if (el) el.style.animation = slide.animationOut;
+        slideInfoName.style.animation = 'fadeModule 0.5s ease-in-out forwards';
+        slideInfoIcon.style.animation = 'slideDown 160ms ease-in-out forwards';
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+        if (localToken !== shortTermSequenceToken) return;
+
+        slideInfoName.style.display = 'none';
+        slideInfoName.style.animation = '';
+        slideProgressBar.style.display = 'none';
+        slideProgressBar.style.animation = '';
+        slideInfoIcon.style.display = 'none';
+        slideInfoIcon.style.animation = '';
+
+        if (!config.presentationConfig.repeatMain && slideIndex === activeSlides.length - 1) {
+            slides.forEach(s => s.style.display = "none");
+            stopVocallocalPlayback();
+            vocallocalGroupActive = '';
+            call?.();
+            return;
+        }
+
+        slideIndex++;
+        showNextSlide();
     }
 
     showNextSlide();
@@ -896,7 +1225,8 @@ function runBumperSlide(bumperId, upcomingRegions, callback) {
         for (let i = upcomingRegions.length; i < regionEls.length; i++) { if (regionEls[i]) regionEls[i].innerText = ''; }
 
         const marquee = domCache.regionalBumperSubtext;
-        marquee.innerText = ` ${config.networkName} `.repeat(50);
+        const networkName = brand?.networkName || config?.networkName || 'METEOchannel';
+        marquee.innerText = ` ${networkName} `.repeat(50);
         $(document).ready(function(){
             $('#national-bumper-subtext').marquee({
                 duration: 9000, gap: 360, delayBeforeStart: 0,

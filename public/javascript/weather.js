@@ -28,14 +28,39 @@ let endingTemp = selectedDisplayUnits.endingTemp, endingWind = selectedDisplayUn
 export let daypartNames = []
 let shortTermForecastPeriods = []
 
-const FORECAST_CHAR_MS = 15
+const FORECAST_CHAR_MS = 4
 const forecastTypewriterTimers = new Map()
+let shortTermPagerTimer = null
+let shortTermTransitionTimer = null
 
-function typewriterInto(el, text, charMs = 4) {
+function formatTemp(value) {
+    const displayValue = value ?? '--'
+    return `${displayValue}<span class="small-degrees">${endingTemp}</span>`
+}
+
+function setWeatherBackground(el, cssVarName, url) {
+    if (!el) return
+    if (!url) {
+        el.style.removeProperty(cssVarName)
+        el.style.backgroundImage = ''
+        return
+    }
+
+    const cssUrl = `url("${url}")`
+    el.style.setProperty(cssVarName, cssUrl)
+    el.style.backgroundImage = ''
+}
+
+function typewriterInto(el, text, charMs = FORECAST_CHAR_MS) {
     const prev = forecastTypewriterTimers.get(el)
-    if (prev) { clearTimeout(prev); forecastTypewriterTimers.delete(el) }
+    if (prev) {
+        clearTimeout(prev)
+        forecastTypewriterTimers.delete(el)
+    }
+
     el.textContent = ''
     let i = 0
+
     const step = () => {
         if (i <= text.length) {
             el.textContent = text.slice(0, i++)
@@ -44,7 +69,19 @@ function typewriterInto(el, text, charMs = 4) {
             forecastTypewriterTimers.delete(el)
         }
     }
+
     step()
+}
+
+function getShortTermElements() {
+    return {
+        titleEl: getCachedElement('forecast-shortterm-title'),
+        conditionEl: getCachedElement('forecast-shortterm-condition'),
+        tempEl: getCachedElement('forecast-shortterm-temp'),
+        textEl: getCachedElement('forecast-shortterm-text'),
+        iconEl: getCachedElement('main-forecast-shortterm-icon'),
+        summaryEl: getCachedElement('forecast-shortterm-summary'),
+    }
 }
 
 export function getShortTermPeriodCount() {
@@ -99,25 +136,27 @@ function getAvifPath(iconCode) {
     return `/images/avif/${iconSet[2]}`
 }
 
-export function renderShortTermPeriod(slideId, periodIndex, animate = false) {
+export function renderShortTermPeriod(periodIndex, animate = false) {
     const period = shortTermForecastPeriods[periodIndex]
     if (!period) {
         return
     }
-    const suffix = slideId === 'forecast-shortterm-d2' ? '2' : '1'
-    const titleEl = getCachedElement(`forecast-shorttermd${suffix}-title`)
-    const conditionEl = getCachedElement(`forecast-shorttermd${suffix}-condition`)
-    const tempEl = getCachedElement(`forecast-shorttermd${suffix}-temp`)
-    const textEl = getCachedElement(`forecast-shorttermd${suffix}-text`)
-    const iconEl = getCachedElement(`main-forecast-shorttermd${suffix}-icon`)
-    const summaryEl = getCachedElement(`forecast-shorttermd${suffix}-summary`)
+    const { titleEl, conditionEl, tempEl, textEl, iconEl, summaryEl } = getShortTermElements()
 
     if (titleEl) titleEl.textContent = period.title || ''
     if (conditionEl) conditionEl.textContent = period.condition || ''
-    if (tempEl) tempEl.textContent = period.temperature
+    if (tempEl) tempEl.innerHTML = period.temperature
     if (textEl) {
-        if (animate) typewriterInto(textEl, period.narrative || '', FORECAST_CHAR_MS)
-        else textEl.textContent = period.narrative || ''
+        if (animate) {
+            typewriterInto(textEl, period.narrative || '')
+        } else {
+            const prev = forecastTypewriterTimers.get(textEl)
+            if (prev) {
+                clearTimeout(prev)
+                forecastTypewriterTimers.delete(textEl)
+            }
+            textEl.textContent = period.narrative || ''
+        }
     }
     if (iconEl) {
         const iconPath = getIconPath(period.iconCode, period.dayOrNight)
@@ -125,8 +164,75 @@ export function renderShortTermPeriod(slideId, periodIndex, animate = false) {
     }
     if (summaryEl) {
         const avifPath = getAvifPath(period.iconCode)
-        summaryEl.style.backgroundImage = avifPath ? `url(${avifPath})` : ''
+        setWeatherBackground(summaryEl, '--forecast-weather-bg', avifPath)
     }
+}
+
+export function stopShortTermProduct() {
+    clearTimeout(shortTermPagerTimer)
+    clearTimeout(shortTermTransitionTimer)
+    shortTermPagerTimer = null
+    shortTermTransitionTimer = null
+
+    const container = getCachedElement('forecast-shortterm-content')
+    if (container) {
+        container.style.transition = ''
+        container.style.opacity = ''
+        container.style.transform = ''
+    }
+}
+
+export function runShortTermProduct(durationMS = 14000) {
+    stopShortTermProduct()
+
+    const count = Math.max(1, getShortTermPeriodCount())
+    const container = getCachedElement('forecast-shortterm-content')
+    const perPeriod = Math.max(2500, Math.floor(durationMS / count))
+    let index = 0
+
+    renderShortTermPeriod(0, true)
+
+    if (container) {
+        container.style.transition = 'none'
+        container.style.opacity = '0'
+        container.style.transform = 'translateX(24px)'
+        setTimeout(() => {
+            container.style.transition = 'opacity 0.4s ease, transform 0.4s ease'
+            container.style.opacity = '1'
+            container.style.transform = 'translateX(0)'
+        }, 150)
+    }
+
+    if (count <= 1) return
+
+    const page = () => {
+        index += 1
+        if (index >= count) return
+
+        if (!container) {
+            renderShortTermPeriod(index, true)
+        } else {
+            container.style.transition = 'opacity 0.2s ease, transform 0.2s ease'
+            container.style.opacity = '0'
+            container.style.transform = 'translateX(-24px)'
+
+            shortTermTransitionTimer = setTimeout(() => {
+                renderShortTermPeriod(index, true)
+                container.style.transform = 'translateX(24px)'
+                container.style.transition = 'none'
+                void container.offsetWidth
+                container.style.transition = 'opacity 0.2s ease, transform 0.2s ease'
+                container.style.opacity = '1'
+                container.style.transform = 'translateX(0)'
+            }, 200)
+        }
+
+        if (index < count - 1) {
+            shortTermPagerTimer = setTimeout(page, perPeriod)
+        }
+    }
+
+    shortTermPagerTimer = setTimeout(page, perPeriod)
 }
 
 export function formatTime(timeString) {
@@ -156,6 +262,8 @@ export function appendTextContent(dataMap) {
             if (!el) continue;
             if (id.includes('icon')) {
                 el.src = iconPrefix + value;
+            } else if (value && typeof value === 'object' && 'html' in value) {
+                el.innerHTML = value.html;
             } else {
                 el.textContent = value;
             }
@@ -199,7 +307,7 @@ export async function appendDatatoMain(locale, locType) {
                 shortTermForecastPeriods.push({
                     title: title || '',
                     condition: condition || '',
-                    temperature: `${temperature ?? '--'}${endingTemp}`,
+                    temperature: formatTemp(temperature),
                     narrative: narrative || '',
                     iconCode,
                     dayOrNight: dayOrNight || 'D'
@@ -322,10 +430,10 @@ export async function appendDatatoMain(locale, locType) {
         const avifPath = wxImgRoot && wxImgRoot[2]? `/images/avif/${wxImgRoot[2]}`: null;
         currentIcon.src = `/graphics/${iconDir}/${iconPath}`
 
-        console.log(avifPath)
-
         if (config.videoBackgrounds === true) {
-            vidBack.style.backgroundImage = `url(${avifPath})`
+            setWeatherBackground(vidBack, '--current-weather-bg', avifPath)
+        } else {
+            setWeatherBackground(vidBack, '--current-weather-bg', null)
         }
 
         if (current.windGust === null) {
@@ -350,17 +458,17 @@ export async function appendDatatoMain(locale, locType) {
 
         const dataMapCurrent = {
             "main-current-condition": current.wxPhraseLong,
-            "main-current-temp": `${current.temperature}${endingTemp}`,
+            "main-current-temp": { html: formatTemp(current.temperature) },
             "main-current-sunrise-value": formatTime(current.sunriseTimeLocal),
             "main-current-sunset-value": formatTime(current.sunsetTimeLocal),
             "main-current-humidityvalue": `${current.relativeHumidity}%`,
             "main-current-pressurevalue": `${current.pressureAltimeter} ${endingPressure + '\u00A0and\u00A0' + current.pressureTendencyTrend}`,
             "main-current-ceilingvalue": ceilingFormatted,
             "main-current-visibvalue": `${current.visibility} ${endingDistance}`,
-            "main-current-dewpointvalue": `${current.temperatureDewPoint}${endingTemp}`,
+            "main-current-dewpointvalue": { html: formatTemp(current.temperatureDewPoint) },
             "main-current-uvvalue": uvIndexVar,
-            "main-current-tempchangevalue": current.temperatureChange24Hour + endingTemp,
-            "main-current-feelslikevalue": current.temperatureFeelsLike + endingTemp
+            "main-current-tempchangevalue": { html: formatTemp(current.temperatureChange24Hour) },
+            "main-current-feelslikevalue": { html: formatTemp(current.temperatureFeelsLike) }
         }
 
 
@@ -403,10 +511,10 @@ export async function appendDatatoMain(locale, locType) {
             "main-intraday-condition1": intraday[1].phrase_22char,
             "main-intraday-condition2": intraday[2].phrase_22char,
             "main-intraday-condition3": intraday[3].phrase_22char,
-            "main-intraday-temp0": intraday[0].temp + endingTemp,
-            "main-intraday-temp1": intraday[1].temp + endingTemp,
-            "main-intraday-temp2": intraday[2].temp + endingTemp,
-            "main-intraday-temp3": intraday[3].temp + endingTemp,
+            "main-intraday-temp0": { html: formatTemp(intraday[0].temp) },
+            "main-intraday-temp1": { html: formatTemp(intraday[1].temp) },
+            "main-intraday-temp2": { html: formatTemp(intraday[2].temp) },
+            "main-intraday-temp3": { html: formatTemp(intraday[3].temp) },
             
         };
 
@@ -424,8 +532,7 @@ export async function appendDatatoMain(locale, locType) {
     }
 
     function buildShortTermForecast() {
-        renderShortTermPeriod('forecast-shortterm-d1', 0, false)
-        renderShortTermPeriod('forecast-shortterm-d2', 1, false)
+        renderShortTermPeriod(0, false)
     }
 
     function buildExtendedForecast() {
@@ -500,7 +607,7 @@ export async function appendDatatoMain(locale, locType) {
             type: 'line',
             responsive: true,
             maintainAspectRatio: false,
-            devicePixelRatio: window.devicePixelRatio || 1,
+            devicePixelRatio: Number(config.performance?.chartDevicePixelRatio ?? 1),
                             
             data: {
                 labels: forecast.dayOfWeek,
@@ -521,6 +628,9 @@ export async function appendDatatoMain(locale, locType) {
                         ]
             },
             options: {
+                animation: false,
+                events: [],
+                responsiveAnimationDuration: 0,
                 scales: {
                 y: {
                     beginAtZero: false
@@ -612,9 +722,11 @@ export function animateIntraday() {
         const percentage = ((tempValue - effectiveMin) / effectiveRange) * 85;
         const clampedPercentage = Math.min(Math.max(percentage, 10), 95);
 
+        htmlEl.style.height = `${clampedPercentage}%`;
+        htmlEl.style.transformOrigin = 'bottom';
         const anim = htmlEl.animate([
-            {height: '0%'},
-            {height: `${clampedPercentage}%`}
+            {transform: 'scaleY(0)'},
+            {transform: 'scaleY(1)'}
         ], {
             duration: 800,
             fill: 'forwards',

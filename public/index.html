@@ -29,8 +29,7 @@
         <link href="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css" rel="stylesheet">
         <script src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script>
         <script src='https://joeiddon.github.io/perlin/perlin.js'></script>
-        <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-        <script type="module" src="javascript/haze.js" defer></script>
+        <script type="module" src="javascript/music_toast.js" defer></script>
     </head>
 
     <body>
@@ -50,26 +49,6 @@
                         <div class="sidebar-channel-logo"></div>
                     </div>
 
-                    <div class="sidebar-haze-display"> <!-- optional integration for haze playout's song metadata and album art -->
-                        <div class="sidebar-haze-text-group">
-                            <div class="sidebar-haze-albumart-container">
-                                <img id="sidebar-haze-albumart" src="/graphics/ux/thermometer-sun.svg">
-                            </div>
-                            <div class="sidebar-haze-songinfo">
-                                <div class="haze-scroll-wrap"><div id="sidebar-haze-title">Song Title</div></div>
-                                <div class="haze-scroll-wrap"><div id="sidebar-haze-artist">Artist Name</div></div>
-                                <div class="haze-scroll-wrap"><div id="sidebar-haze-album">Album Name (Album Year)</div></div>
-                            </div>
-                        </div>
-                        <div class="sidebar-haze-progressbar-group">
-                            <div class="sidebar-haze-current-time">00:00</div>
-                            <div class="sidebar-haze-progressbar">
-                                <div id="sidebar-haze-progress" class="sidebar-haze-progress"></div>
-                            </div>
-                            <div class="sidebar-haze-duration">00:00</div>
-                        </div>
-                    </div>
-
                     <div class="sidebar-main-location-summary">
                         <div class="sidebar-conditions-location-row">
                             <div class="sidebar-conditions-location" id="sidebar-conditions-location">--</div>
@@ -83,6 +62,26 @@
                         </div>
                         <div class="sidebar-conditions-footer">
                             <div class="sidebar-summary-terminal" id="sidebar-summary-lines"></div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-music-toast">
+                        <div class="sidebar-music-text-group">
+                            <div class="sidebar-music-albumart-container">
+                                <img id="sidebar-music-albumart" alt="">
+                            </div>
+                            <div class="sidebar-music-songinfo">
+                                <div class="music-scroll-wrap"><div id="sidebar-music-title">Song Title</div></div>
+                                <div class="music-scroll-wrap"><div id="sidebar-music-artist">Artist Name</div></div>
+                                <div class="music-scroll-wrap"><div id="sidebar-music-album">Album Name (Album Year)</div></div>
+                            </div>
+                        </div>
+                        <div class="sidebar-music-progressbar-group">
+                            <div class="sidebar-music-current-time">00:00</div>
+                            <div class="sidebar-music-progressbar">
+                                <div id="sidebar-music-progress" class="sidebar-music-progress"></div>
+                            </div>
+                            <div class="sidebar-music-duration">00:00</div>
                         </div>
                     </div>
 
@@ -149,20 +148,12 @@
                                 </div>
                             </div>
                             <div class="upnext-locations-group">
-                                <div class="current-location-group">
+                                <div class="main-upnext-carousel-current current-location-group">
                                     <div class="current-location-icon"></div>
                                     <div class="current-location-name" id="upnext-current-location-name">Saskatoon</div>
                                 </div>
-                                <div class="upnext-list">
-                                    <div class="upnext-location-entry" id="upnext-location1">
-                                        <div class="upnext-location-name" id="upnext-loc-name1">> Edmonton</div>
-                                    </div>
-                                    <div class="upnext-location-entry" id="upnext-location2">
-                                        <div class="upnext-location-name" id="upnext-loc-name2">> Regina</div>
-                                    </div>
-                                    <div class="upnext-location-entry" id="upnext-location3">
-                                        <div class="upnext-location-name" id="upnext-loc-name3">> Prince Albert</div>
-                                    </div>
+                                <div class="main-upnext-carousel-viewport">
+                                    <div class="main-upnext-carousel-track" id="main-upnext-carousel-track"></div>
                                 </div>
                             </div>
                         </div>
@@ -370,27 +361,15 @@
                                 </div>
                             </div>
 
-                            <div id="forecast-shortterm-d1" class="main-slide">
-                                <div class="main-shortterm-slide-container">
-                                    <div class="forecast-shortterm-summary main-slide-panel" id="forecast-shorttermd1-summary">
-                                        <div class="forecast-shortterm-title" id="forecast-shorttermd1-title"></div>
-                                        <img class="forecast-shortterm-icon" src="/graphics/animated/not-available.svg" id="main-forecast-shorttermd1-icon">
-                                        <div class="forecast-shortterm-condition" id="forecast-shorttermd1-condition"></div>
-                                        <div class="forecast-shortterm-temp" id="forecast-shorttermd1-temp"></div>
+                            <div id="forecast-shortterm" class="main-slide">
+                                <div class="main-shortterm-slide-container" id="forecast-shortterm-content">
+                                    <div class="forecast-shortterm-summary main-slide-panel" id="forecast-shortterm-summary">
+                                        <div class="forecast-shortterm-title" id="forecast-shortterm-title"></div>
+                                        <img class="forecast-shortterm-icon" src="/graphics/animated/not-available.svg" id="main-forecast-shortterm-icon">
+                                        <div class="forecast-shortterm-condition" id="forecast-shortterm-condition"></div>
+                                        <div class="forecast-shortterm-temp" id="forecast-shortterm-temp"></div>
                                     </div>
-                                    <div class="forecast-shortterm-text main-slide-panel" id="forecast-shorttermd1-text"></div>
-                                </div>
-                            </div>
-                            
-                            <div id="forecast-shortterm-d2" class="main-slide">
-                                <div class="main-shortterm-slide-container">
-                                    <div class="forecast-shortterm-summary main-slide-panel" id="forecast-shorttermd2-summary">
-                                        <div class="forecast-shortterm-title" id="forecast-shorttermd2-title"></div>
-                                        <img class="forecast-shortterm-icon" src="/graphics/animated/not-available.svg" id="main-forecast-shorttermd2-icon">
-                                        <div class="forecast-shortterm-condition" id="forecast-shorttermd2-condition"></div>
-                                        <div class="forecast-shortterm-temp" id="forecast-shorttermd2-temp"></div>
-                                    </div>
-                                    <div class="forecast-shortterm-text main-slide-panel" id="forecast-shorttermd2-text"></div>
+                                    <div class="forecast-shortterm-text main-slide-panel" id="forecast-shortterm-text"></div>
                                 </div>
                             </div>
 
@@ -601,8 +580,8 @@
                 <div class="ldl-branding-area">
                     <div class="ldl-date-time-container">
                         <div id="ldl-time" class="ldl-time">6:58:00 PM CST</div>
-                    </div>
                         <div id="ldl-date" class="ldl-date">Wed May 13, 2026</div>
+                    </div>
                     <div class="provider-logo-container">
                         <span id="ldl-provider-extratext-heading" class="ldl-provider-extratext"></span>
                         <img id="ldl-provider-logo" class="ldl-provider-logo" src="" alt="Provider logo">

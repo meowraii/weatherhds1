@@ -9,12 +9,13 @@
 
 .cityticker-track {
     position: relative;
-    left: 0;
     display: flex;
     align-items: center;
     height: 100%;
     flex-wrap: nowrap;
     white-space: nowrap;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
 }
 
 .cityticker-header {
@@ -40,6 +41,8 @@
     height: 100%;
     flex-shrink: 0;
     margin: 0px 30px 0px 120px;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
 }
 
 .cityticker-entry {
@@ -120,4 +123,3 @@
     object-fit: contain;
     flex-shrink: 0;
 }
-

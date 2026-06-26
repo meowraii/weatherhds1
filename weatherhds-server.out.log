@@ -1,0 +1,285 @@
+c                    ██
+           ██       ██     ██
+            ███          ███                  ████        ███  ██████████         ████████
+          ███████████████               ██    ████        ███  █████████████    █████████████    ███
+        █████ █████    ██            ██████   ████        ███  ████     ██████ ██████    ████   ██████
+     █████      █████████   ███   ███████     ███████████████  ████      ██████ █████████         ███████
+   ███████        ███████        █████        ███████████████  ████       █████  ████████████       ██████
+   ██  █               ██         ██████      ████        ███  ████      █████         ███████    ███████
+  ██    ██             ██           ██████    ████        ███  ████      █████ █████      ████   ██████
+ ███    ███ █████████████              ████   ████        ███  █████████████   ███████████████  █████
+   ██  ██   ███████████                       ████        ███   ██████████       ███████████
+[2m2026-06-26 11:52:10 AM[0m [92mINF[0m [server] ==========================================================================================================
+[2m2026-06-26 11:52:10 AM[0m [92mINF[0m [server] WeatherHDS Server v26.05.14
+[2m2026-06-26 11:52:10 AM[0m [92mINF[0m [server] Created by raiii. (c) SSPWXR/raii 2025
+[2m2026-06-26 11:52:10 AM[0m [92mINF[0m [server] User contributors: ScentedOrangeDev, LeWolfYt,
+[2m2026-06-26 11:52:10 AM[0m [92mINF[0m [server] HTTP server listening on http://localhost:3000
+[2m2026-06-26 11:52:10 AM[0m [92mINF[0m [music] music scan complete: 581 supported, 312 unsupported
+[2m2026-06-26 11:52:10 AM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\On-looker.opus
+[2m2026-06-26 11:52:11 AM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:58072
+[2m2026-06-26 11:52:11 AM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 11:52:11 AM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 11:52:17 AM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 904ms
+[2m2026-06-26 11:52:17 AM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 1.391s
+[2m2026-06-26 11:52:18 AM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 2.789s
+[2m2026-06-26 11:52:45 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0E:CA:52.861,-104.611:ldl
+[2m2026-06-26 11:53:45 AM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 947ms
+[2m2026-06-26 11:54:22 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S9A:CA:52.773,-108.299:ldl
+[2m2026-06-26 11:54:23 AM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\So Sue Me.opus
+[2m2026-06-26 11:55:11 AM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 879ms
+[2m2026-06-26 11:55:11 AM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 879ms
+[2m2026-06-26 11:56:00 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-T9V:CA:53.283,-110.006:ldl
+[2m2026-06-26 11:56:40 AM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 738ms
+[2m2026-06-26 11:57:37 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S4P:CA:50.449,-104.611:ldl
+[2m2026-06-26 11:57:54 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S7K:CA:52.128,-106.662:primary
+[2m2026-06-26 11:57:54 AM[0m [92mINF[0m [server/http] HTTP GET /data/Saskatoon, SK, Canada 200 714ms
+[2m2026-06-26 11:58:48 AM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 11:58:48 AM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:57937
+[2m2026-06-26 11:58:48 AM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 11:58:48 AM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 11:58:48 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S6V:CA:53.203,-105.754:ldl
+[2m2026-06-26 11:58:48 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S7K:CA:52.128,-106.662:ldl
+[2m2026-06-26 11:58:48 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0K:CA:52.2,-105.123:ldl
+[2m2026-06-26 11:58:49 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0A:CA:51.946,-103.802:ldl
+[2m2026-06-26 11:58:49 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0K:CA:51.675,-105.467:ldl
+[2m2026-06-26 11:58:49 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0A:CA:51.769,-104.186:ldl
+[2m2026-06-26 11:58:49 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0E:CA:52.599,-103.254:ldl
+[2m2026-06-26 11:58:49 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0E:CA:52.849,-104.048:ldl
+[2m2026-06-26 11:58:49 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0L:CA:51.551,-107.991:ldl
+[2m2026-06-26 11:58:49 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0L:CA:51.919,-109.137:ldl
+[2m2026-06-26 11:58:49 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S6H:CA:50.401,-105.543:ldl
+[2m2026-06-26 11:58:49 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0L:CA:51.488,-107.056:ldl
+[2m2026-06-26 11:58:49 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S4H:CA:49.662,-103.854:ldl
+[2m2026-06-26 11:58:50 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S4A:CA:49.142,-102.992:ldl
+[2m2026-06-26 11:58:50 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0H:CA:49.632,-105.992:ldl
+[2m2026-06-26 11:58:50 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0G:CA:50.144,-101.667:ldl
+[2m2026-06-26 11:58:50 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S9H:CA:50.285,-107.8:ldl
+[2m2026-06-26 11:58:50 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0A:CA:50.928,-102.806:ldl
+[2m2026-06-26 11:58:50 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0N:CA:49.909,-109.478:ldl
+[2m2026-06-26 11:58:50 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0G:CA:50.77,-103.795:ldl
+[2m2026-06-26 11:58:50 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S3N:CA:51.212,-102.46:ldl
+[2m2026-06-26 11:58:50 AM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0H:CA:49.876,-106.557:ldl
+[2m2026-06-26 12:00:19 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:00:19 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:59129
+[2m2026-06-26 12:00:19 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:00:19 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:00:20 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 1.238s
+[2m2026-06-26 12:00:26 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\Smooth Tailing.opus
+[2m2026-06-26 12:01:14 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:01:14 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:53011
+[2m2026-06-26 12:01:14 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:01:14 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:01:15 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:01:16 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:53026
+[2m2026-06-26 12:01:17 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:01:17 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:02:18 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:02:18 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:53034
+[2m2026-06-26 12:02:18 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:02:18 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:02:25 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:02:25 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:53049
+[2m2026-06-26 12:02:25 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:02:25 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:02:31 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\Big Deal.opus
+[2m2026-06-26 12:06:14 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:06:15 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:51342
+[2m2026-06-26 12:06:15 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:06:15 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:06:15 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0E:CA:52.861,-104.611:ldl
+[2m2026-06-26 12:06:48 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:06:48 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:51366
+[2m2026-06-26 12:06:48 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:06:48 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:06:48 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S9A:CA:52.773,-108.299:ldl
+[2m2026-06-26 12:07:03 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\Silver Lining (Remastered).opus
+[2m2026-06-26 12:08:51 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:08:51 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:51535
+[2m2026-06-26 12:08:51 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:08:51 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:08:51 PM[0m [92mINF[0m [server/http] HTTP GET /data/alerts/Saskatoon, SK 500 97ms
+[2m2026-06-26 12:08:51 PM[0m [92mINF[0m [server/http] HTTP GET /data/alerts/Saskatoon, SK, Canada 500 204ms
+[2m2026-06-26 12:08:52 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-T9V:CA:53.283,-110.006:ldl
+[2m2026-06-26 12:08:52 PM[0m [92mINF[0m [server/http] HTTP GET /data/Lloydminster, AB 200 1.169s
+[2m2026-06-26 12:08:52 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:08:53 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:51559
+[2m2026-06-26 12:08:53 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:08:53 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:09:11 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:09:12 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:63400
+[2m2026-06-26 12:09:12 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:09:12 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:10:21 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\Fog in Pacifica.opus
+[2m2026-06-26 12:10:56 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 2.487s
+[2m2026-06-26 12:10:57 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 3.025s
+[2m2026-06-26 12:10:57 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 3.186s
+[2m2026-06-26 12:12:21 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 2.412s
+[2m2026-06-26 12:12:21 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 2.25s
+[2m2026-06-26 12:12:21 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 2.513s
+[2m2026-06-26 12:12:26 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0L:CA:51.551,-107.991:ldl
+[2m2026-06-26 12:12:28 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:12:28 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:64822
+[2m2026-06-26 12:12:28 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S7K:CA:52.128,-106.662:ldl
+[2m2026-06-26 12:12:28 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:12:28 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:12:28 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S7K:CA:52.128,-106.662:primary
+[2m2026-06-26 12:12:28 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S6V:CA:53.203,-105.754:ldl
+[2m2026-06-26 12:12:28 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0K:CA:52.2,-105.123:ldl
+[2m2026-06-26 12:12:29 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0K:CA:51.675,-105.467:ldl
+[2m2026-06-26 12:12:29 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0A:CA:51.946,-103.802:ldl
+[2m2026-06-26 12:12:29 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0A:CA:51.769,-104.186:ldl
+[2m2026-06-26 12:12:29 PM[0m [92mINF[0m [server/http] HTTP GET /data/Wadena, SK 200 581ms
+[2m2026-06-26 12:12:29 PM[0m [92mINF[0m [server/http] HTTP GET /images/avif/mostlyCloudyDay1.avif 200 753ms
+[2m2026-06-26 12:12:29 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0L:CA:51.919,-109.137:ldl
+[2m2026-06-26 12:12:29 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0E:CA:52.849,-104.048:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0E:CA:52.599,-103.254:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [server/http] HTTP GET /data/Porcupine Plain, SK 200 1.022s
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0L:CA:51.488,-107.056:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S4P:CA:50.449,-104.611:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S6H:CA:50.401,-105.543:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S4H:CA:49.662,-103.854:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S4A:CA:49.142,-102.992:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S9H:CA:50.285,-107.8:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0G:CA:50.144,-101.667:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0H:CA:49.632,-105.992:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S3N:CA:51.212,-102.46:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0N:CA:49.909,-109.478:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0A:CA:50.928,-102.806:ldl
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 1.912s
+[2m2026-06-26 12:12:30 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 1.485s
+[2m2026-06-26 12:12:31 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0H:CA:49.876,-106.557:ldl
+[2m2026-06-26 12:12:31 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0G:CA:50.77,-103.795:ldl
+[2m2026-06-26 12:12:31 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:12:32 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:64838
+[2m2026-06-26 12:12:32 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:12:32 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:12:52 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\Constellation.opus
+[2m2026-06-26 12:15:01 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:15:02 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:52193
+[2m2026-06-26 12:15:02 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:15:02 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:15:05 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:15:06 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:52216
+[2m2026-06-26 12:15:06 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:15:06 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:15:13 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:15:17 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:52223
+[2m2026-06-26 12:15:17 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:15:17 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:15:50 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\Love Will Find a Way (Remastered).opus
+[2m2026-06-26 12:17:06 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:17:06 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:52535
+[2m2026-06-26 12:17:06 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:17:06 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:17:07 PM[0m [92mINF[0m [server/http] HTTP GET /data/alerts/Wadena, SK 204 505ms
+[2m2026-06-26 12:17:08 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:17:08 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:52542
+[2m2026-06-26 12:17:08 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:17:09 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:17:09 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:17:10 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:52557
+[2m2026-06-26 12:17:10 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:17:10 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:19:26 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\素直になれなくて.opus
+[2m2026-06-26 12:21:28 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 1.526s
+[2m2026-06-26 12:21:28 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 1.387s
+[2m2026-06-26 12:21:43 PM[0m [92mINF[0m [server/http] HTTP GET /images/avif/windyDay2.avif 200 503ms
+[2m2026-06-26 12:22:02 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0E:CA:52.861,-104.611:ldl
+[2m2026-06-26 12:22:02 PM[0m [92mINF[0m [server/http] HTTP GET /data/Melfort, SK 200 645ms
+[2m2026-06-26 12:22:15 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:22:16 PM[0m [92mINF[0m [server/http] HTTP GET / 200 1.12s
+[2m2026-06-26 12:22:16 PM[0m [92mINF[0m [server/http] HTTP GET /javascript/weather.js 200 945ms
+[2m2026-06-26 12:22:16 PM[0m [92mINF[0m [server/http] HTTP GET /javascript/clock.js 200 957ms
+[2m2026-06-26 12:22:16 PM[0m [92mINF[0m [server/http] HTTP GET /javascript/national.js 200 959ms
+[2m2026-06-26 12:22:16 PM[0m [92mINF[0m [server/http] HTTP GET /javascript/main.js 200 990ms
+[2m2026-06-26 12:22:16 PM[0m [92mINF[0m [server/http] HTTP GET /javascript/slides.js 200 1.02s
+[2m2026-06-26 12:22:16 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:59097
+[2m2026-06-26 12:22:16 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:22:16 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:22:17 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-T9V:CA:53.283,-110.006:ldl
+[2m2026-06-26 12:22:17 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S9A:CA:52.773,-108.299:ldl
+[2m2026-06-26 12:22:18 PM[0m [92mINF[0m [server/http] HTTP GET /data/alerts/Watrous, SK 204 1.133s
+[2m2026-06-26 12:23:28 PM[0m [92mINF[0m [server/http] HTTP GET /images/avif/strongTstm1.avif 200 990ms
+[2m2026-06-26 12:23:29 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\Blue Cocktail.opus
+[2m2026-06-26 12:23:54 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:23:54 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:59887
+[2m2026-06-26 12:23:54 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:23:54 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:25:43 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:58498
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [server/http] HTTP GET /data/alerts/Lloydminster, AB 500 112ms
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S7K:CA:52.128,-106.662:ldl
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S7K:CA:52.128,-106.662:primary
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S6V:CA:53.203,-105.754:ldl
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0K:CA:52.2,-105.123:ldl
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0A:CA:51.769,-104.186:ldl
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0K:CA:51.675,-105.467:ldl
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0E:CA:52.599,-103.254:ldl
+[2m2026-06-26 12:25:44 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0A:CA:51.946,-103.802:ldl
+[2m2026-06-26 12:25:45 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0E:CA:52.849,-104.048:ldl
+[2m2026-06-26 12:25:45 PM[0m [92mINF[0m [server/http] HTTP GET /data/Wadena, SK 200 589ms
+[2m2026-06-26 12:25:45 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0L:CA:51.919,-109.137:ldl
+[2m2026-06-26 12:25:45 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0L:CA:51.488,-107.056:ldl
+[2m2026-06-26 12:25:45 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0L:CA:51.551,-107.991:ldl
+[2m2026-06-26 12:25:45 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S4P:CA:50.449,-104.611:ldl
+[2m2026-06-26 12:25:45 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S6H:CA:50.401,-105.543:ldl
+[2m2026-06-26 12:25:45 PM[0m [92mINF[0m [server/http] HTTP GET /data/Regina, SK 200 548ms
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S4H:CA:49.662,-103.854:ldl
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S9H:CA:50.285,-107.8:ldl
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0G:CA:50.144,-101.667:ldl
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S4A:CA:49.142,-102.992:ldl
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0H:CA:49.632,-105.992:ldl
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [server/http] HTTP GET /data/Moosomin, SK 200 577ms
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [server/http] HTTP GET /data/Estevan, SK 200 633ms
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0N:CA:49.909,-109.478:ldl
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0A:CA:50.928,-102.806:ldl
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0G:CA:50.77,-103.795:ldl
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S3N:CA:51.212,-102.46:ldl
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [server/http] HTTP GET /images/avif/mostlyCloudyDay1.avif 200 1.485s
+[2m2026-06-26 12:25:46 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0H:CA:49.876,-106.557:ldl
+[2m2026-06-26 12:26:47 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:26:47 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:58527
+[2m2026-06-26 12:26:47 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:26:47 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:26:48 PM[0m [92mINF[0m [server/http] HTTP GET /images/avif/mostlyCloudyDay1.avif 200 508ms
+[2m2026-06-26 12:27:23 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\The Meeting - And I Think About It All The Time.opus
+[2m2026-06-26 12:27:27 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:27:28 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:58535
+[2m2026-06-26 12:27:28 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:27:28 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:27:30 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:27:30 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:58556
+[2m2026-06-26 12:27:30 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:27:30 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:29:14 PM[0m [92mINF[0m [server/http] HTTP GET /images/avif/partlyCloudyDay1.avif 200 851ms
+[2m2026-06-26 12:29:34 PM[0m [92mINF[0m [server/http] HTTP GET /images/avif/partlyCloudyNight1.avif 200 549ms
+[2m2026-06-26 12:31:37 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 2.815s
+[2m2026-06-26 12:31:52 PM[0m [92mINF[0m [server/http] HTTP GET /images/avif/windyDay2.avif 200 650ms
+[2m2026-06-26 12:32:44 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\Shop Till You Bop (From ＂Fabulous Baker Boys＂ Soundtrack).opus
+[2m2026-06-26 12:32:57 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:32:58 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:58592
+[2m2026-06-26 12:32:58 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:32:58 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:35:15 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 526ms
+[2m2026-06-26 12:35:15 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 651ms
+[2m2026-06-26 12:35:15 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 650ms
+[2m2026-06-26 12:35:16 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 723ms
+[2m2026-06-26 12:35:16 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 938ms
+[2m2026-06-26 12:35:22 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:35:22 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:57496
+[2m2026-06-26 12:35:22 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:35:22 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:35:23 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-T9V:CA:53.283,-110.006:ldl
+[2m2026-06-26 12:35:23 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S9A:CA:52.773,-108.299:ldl
+[2m2026-06-26 12:35:23 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0E:CA:52.861,-104.611:ldl
+[2m2026-06-26 12:37:09 PM[0m [92mINF[0m [music] webrtc connection state: closed
+[2m2026-06-26 12:37:09 PM[0m [92mINF[0m [music] websocket connect from 127.0.0.1:51732
+[2m2026-06-26 12:37:09 PM[0m [92mINF[0m [music] webrtc connection state: connecting
+[2m2026-06-26 12:37:09 PM[0m [92mINF[0m [music] webrtc connection state: connected
+[2m2026-06-26 12:37:10 PM[0m [92mINF[0m [server/http] HTTP GET /images/avif/mostlyCloudyDay1.avif 200 711ms
+[2m2026-06-26 12:37:10 PM[0m [92mINF[0m [server/http] HTTP POST /vocallocal/clips 200 669ms
+[2m2026-06-26 12:37:21 PM[0m [92mINF[0m [music] now playing: D:\.document\weatherHDS project\weatherhds1\Music\Songbird.opus
+[2m2026-06-26 12:39:30 PM[0m [92mINF[0m [server/http] HTTP GET /images/avif/cloudy.avif 200 950ms
+[2m2026-06-26 12:40:24 PM[0m [92mINF[0m [providers/twc] Fetched and cached: wxData-S0L:CA:51.551,-107.991:ldl

@@ -3,6 +3,8 @@ import { requestWxData, requestAlertData } from "./data.js";
 
 const SCROLL_SPEED_PX_PER_MS = 0.24;
 const STATIC_MSG_DURATION_MS = 12000;
+const TARGET_FRAME_MS = 1000 / Math.max(1, Number(config.performance?.cityTickerFps ?? 60));
+const FETCH_CONCURRENCY = Math.max(1, Number(config.performance?.cityTickerFetchConcurrency ?? 4));
 const iconDir = config.staticIcons ? "static" : "animated";
 const units = displayUnits[serverConfig.units] ?? displayUnits["m"];
 
@@ -161,8 +163,8 @@ async function fetchSectionData(categories) {
     )];
 
     const [wxResults, alertResults] = await Promise.all([
-        Promise.allSettled(allLocations.map(loc => requestWxData(loc, "ldl"))),
-        Promise.allSettled(allLocations.map(loc => requestAlertData(loc))),
+        mapSettledLimit(allLocations, FETCH_CONCURRENCY, loc => requestWxData(loc, "ldl")),
+        mapSettledLimit(allLocations, FETCH_CONCURRENCY, loc => requestAlertData(loc)),
     ]);
 
     const dataMap = {};
@@ -173,6 +175,24 @@ async function fetchSectionData(categories) {
         alertMap[loc] = alertResults[i].status === "fulfilled" ? alertResults[i].value : null;
     });
     return { dataMap, alertMap };
+}
+
+async function mapSettledLimit(items, limit, worker) {
+    const results = new Array(items.length);
+    let nextIndex = 0;
+    async function run() {
+        while (nextIndex < items.length) {
+            const index = nextIndex++;
+            try {
+                results[index] = { status: "fulfilled", value: await worker(items[index], index) };
+            } catch (reason) {
+                results[index] = { status: "rejected", reason };
+            }
+        }
+    }
+    const workers = Array.from({ length: Math.min(limit, items.length) }, run);
+    await Promise.all(workers);
+    return results;
 }
 
 function buildAlertIntroEntry(alertInfo) {
@@ -291,6 +311,7 @@ class CityTickerScroller {
     #headerWidth = 0;
     #entryOffset = 0;
     #lastTimestamp = null;
+    #lastPaintTimestamp = null;
 
     #state = "idle";
     #staticStart = null;
@@ -301,6 +322,14 @@ class CityTickerScroller {
         this.byProduct = byProduct;
         this.products = products;
         this.messages = messages;
+    }
+
+    #setTrackX(x) {
+        this.track.style.transform = `translate3d(${x}px, 0, 0)`;
+    }
+
+    #setEntriesX(x) {
+        if (this.#entriesEl) this.#entriesEl.style.transform = `translate3d(${x}px, 0, 0)`;
     }
 
     #rebuildQueue() {
@@ -347,9 +376,11 @@ class CityTickerScroller {
 
             if (!seg.msg.scroll) {
                 this.#lastTimestamp = null;
+                this.#lastPaintTimestamp = null;
                 this.#state = "static";
                 this.#staticStart = null;
-                this.track.style.left = "0px";
+                this.#setTrackX(0);
+                this.#setEntriesX(0);
                 return;
             }
         }
@@ -357,8 +388,12 @@ class CityTickerScroller {
         this.#trackOffset = vpWidth;
         this.#entryOffset = 0;
         this.#lastTimestamp = null;
-        this.track.style.left = `${vpWidth}px`;
-        if (this.#entriesEl) this.#entriesEl.style.marginLeft = "0px";
+        this.#lastPaintTimestamp = null;
+        this.#setTrackX(vpWidth);
+        if (this.#entriesEl) {
+            this.#entriesEl.style.marginLeft = "0px";
+            this.#setEntriesX(0);
+        }
         this.#state = "scrolling";
     }
 
@@ -369,11 +404,17 @@ class CityTickerScroller {
             return;
         }
 
+        if (this.#lastPaintTimestamp !== null && timestamp - this.#lastPaintTimestamp < TARGET_FRAME_MS) {
+            this.#raf = requestAnimationFrame(ts => this.#tick(ts));
+            return;
+        }
+        this.#lastPaintTimestamp = timestamp;
+
         if (this.#state === "scrolling") {
             const delta = this.#lastTimestamp === null ? 0 : timestamp - this.#lastTimestamp;
             this.#lastTimestamp = timestamp;
             this.#trackOffset -= SCROLL_SPEED_PX_PER_MS * delta;
-            this.track.style.left = `${this.#trackOffset}px`;
+            this.#setTrackX(this.#trackOffset);
 
             if (this.#trackOffset <= 0) {
                 this.#entryOffset = 0;
@@ -385,7 +426,7 @@ class CityTickerScroller {
             const delta = this.#lastTimestamp === null ? 0 : timestamp - this.#lastTimestamp;
             this.#lastTimestamp = timestamp;
             this.#entryOffset -= SCROLL_SPEED_PX_PER_MS * delta;
-            this.#entriesEl.style.marginLeft = `${this.#entryOffset}px`;
+            this.#setEntriesX(this.#entryOffset);
 
             const rightEdge = this.#trackOffset + this.#headerWidth + this.#entryOffset + this.#entriesWidth;
             if (rightEdge <= 0) {
@@ -397,7 +438,7 @@ class CityTickerScroller {
             const delta = this.#lastTimestamp === null ? 0 : timestamp - this.#lastTimestamp;
             this.#lastTimestamp = timestamp;
             this.#trackOffset -= SCROLL_SPEED_PX_PER_MS * delta;
-            this.track.style.left = `${this.#trackOffset}px`;
+            this.#setTrackX(this.#trackOffset);
 
             if (this.#trackOffset + this.#headerWidth <= 0) this.#advance();
 
@@ -410,6 +451,7 @@ class CityTickerScroller {
     }
 
     start() {
+        if (this.#raf) return;
         this.#rebuildQueue();
         this.#loadCurrent();
         this.#raf = requestAnimationFrame(ts => this.#tick(ts));
@@ -417,6 +459,7 @@ class CityTickerScroller {
 
     stop() {
         if (this.#raf) cancelAnimationFrame(this.#raf);
+        this.#raf = null;
     }
 }
 

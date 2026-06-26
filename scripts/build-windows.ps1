@@ -72,8 +72,8 @@ go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest `
     -o $resourcePath `
     -manifest $manifestPath `
     -icon $icoPath `
-    -product-name 'WeatherHDS' `
-    -description 'WeatherHDS daemon' `
+    -product-name 'WeatherHDS Server' `
+    -description 'WeatherHDS Server' `
     -company 'METEOchannel / meowraii' `
     -copyright 'Copyright (c) meowraii' `
     -internal-name 'weatherhds' `

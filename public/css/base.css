@@ -1,29 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100..900;1,100..900&display=swap');
 :root {
-  --main-font-family: 'Zalando Sans', 'Inter Tight', sans-serif; /* everything else */
-  --secondary-font-family: 'Zalando Sans SemiExpanded', 'Inter Tight', sans-serif; /* forecast text narratives and some titles */
-  --tertiary-font-family: 'Inter Tight', sans-serif; /* ldl */
-  --monospace-font: 'JetBrains Mono', monospace;
+  --main-font-family: 'Poppins', sans-serif; /* everything else */
+  --secondary-font-family: 'Poppins', sans-serif; /* forecast text narratives and some titles */
+  --tertiary-font-family: 'Poppins', sans-serif; /* ldl */
+  --monospace-font: 'Poppins', sans-serif;
   font-family: var(--main-font-family);
   image-rendering: auto;
   color: var(--text);
 
   /* Surfaces */
-  --color-bg: #060b18b3;
-  --color-bg-dim: #06070a65;
-  --color-surface: #0a0d14e1;
-  --color-surface-dim: #24262c65;
-  --color-muted: #101822b7;
-  --color-deep: #04040fe1;
-  --color-overlay: #27303859;
-  --color-raised: #17213be1;
-  --color-panel: #040811;
-  --color-highlight: #91cdff8f;
+  --color-bg: #02060cf0;
+  --color-bg-dim: #020812b8;
+  --color-surface: #020911eb;
+  --color-surface-dim: #071b34a3;
+  --color-muted: #050c14;
+  --color-deep: #01050cf7;
+  --color-overlay: #0e3c645c;
+  --color-raised: #030b14de;
+  --color-panel: #020812;
+  --color-highlight: #1160a0a8;
 
   /* Accent */
-  --color-accent-dim: #e4f2ff6e;
-  --color-accent: #a8d5ffcb;
-  --color-accent-sharp: #2c99ff;
+  --color-accent-dim: #a8d4ff70;
+  --color-accent: #72bdffdc;
+  --color-accent-sharp: #1f9bff;
 
   /* Text */
   --text: #ffffff;
@@ -32,13 +32,22 @@
   --text-temp-lo: var(--color-accent);
 
   /* Shape */
-  --radius: 24px;
+  --radius: 14px;
   --outline-default: 4.8px solid #ffffff00;
-  --blur-slide: blur(70px);
+  --blur-slide: blur(96px) saturate(185%);
 
   /* Borders */
-  --border-subtle: 2px solid #ffffff4a;
+  --border-subtle: 1px solid rgba(202, 232, 255, 0.22);
   --border-distinct: 1px solid var(--color-accent);
+
+  /* Glass */
+  --glass-surface: linear-gradient(145deg, rgba(4, 20, 38, 0.72), rgba(2, 8, 18, 0.64));
+  --glass-surface-soft: linear-gradient(145deg, rgba(8, 32, 58, 0.5), rgba(2, 8, 18, 0.42));
+  --glass-surface-strong: linear-gradient(145deg, rgba(3, 16, 31, 0.9), rgba(1, 5, 12, 0.86));
+  --glass-tint: rgba(2, 8, 18, 0.56);
+  --glass-border: 1px solid rgba(185, 224, 255, 0.18);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 12px 30px rgba(0, 0, 0, 0.3), var(--glass-highlight);
 
   /* Type scale */
   --text-2xs: 18pt;
@@ -51,14 +60,14 @@
   --text-xl: 46pt;
   --text-2xl: 48pt;
   --text-3xl: 72pt;
-  --sidebar-rail-width: max(568px, 2vw);
+  --sidebar-rail-width: max(576px, 2vw);
 
   /* Gradients */
-  --gradient-base: linear-gradient(var(--color-bg), var(--color-surface));
-  --gradient-overlay: linear-gradient(var(--color-overlay), var(--color-deep));
-  --gradient-raised: linear-gradient(var(--color-raised), var(--color-panel));
+  --gradient-base: linear-gradient(180deg, var(--color-bg), var(--color-surface));
+  --gradient-overlay: linear-gradient(180deg, var(--color-overlay), var(--color-deep));
+  --gradient-raised: linear-gradient(180deg, var(--color-raised), var(--color-panel));
   --gradient-highlight: linear-gradient(var(--color-highlight), var(--color-highlight));
-  --gradient-slide: var(--gradient-base);
+  --gradient-slide: var(--glass-surface);
 }
 
 
@@ -94,6 +103,17 @@ body {
   overflow: hidden;
   text-rendering: optimizeSpeed;
   -webkit-font-smoothing: antialiased;
+}
+
+.small-degrees {
+  font-size: var(--text-2xs);
+  vertical-align: top;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+body.performance-static-glass {
+  --blur-slide: none;
 }
 
 .fade-out {
@@ -153,7 +173,15 @@ body {
   right: 0;
   background-size: cover;
   background-position: center;
-  filter: brightness(0.8);
+  filter: none;
+}
+
+.wallpaper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 hr {
@@ -162,3 +190,115 @@ hr {
   border-top: 2px solid var(--text);
 }
 
+/* Performance-first DOM renderer.
+   Live backdrop blur over large 1440p panels is the biggest old-GPU paint cost. */
+body.performance-static-glass .sidebar,
+body.performance-static-glass .slide-info-group,
+body.performance-static-glass .current-location-group,
+body.performance-static-glass .upnext-location-entry,
+body.performance-static-glass .main-upnext-carousel-entry,
+body.performance-static-glass .main-slide-panel,
+body.performance-static-glass .main-slide-panel::before,
+body.performance-static-glass #main-current-icon,
+body.performance-static-glass .main-current-condtions-box,
+body.performance-static-glass .main-intraday-period-title,
+body.performance-static-glass .intradayicon,
+body.performance-static-glass .main-intraday-temp-slider-container,
+body.performance-static-glass .main-intraday-temp-slider,
+body.performance-static-glass .forecast-shortterm-icon,
+body.performance-static-glass .main-forecast-title,
+body.performance-static-glass .main-forecast-icon,
+body.performance-static-glass .main-forecast-wind,
+body.performance-static-glass .radar-info-bubble,
+body.performance-static-glass .bumper-background-metadata,
+body.performance-static-glass .bumper-background-canvas,
+body.performance-static-glass .ldl-weather,
+body.performance-static-glass .ldl-carousel-current,
+body.performance-static-glass .ldl-date-time-container,
+body.performance-static-glass .cityticker,
+body.performance-static-glass .provider-logo-container,
+body.performance-static-glass .ldl-bulletin-crawl,
+body.performance-static-glass .ldl-carousel-container,
+body.performance-static-glass .left-container-radar,
+body.performance-static-glass .right-container-locations,
+body.performance-static-glass .national-current-labels {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+body.performance-static-glass .main-slide-panel::before,
+body.performance-static-glass .slide-info-group,
+body.performance-static-glass .current-location-group,
+body.performance-static-glass .upnext-location-entry,
+body.performance-static-glass .main-upnext-carousel-entry,
+body.performance-static-glass .main-current-condtions-box,
+body.performance-static-glass .radar-info-bubble,
+body.performance-static-glass .left-container-radar,
+body.performance-static-glass .right-container-locations {
+  background-image: var(--glass-surface-soft);
+}
+
+body.performance-static-glass .bumper-background-canvas::before {
+  display: none;
+}
+
+body.performance-static-glass .bumper-channel-logo,
+body.performance-static-glass .bumper-background-metadata,
+body.performance-static-glass .bumper-bg-title,
+body.performance-static-glass .bumper-bg-subtitle,
+body.performance-static-glass .bumper-bg-author,
+body.performance-static-glass .bumper-text,
+body.performance-static-glass .upnext-reg,
+body.performance-static-glass .upnext-reg-loc-header,
+body.performance-static-glass .national-region-card,
+body.performance-static-glass .ldl-provider-logo,
+body.performance-static-glass .ldl-current-wind-arrow {
+  filter: none !important;
+}
+
+body.performance-static-glass .bumper-bg-title,
+body.performance-static-glass .bumper-bg-subtitle,
+body.performance-static-glass .bumper-bg-author,
+body.performance-static-glass .bumper-text,
+body.performance-static-glass .upnext-reg,
+body.performance-static-glass .upnext-reg-loc-header {
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.86);
+}
+
+body.performance-cached-glass .sidebar,
+body.performance-cached-glass .slide-info-group,
+body.performance-cached-glass .current-location-group,
+body.performance-cached-glass .upnext-location-entry,
+body.performance-cached-glass .main-upnext-carousel-entry,
+body.performance-cached-glass .main-slide-panel,
+body.performance-cached-glass .main-current-condtions-box,
+body.performance-cached-glass .radar-info-bubble,
+body.performance-cached-glass .ldl-weather,
+body.performance-cached-glass .cityticker,
+body.performance-cached-glass .ldl-bulletin-crawl,
+body.performance-cached-glass .ldl-carousel-container,
+body.performance-cached-glass .ldl-carousel-current,
+body.performance-cached-glass .ldl-carousel-location-entry,
+body.performance-cached-glass .left-container-radar,
+body.performance-cached-glass .right-container-locations,
+body.performance-cached-glass .national-current-labels {
+  background-image: var(--glass-surface-soft), var(--cached-glass-bg) !important;
+  background-position: center, var(--glass-bg-x, 0) var(--glass-bg-y, 0) !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-size: auto, var(--glass-bg-w, 100%) var(--glass-bg-h, 100%) !important;
+}
+
+body.performance-cached-glass .ldl-weather,
+body.performance-cached-glass .sidebar {
+  background-image: linear-gradient(180deg, rgba(2, 8, 18, 0.72), rgba(2, 8, 18, 0.58)), var(--cached-glass-bg) !important;
+}
+
+body.performance-cached-glass .forecast-shortterm-summary {
+  background-image:
+    linear-gradient(180deg, rgba(2, 8, 18, 0.62), rgba(2, 8, 18, 0.82)),
+    var(--forecast-weather-bg, none),
+    var(--glass-surface-strong) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+}
