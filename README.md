@@ -9,7 +9,11 @@
 
   <h1>Building</h1>
   <p>Requires Go 1.20+. To build, run <code>go build -o weatherhds</code> in the project root. The executable will just simply appear.</p>
-  <p>Or, you can download the latest release from the releases page: <a href="https://github.com/meowraii/weatherhds1/releases">Releases</a></p>
+  <h3>Downloads</h3>
+  <ul>
+    <li>Download stable versions from the <a href="https://github.com/meowraii/weatherhds1/releases">Releases page</a>.</li>
+    <li>Download development nightly builds from <a href="https://github.com/meowraii/weatherhds1/actions">GitHub Actions</a>.</li>
+  </ul>
 
   <h1>Configuration</h1>
   <p>Main presentation, LDL locations, and system settings can be edited in <code>public/config.js</code>. Always restart the server for config changes!</p>
