@@ -13,3 +13,4 @@ weatherhds.exe
 /resource_windows_amd64.syso
 /build/windows/weatherhds.ico
 /public/audio/vocallocal/
+dist/
