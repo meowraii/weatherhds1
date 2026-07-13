@@ -1,10 +1,14 @@
 package music
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/pion/sdp/v3"
 	"github.com/pion/webrtc/v4"
 	"github.com/pion/webrtc/v4/pkg/media"
 )
@@ -141,7 +145,12 @@ func (c *client) handleOffer(offer webrtc.SessionDescription) error {
 		return err
 	}
 	track, err := webrtc.NewTrackLocalStaticSample(
-		webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeOpus, ClockRate: opusClockRate, Channels: 2},
+		webrtc.RTPCodecCapability{
+			MimeType:    webrtc.MimeTypeOpus,
+			ClockRate:   opusClockRate,
+			Channels:    2,
+			SDPFmtpLine: "minptime=10;useinbandfec=1;stereo=1;sprop-stereo=1",
+		},
 		"music",
 		"weatherhds-music",
 	)
@@ -188,6 +197,10 @@ func (c *client) handleOffer(offer webrtc.SessionDescription) error {
 		_ = pc.Close()
 		return err
 	}
+	if err := enableOpusStereo(pc, offer.SDP); err != nil {
+		_ = pc.Close()
+		return err
+	}
 	answer, err := pc.CreateAnswer(nil)
 	if err != nil {
 		_ = pc.Close()
@@ -205,6 +218,69 @@ func (c *client) handleOffer(offer webrtc.SessionDescription) error {
 	c.mu.Unlock()
 	c.sendJSON(map[string]any{"type": "webrtc.answer", "sdp": pc.LocalDescription()})
 	return nil
+}
+
+func enableOpusStereo(pc *webrtc.PeerConnection, rawSDP string) error {
+	description := &sdp.SessionDescription{}
+	if err := description.UnmarshalString(rawSDP); err != nil {
+		return fmt.Errorf("parse WebRTC offer SDP: %w", err)
+	}
+
+	var opusCodec *webrtc.RTPCodecParameters
+	for _, media := range description.MediaDescriptions {
+		if media.MediaName.Media != "audio" {
+			continue
+		}
+		for _, format := range media.MediaName.Formats {
+			payload, err := strconv.ParseUint(format, 10, 8)
+			if err != nil {
+				continue
+			}
+			codec, err := description.GetCodecForPayloadType(uint8(payload))
+			if err == nil && strings.EqualFold(codec.Name, "opus") && codec.ClockRate == opusClockRate {
+				opusCodec = &webrtc.RTPCodecParameters{
+					RTPCodecCapability: webrtc.RTPCodecCapability{
+						MimeType:    webrtc.MimeTypeOpus,
+						ClockRate:   opusClockRate,
+						Channels:    2,
+						SDPFmtpLine: forceStereoParameters(codec.Fmtp),
+					},
+					PayloadType: webrtc.PayloadType(payload),
+				}
+				break
+			}
+		}
+		break
+	}
+	if opusCodec == nil {
+		return fmt.Errorf("WebRTC offer did not contain an Opus audio codec")
+	}
+	for _, transceiver := range pc.GetTransceivers() {
+		if transceiver.Kind() != webrtc.RTPCodecTypeAudio {
+			continue
+		}
+		if err := transceiver.SetCodecPreferences([]webrtc.RTPCodecParameters{*opusCodec}); err != nil {
+			return fmt.Errorf("set Opus stereo codec preference: %w", err)
+		}
+	}
+	return nil
+}
+
+func forceStereoParameters(parameters string) string {
+	values := make([]string, 0, 6)
+	for _, parameter := range strings.Split(parameters, ";") {
+		parameter = strings.TrimSpace(parameter)
+		if parameter == "" {
+			continue
+		}
+		key := strings.ToLower(strings.TrimSpace(strings.SplitN(parameter, "=", 2)[0]))
+		if key == "stereo" || key == "sprop-stereo" {
+			continue
+		}
+		values = append(values, parameter)
+	}
+	values = append(values, "stereo=1", "sprop-stereo=1")
+	return strings.Join(values, ";")
 }
 
 func (c *client) writeSample(sample media.Sample) {

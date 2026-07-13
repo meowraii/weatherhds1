@@ -247,6 +247,9 @@ func TestHandleOfferCreatesWebRTCAnswer(t *testing.T) {
 	if response.SDP.Type != webrtc.SDPTypeAnswer {
 		t.Fatalf("expected answer SDP, got %s", response.SDP.Type)
 	}
+	if !strings.Contains(response.SDP.SDP, "stereo=1") {
+		t.Fatalf("answer SDP did not negotiate Opus stereo:\n%s", response.SDP.SDP)
+	}
 	if err := peer.SetRemoteDescription(*response.SDP); err != nil {
 		t.Fatalf("client-side SetRemoteDescription failed: %v", err)
 	}

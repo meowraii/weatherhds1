@@ -492,6 +492,18 @@ func installPiperBinAsset(destinationDir string) error {
 			if err := os.Chmod(targetPath, mode); err != nil {
 				return err
 			}
+		case tar.TypeSymlink:
+			linkName := filepath.FromSlash(header.Linkname)
+			linkTarget := filepath.Clean(filepath.Join(filepath.Dir(targetPath), linkName))
+			if filepath.IsAbs(linkName) || !pathWithin(tempDir, linkTarget) {
+				return fmt.Errorf("invalid archive symlink: %s -> %s", header.Name, header.Linkname)
+			}
+			if err := os.MkdirAll(filepath.Dir(targetPath), 0o755); err != nil {
+				return err
+			}
+			if err := os.Symlink(linkName, targetPath); err != nil {
+				return err
+			}
 		}
 	}
 	backupDir := destinationDir + ".bak"
