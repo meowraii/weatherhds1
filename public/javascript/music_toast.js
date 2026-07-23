@@ -301,9 +301,52 @@ async function createPeer() {
             }, 5000);
         }
     };
-    const offer = await pc.createOffer();
+    const offer = enableOpusStereo(await pc.createOffer());
     await pc.setLocalDescription(offer);
     send({ type: "webrtc.offer", sdp: pc.localDescription });
+}
+
+function enableOpusStereo(description) {
+    if (!description?.sdp) return description;
+
+    const lines = description.sdp.split(/\r?\n/);
+    const opusPayloads = new Set();
+    for (const line of lines) {
+        const match = line.match(/^a=rtpmap:(\d+)\s+opus\/48000\/2$/i);
+        if (match) opusPayloads.add(match[1]);
+    }
+    if (opusPayloads.size === 0) return description;
+
+    const updatedPayloads = new Set();
+    for (let index = 0; index < lines.length; index++) {
+        const match = lines[index].match(/^a=fmtp:(\d+)\s*(.*)$/i);
+        if (!match || !opusPayloads.has(match[1])) continue;
+        lines[index] = `a=fmtp:${match[1]} ${forceOpusStereoParameters(match[2])}`;
+        updatedPayloads.add(match[1]);
+    }
+
+    for (const payload of opusPayloads) {
+        if (updatedPayloads.has(payload)) continue;
+        const rtpmapIndex = lines.findIndex(line => new RegExp(`^a=rtpmap:${payload}\\s`, "i").test(line));
+        if (rtpmapIndex >= 0) {
+            lines.splice(rtpmapIndex + 1, 0, `a=fmtp:${payload} stereo=1;sprop-stereo=1`);
+        }
+    }
+
+    return { type: description.type, sdp: lines.join("\r\n") };
+}
+
+function forceOpusStereoParameters(parameters) {
+    const values = parameters
+        .split(";")
+        .map(parameter => parameter.trim())
+        .filter(Boolean)
+        .filter(parameter => {
+            const key = parameter.split("=", 1)[0].trim().toLowerCase();
+            return key !== "stereo" && key !== "sprop-stereo";
+        });
+    values.push("stereo=1", "sprop-stereo=1");
+    return values.join(";");
 }
 
 async function handleMessage(message) {

@@ -195,8 +195,22 @@ function getUpNextDisplayName(item) {
     return item?.displayName || 'Please Standby...';
 }
 
+function getUpNextDisplayKey(item) {
+    return getUpNextDisplayName(item).trim().toLocaleLowerCase();
+}
+
+function getMainUpNextDisplayQueue(queue) {
+    const seen = new Set();
+    return queue.filter(item => {
+        const key = getUpNextDisplayKey(item);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
 function getMainUpNextQueueKey(queue) {
-    return queue.map(item => `${item.type}:${getUpNextDisplayName(item)}`).join('|');
+    return queue.map(getUpNextDisplayKey).join('|');
 }
 
 function appendMainUpNextPill(track, item, itemIndex, fadeIn = false) {
@@ -216,17 +230,29 @@ function appendMainUpNextPill(track, item, itemIndex, fadeIn = false) {
 }
 
 function fillMainUpNextCarousel(track, queue, currentIdx) {
-    const viewport = track.parentElement;
-    const targetWidth = Math.max(viewport?.clientWidth ?? 0, window.innerWidth * 0.45) + 520;
-    let guard = 1;
-
-    while ((track.scrollWidth < targetWidth || track.children.length < 3) && guard < queue.length * 4) {
-        const itemIndex = (currentIdx + guard) % queue.length;
-        appendMainUpNextPill(track, queue[itemIndex], itemIndex, false);
-        guard++;
+    if (queue.length < 2) {
+        mainUpnextCarouselTailIndex = currentIdx;
+        return;
     }
 
-    mainUpnextCarouselTailIndex = (currentIdx + guard) % queue.length;
+    const viewport = track.parentElement;
+    const targetWidth = Math.max(viewport?.clientWidth ?? 0, window.innerWidth * 0.45) + 520;
+    let offset = 1;
+    let attempts = 0;
+    const maxAttempts = queue.length * 8;
+
+    while ((track.scrollWidth < targetWidth || track.children.length < 3) && attempts < maxAttempts) {
+        const itemIndex = (currentIdx + offset) % queue.length;
+        offset++;
+        attempts++;
+        if (itemIndex === currentIdx) continue;
+        appendMainUpNextPill(track, queue[itemIndex], itemIndex, false);
+    }
+
+    mainUpnextCarouselTailIndex = (currentIdx + offset) % queue.length;
+    if (mainUpnextCarouselTailIndex === currentIdx) {
+        mainUpnextCarouselTailIndex = (mainUpnextCarouselTailIndex + 1) % queue.length;
+    }
 }
 
 function initMainUpNextCarousel(queue, currentIdx) {
@@ -240,7 +266,7 @@ function initMainUpNextCarousel(queue, currentIdx) {
     fillMainUpNextCarousel(track, queue, currentIdx);
 }
 
-function scrollMainUpNextCarousel(queue) {
+function scrollMainUpNextCarousel(queue, currentIdx) {
     const track = domCache.mainUpnextCarouselTrack;
     if (!track || queue.length < 2) return;
 
@@ -260,6 +286,9 @@ function scrollMainUpNextCarousel(queue) {
 
     setTimeout(() => {
         pills[0].remove();
+        if (mainUpnextCarouselTailIndex === currentIdx) {
+            mainUpnextCarouselTailIndex = (mainUpnextCarouselTailIndex + 1) % queue.length;
+        }
         appendMainUpNextPill(track, queue[mainUpnextCarouselTailIndex], mainUpnextCarouselTailIndex, true);
         mainUpnextCarouselTailIndex = (mainUpnextCarouselTailIndex + 1) % queue.length;
 
@@ -271,11 +300,15 @@ function scrollMainUpNextCarousel(queue) {
 
 function updateUpNext(queue, currentIdx) {
     const current = queue[currentIdx];
-    const upcoming = [1, 2, 3].map(i => queue[(currentIdx + i) % queue.length]);
-    const nextCarouselKey = getMainUpNextQueueKey(queue);
+    const displayQueue = getMainUpNextDisplayQueue(queue);
+    const displayCurrentIdx = Math.max(0, displayQueue.findIndex(item => getUpNextDisplayKey(item) === getUpNextDisplayKey(current)));
+    const upcoming = [1, 2, 3].map(i => displayQueue[(displayCurrentIdx + i) % displayQueue.length]);
+    const nextCarouselKey = getMainUpNextQueueKey(displayQueue);
     const shouldUseCarousel = Boolean(domCache.mainUpnextCarouselTrack);
     const isSequentialCarouselStep = mainUpnextCarouselIndex >= 0
-        && currentIdx === (mainUpnextCarouselIndex + 1) % queue.length
+        && displayCurrentIdx === (mainUpnextCarouselIndex + 1) % displayQueue.length
+        && nextCarouselKey === mainUpnextCarouselKey;
+    const isSameCarouselStep = mainUpnextCarouselIndex === displayCurrentIdx
         && nextCarouselKey === mainUpnextCarouselKey;
 
     if (domCache.currentLocationName) {
@@ -288,13 +321,15 @@ function updateUpNext(queue, currentIdx) {
     }
 
     if (shouldUseCarousel) {
-        if (nextCarouselKey !== mainUpnextCarouselKey || !domCache.mainUpnextCarouselTrack.children.length || !isSequentialCarouselStep) {
-            initMainUpNextCarousel(queue, currentIdx);
-        } else {
-            scrollMainUpNextCarousel(queue);
+        if (nextCarouselKey !== mainUpnextCarouselKey || !domCache.mainUpnextCarouselTrack.children.length) {
+            initMainUpNextCarousel(displayQueue, displayCurrentIdx);
+        } else if (isSequentialCarouselStep) {
+            scrollMainUpNextCarousel(displayQueue, displayCurrentIdx);
+        } else if (!isSameCarouselStep) {
+            initMainUpNextCarousel(displayQueue, displayCurrentIdx);
         }
         mainUpnextCarouselKey = nextCarouselKey;
-        mainUpnextCarouselIndex = currentIdx;
+        mainUpnextCarouselIndex = displayCurrentIdx;
         return;
     }
 
